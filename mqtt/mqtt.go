@@ -15,17 +15,13 @@ type ClientConfig struct {
 }
 
 type Mqtt struct {
-	client mqtt.Client
+	Config    ClientConfig
+	Listeners Listeners
+	client    mqtt.Client
 }
 
 func (mq *Mqtt) Connect() error {
-	opts := createClientOptions(ClientConfig{
-		Host:     "test.mosquitto.org",
-		Port:     1883,
-		ClientId: "go_mqtt_client",
-		Username: "",
-		Password: "",
-	})
+	opts := createClientOptions(mq.Config)
 	mq.client = mqtt.NewClient(opts)
 
 	token := mq.client.Connect()
@@ -39,10 +35,10 @@ func (mq *Mqtt) Disconnect() {
 	mq.client.Disconnect(100)
 }
 
-type Subscribers map[string]mqtt.MessageHandler
+type Listeners map[string]mqtt.MessageHandler
 
-func (mq *Mqtt) Subscribe(subscribers Subscribers) error {
-	for topic, handler := range subscribers {
+func (mq *Mqtt) SubscribeAll() error {
+	for topic, handler := range mq.Listeners {
 		token := mq.client.Subscribe(topic, 1, handler)
 
 		if token.Wait() && token.Error() != nil {

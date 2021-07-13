@@ -9,15 +9,22 @@ import (
 )
 
 func main() {
-	mq := &mqtt.Mqtt{}
+	mq := &mqtt.Mqtt{
+		Config: mqtt.ClientConfig{
+			Host:     "test.mosquitto.org",
+			Port:     1883,
+			ClientId: "go_mqtt_client",
+		},
+		Listeners: mqtt.Listeners{
+			"VCU/+/RPT": handler.Report,
+		},
+	}
+
 	if err := mq.Connect(); err != nil {
 		log.Fatalf("[MQTT] Failed to connect, %s\n", err.Error())
 	}
 
-	subscribers := mqtt.Subscribers{
-		"VCU/+/RPT": handler.Report,
-	}
-	if err := mq.Subscribe(subscribers); err != nil {
+	if err := mq.SubscribeAll(); err != nil {
 		log.Fatalf("[MQTT] Failed to subscribe, %s\n", err.Error())
 	}
 

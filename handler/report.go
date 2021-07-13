@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/hex"
 	"log"
 	"strings"
@@ -14,8 +13,7 @@ func Report(client mqtt.Client, msg mqtt.Message) {
 	hexString := strings.ToUpper(hex.EncodeToString(msg.Payload()))
 	log.Printf("[REPORT] %s\n", hexString)
 
-	reader := bytes.NewReader(msg.Payload())
-	report := &decoder.Report{Reader: reader}
+	report := &decoder.Report{Bytes: msg.Payload()}
 
 	_, err := report.Decode()
 	if err != nil {

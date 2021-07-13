@@ -1,21 +1,20 @@
 package packet
 
 import (
+	"bytes"
 	"errors"
 	"reflect"
 	"strconv"
 )
 
-// type M map[string]interface{}
-
-type Tag struct {
-	Tipe      string
-	Unit      string
-	Scale     float32
-	Chartable bool
+type Meta struct {
+	Tipe   string
+	Len    int
+	Factor float32
+	Unit   string
 }
 
-func TagWalk(v reflect.Value) error {
+func TagWalk(rdr *bytes.Reader, v reflect.Value, t reflect.StructTag) error {
 	if v.Kind() != reflect.Ptr {
 		return errors.New("not a pointer value")
 	}
@@ -25,76 +24,91 @@ func TagWalk(v reflect.Value) error {
 	switch v.Kind() {
 	case reflect.Struct:
 		for i := 0; i < v.NumField(); i++ {
-			if err := TagWalk(v.Field(i).Addr()); err != nil {
+			tag := v.Type().Field(i).Tag
+
+			if err := TagWalk(rdr, v.Field(i).Addr(), tag); err != nil {
 				return err
 			}
 		}
+		return nil
 	case reflect.Array:
 		for i := 0; i < v.Len(); i++ {
-			if err := TagWalk(v.Index(i).Addr()); err != nil {
+			if err := TagWalk(rdr, v.Index(i).Addr(), ""); err != nil {
 				return err
 			}
 		}
-	case reflect.Uint8:
-		v.SetUint(10)
-	case reflect.Int8:
-		v.SetInt(-50)
-	case reflect.String:
-		v.SetString("Foo")
-	case reflect.Bool:
-		v.SetBool(true)
-
-	default:
-		// return errors.New("Unsupported kind: " + v.Kind().String())
+		return nil
 	}
 
-	// for i := 0; i < v.NumField(); i++ {
-	// 	value := v.Field(i)
-	// 	t := v.Type().Field(i)
+	if t == "" {
+		return errors.New("no meta defined")
+	}
 
-	// 	// if _, ok := tipe.Tag.Lookup("type"); !ok {
-	// 	if t.Type.Kind() == reflect.Struct {
-	// 		tagStructWalk(value.Addr())
-	// 		continue
-	// 	}
+	meta := getMeta(t)
 
-	// 	tag := getTags(t)
-	// 	// key := tag.Group + "." + strings.ToLower(t.Name)
-	// 	val := value.Interface()
+	buf := make([]byte, meta.Len)
+	rdr.Read(buf)
 
-	// 	fmt.Println(t.Name, val, tag)
-	// 	// switch tag.Tipe {
-	// 	// case "string":
-	// 	// 	val = val.([]byte)
-	// 	// case "datetime":
-	// 	// 	val = formatter.ToUnixTime(val.([]byte))
-	// 	// }
-	// 	// buf[key] = val
-	// }
+	switch v.Kind() {
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		v.SetUint(toUint64(buf))
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		var val int64 = toInt64(buf)
+		if meta.Tipe == "unix_time" {
+			val = toUnixTime(buf)
+		}
+		v.SetInt(val)
+	case reflect.Float32:
+		// log.Println(buf, meta.Factor, toFloat64(buf, meta.Factor))
+		v.SetFloat(toFloat64(buf, meta.Factor))
+	case reflect.Bool:
+		v.SetBool(toBool(buf))
+	case reflect.String:
+		v.SetString(toAscii(buf))
 
+	default:
+		return errors.New("unsupported kind: " + v.Kind().String())
+	}
+
+	// fmt.Printf("%v %d %X %v\n", v.Type().Name(), meta.Len, buf, v.Interface())
 	return nil
 }
 
-func getTags(field reflect.StructField) Tag {
-	tag := Tag{}
+func getMeta(tag reflect.StructTag) Meta {
+	meta := Meta{
+		Factor: 1,
+	}
 
-	// if group, ok := field.Tag.Lookup("group"); ok {
-	// 	tag.Group = group
-	// }
-	if tipe, ok := field.Tag.Lookup("type"); ok {
-		tag.Tipe = tipe
+	if tipe, ok := tag.Lookup("type"); ok {
+		meta.Tipe = tipe
 	}
-	if unit, ok := field.Tag.Lookup("unit"); ok {
-		tag.Unit = unit
-	}
-	if factor, ok := field.Tag.Lookup("factor"); ok {
-		if f, err := strconv.ParseFloat(factor, 32); err == nil {
-			tag.Scale = float32(f)
+
+	if len, ok := tag.Lookup("len"); ok {
+		if i, err := strconv.Atoi(len); err == nil {
+			meta.Len = int(i)
+		}
+	} else {
+		switch meta.Tipe {
+		case reflect.Uint8.String(), reflect.Int8.String():
+			meta.Len = 1
+		case reflect.Uint16.String(), reflect.Int16.String():
+			meta.Len = 2
+		case reflect.Uint32.String(), reflect.Int32.String():
+			meta.Len = 4
+		case reflect.Uint64.String(), reflect.Int64.String():
+			meta.Len = 8
 		}
 	}
-	if _, ok := field.Tag.Lookup("chartable"); ok {
-		tag.Chartable = true
+
+	if factor, ok := tag.Lookup("factor"); ok {
+		if f, err := strconv.ParseFloat(factor, 32); err == nil {
+			meta.Factor = float32(f)
+		}
 	}
 
-	return tag
+	if unit, ok := tag.Lookup("unit"); ok {
+		meta.Unit = unit
+	}
+
+	return meta
 }

@@ -19,29 +19,6 @@ func (h *Header) Decode() (packet.HeaderPacket, error) {
 		return packet.HeaderPacket{}, errors.New("cant decode header")
 	}
 	return data, nil
-
-	// data := make(M)
-	// for _, v := range packet.Header {
-	// 	buf := make([]byte, v.Size)
-	// 	n, err := reader.Read(buf)
-	// 	if n != v.Size || err != nil {
-	// 		return M{}, errors.New("packet corrupted")
-	// 	}
-
-	// 	switch v.Format.DataType {
-	// 	case reflect.String:
-	// 		data[v.Field] = toAscii(buf)
-	// 	case reflect.Uint8:
-	// 		data[v.Field] = toUint8(buf)
-	// 	case reflect.Uint32:
-	// 		data[v.Field] = toUint32(buf)
-	// 	case reflect.Interface:
-	// 		if v.Format.InterfaceName == "datetime" {
-	// 			data[v.Field] = toUnixTime(buf)
-	// 		}
-	// 	}
-	// }
-	// return data, nil
 }
 
 // func (h *Header) Validate() error {

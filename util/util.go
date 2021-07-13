@@ -1,9 +1,10 @@
 package util
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 func WaitForCtrlC() {
@@ -13,5 +14,6 @@ func WaitForCtrlC() {
 }
 
 func Debug(data interface{}) {
-	fmt.Printf("%+v\n", data)
+	// fmt.Printf("%+v\n", data)
+	spew.Dump(data)
 }
