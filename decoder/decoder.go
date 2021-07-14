@@ -21,7 +21,7 @@ func toUnixTime(b []byte) int64 {
 }
 
 func toBool(b []byte) bool {
-	return b[0] == 0
+	return b[0] == 1
 }
 
 func toAscii(b []byte) string {
