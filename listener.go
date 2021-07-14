@@ -9,17 +9,15 @@ import (
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
-func (s *Sdk) statusHandler(client mqtt.Client, msg mqtt.Message) {
+func (s *Sdk) statusListener(client mqtt.Client, msg mqtt.Message) {
 	s.logPaylod(msg)
 
-	online := msg.Payload()[0] == '1'
-
-	if err := s.statusListener(getVin(msg.Topic()), online); err != nil {
+	if err := s.statusFunc(getVin(msg), isOnline(msg)); err != nil {
 		log.Fatalf("Status callback error, %v\n", err)
 	}
 }
 
-func (s *Sdk) reportHandler(client mqtt.Client, msg mqtt.Message) {
+func (s *Sdk) reportListener(client mqtt.Client, msg mqtt.Message) {
 	s.logPaylod(msg)
 
 	packet := &Report{Bytes: msg.Payload()}
@@ -28,7 +26,7 @@ func (s *Sdk) reportHandler(client mqtt.Client, msg mqtt.Message) {
 		log.Fatalf("Can't decode report package, %v\n", err)
 	}
 
-	if err := s.reportListener(getVin(msg.Topic()), report); err != nil {
+	if err := s.reportFunc(getVin(msg), report); err != nil {
 		log.Fatalf("Report callback error, %v\n", err)
 	}
 }
@@ -39,9 +37,13 @@ func (s *Sdk) logPaylod(msg mqtt.Message) {
 	}
 }
 
-func getVin(topic string) int {
-	s := strings.Split(topic, "/")
+func getVin(msg mqtt.Message) int {
+	s := strings.Split(msg.Topic(), "/")
 	vin, _ := strconv.Atoi(s[1])
 
 	return vin
+}
+
+func isOnline(msg mqtt.Message) bool {
+	return msg.Payload()[0] == '1'
 }

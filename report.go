@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"reflect"
 
-	"github.com/pudjamansyurin/gen_vcu_sdk/decoder"
+	"github.com/pudjamansyurin/gen_vcu_sdk/coder"
 	"github.com/pudjamansyurin/gen_vcu_sdk/model"
 )
 
@@ -37,7 +37,7 @@ func (r *Report) decodeReport() (interface{}, error) {
 }
 
 func (r *Report) decode(dst interface{}) error {
-	return decoder.TagWalk(bytes.NewReader(r.Bytes), reflect.ValueOf(dst), "")
+	return coder.TagWalk(bytes.NewReader(r.Bytes), reflect.ValueOf(dst), "")
 }
 
 func (r *Report) simpleFrame(header model.HeaderReport) bool {
