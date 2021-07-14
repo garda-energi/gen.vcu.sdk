@@ -11,3 +11,9 @@ type HeaderReport struct {
 	Header
 	FrameID FRAME_ID `type:"uint8"`
 }
+
+type HeaderCommand struct {
+	Header
+	Code    CMD_CODE    `type:"uint8"`
+	SubCode CMD_SUBCODE `type:"uint8"`
+}

@@ -1,8 +1,5 @@
 package model
 
-// type DateTime [7]byte
-// type Prefix [2]byte
-
 const BMS_PACK_CNT = 2
 const DRIVE_MODE_CNT = 3
 

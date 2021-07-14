@@ -25,7 +25,7 @@ func toBool(b []byte) bool {
 }
 
 func toAscii(b []byte) string {
-	return reverseString(string(b))
+	return reverse(string(b))
 }
 
 func toFloat64(b []byte, factor float32) float64 {
@@ -88,7 +88,7 @@ func toInt64(b []byte) int64 {
 }
 
 // reverse returns a string with the bytes of s in reverse order.
-func reverseString(s string) string {
+func reverse(s string) string {
 	var b strings.Builder
 	b.Grow(len(s))
 	for i := len(s) - 1; i >= 0; i-- {

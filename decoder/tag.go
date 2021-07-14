@@ -39,10 +39,16 @@ func TagWalk(rdr *bytes.Reader, v reflect.Value, t reflect.StructTag) error {
 		return nil
 	}
 
+	err := decodePacket(rdr, v, t)
+	return err
+}
+
+func decodePacket(rdr *bytes.Reader, v reflect.Value, t reflect.StructTag) error {
 	if t == "" {
 		return errors.New("no meta defined")
 	}
-	meta := getMeta(t)
+
+	meta := decodeMeta(t)
 	buf := make([]byte, meta.Len)
 	rdr.Read(buf)
 
@@ -69,7 +75,7 @@ func TagWalk(rdr *bytes.Reader, v reflect.Value, t reflect.StructTag) error {
 	return nil
 }
 
-func getMeta(tag reflect.StructTag) Meta {
+func decodeMeta(tag reflect.StructTag) Meta {
 	meta := Meta{
 		Factor: 1,
 	}

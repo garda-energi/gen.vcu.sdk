@@ -10,7 +10,7 @@ import (
 )
 
 func (s *Sdk) statusHandler(client mqtt.Client, msg mqtt.Message) {
-	logPaylod(msg)
+	s.logPaylod(msg)
 
 	online := msg.Payload()[0] == '1'
 
@@ -20,7 +20,7 @@ func (s *Sdk) statusHandler(client mqtt.Client, msg mqtt.Message) {
 }
 
 func (s *Sdk) reportHandler(client mqtt.Client, msg mqtt.Message) {
-	logPaylod(msg)
+	s.logPaylod(msg)
 
 	packet := &Report{Bytes: msg.Payload()}
 	report, err := packet.decodeReport()
@@ -33,8 +33,10 @@ func (s *Sdk) reportHandler(client mqtt.Client, msg mqtt.Message) {
 	}
 }
 
-func logPaylod(msg mqtt.Message) {
-	log.Printf("[%s] %s\n", msg.Topic(), util.HexString(msg.Payload()))
+func (s *Sdk) logPaylod(msg mqtt.Message) {
+	if s.logging {
+		log.Printf("[%s] %s\n", msg.Topic(), util.HexString(msg.Payload()))
+	}
 }
 
 func getVin(topic string) int {
