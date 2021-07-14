@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
+	"github.com/pudjamansyurin/gen_vcu_sdk/model"
 )
 
 func main() {
@@ -22,13 +23,18 @@ func statusListener(vin int, online bool) error {
 	if online {
 		status = "ONLINE"
 	}
-	fmt.Printf("%d is %s\n", vin, status)
+	fmt.Printf("%d => %s\n", vin, status)
 
 	return nil
 }
 
 func reportListener(vin int, report interface{}) error {
-	fmt.Printf("%+v\n", report)
+	switch r := report.(type) {
+	case model.ReportSimple:
+		fmt.Printf("[S] %d  => %+v\n", vin, r)
+	case model.ReportFull:
+		fmt.Printf("[F] %d  => %+v\n", vin, r)
+	}
 
 	return nil
 }
