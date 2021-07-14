@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/davecgh/go-spew/spew"
 	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
+	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 func main() {
@@ -13,5 +13,5 @@ func main() {
 }
 
 func reportListener(report interface{}, bytes []byte) {
-	spew.Dump(report)
+	util.Debug(report)
 }
