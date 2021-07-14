@@ -10,3 +10,4 @@
 ✔ add development branch @done(21-07-14 12:44)
 ✔ add device status (online/offline) listener @done(21-07-14 13:27)
 ☐ be carefull with concurency race-condition 
+✔ add payload loggin control @done(21-07-14 13:52)

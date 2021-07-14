@@ -17,6 +17,7 @@ type ReportListenerFunc func(vin int, report interface{}) error
 
 type Sdk struct {
 	config         transport.ClientConfig
+	logging        bool
 	statusListener StatusListenerFunc
 	reportListener ReportListenerFunc
 }
@@ -30,6 +31,7 @@ func New(host string, port int, user, pass string) Sdk {
 			Password: pass,
 			// ClientId: "go_mqtt_client",
 		},
+		logging: true,
 	}
 }
 
@@ -58,4 +60,8 @@ func (s *Sdk) AddReportListener(cb ReportListenerFunc) {
 
 func (s *Sdk) AddStatusListener(cb StatusListenerFunc) {
 	s.statusListener = cb
+}
+
+func (s *Sdk) Logging(enable bool) {
+	s.logging = enable
 }

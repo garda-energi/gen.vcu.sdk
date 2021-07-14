@@ -11,6 +11,8 @@ func main() {
 
 	sdk.AddStatusListener(statusListener)
 	sdk.AddReportListener(reportListener)
+
+	sdk.Logging(false)
 	sdk.ConnectAndListen()
 }
 
