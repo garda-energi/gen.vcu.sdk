@@ -6,3 +6,5 @@
 ☐ add unit test
 ✔ remove main.go, change as a package @done(21-07-14 12:32)
 ☐ add context.TODO 
+☐ add documentation/comment for each func
+✔ add development branch @done(21-07-14 12:44)

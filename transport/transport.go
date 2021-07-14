@@ -40,7 +40,6 @@ func (t *Transport) Disconnect() {
 
 func (t *Transport) Subscribe(topic string, handler mqtt.MessageHandler) error {
 	token := t.client.Subscribe(topic, 1, handler)
-
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}

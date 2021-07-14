@@ -53,7 +53,7 @@ func (s *Sdk) ConnectAndListen() {
 }
 
 func (s *Sdk) reportHandler(client mqtt.Client, msg mqtt.Message) {
-	// log.Printf("[REPORT] %s\n", util.HexString(msg.Payload()))
+	log.Printf("[REPORT] %s\n", util.HexString(msg.Payload()))
 
 	packet := &Report{Bytes: msg.Payload()}
 	report, err := packet.decodeReport()
