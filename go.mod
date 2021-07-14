@@ -1,4 +1,4 @@
-module github.com/pudjamansyurin/gen-go-packet
+module github.com/pudjamansyurin/gen_vcu_sdk
 
 go 1.16
 

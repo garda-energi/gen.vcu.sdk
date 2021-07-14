@@ -1,30 +1,12 @@
-package handler
+package api
 
 import (
 	"bytes"
-	"encoding/hex"
-	"log"
 	"reflect"
-	"strings"
 
-	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/pudjamansyurin/gen-go-packet/decoder"
-	"github.com/pudjamansyurin/gen-go-packet/model"
-	"github.com/pudjamansyurin/gen-go-packet/util"
+	"github.com/pudjamansyurin/gen_vcu_sdk/decoder"
+	"github.com/pudjamansyurin/gen_vcu_sdk/model"
 )
-
-func ReportHandler(client mqtt.Client, msg mqtt.Message) {
-	hexString := strings.ToUpper(hex.EncodeToString(msg.Payload()))
-	log.Printf("[REPORT] %s\n", hexString)
-
-	packet := &Report{Bytes: msg.Payload()}
-	report, err := packet.decodeReport()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	util.Debug(report)
-}
 
 type Report struct {
 	Bytes []byte
