@@ -1,7 +1,7 @@
-# gen_vcu_sdk
+# GEN VCU SDK
 
 ## SDK for Vehicle Control Unit in Golang
 
 ### How To Use
 
-#### See example/main.go
+`See example/main.go`
