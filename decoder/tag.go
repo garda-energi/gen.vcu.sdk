@@ -66,7 +66,6 @@ func TagWalk(rdr *bytes.Reader, v reflect.Value, t reflect.StructTag) error {
 		return errors.New("unsupported kind: " + v.Kind().String())
 	}
 
-	// fmt.Printf("%v %d %X %v\n", v.Type().Name(), meta.Len, buf, v.Interface())
 	return nil
 }
 
