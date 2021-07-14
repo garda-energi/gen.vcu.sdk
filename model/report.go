@@ -1,41 +1,40 @@
-package packet
+package model
 
-type ReportSimplePacket struct {
-	Header HeaderPacket
-	VCU    VcuPacket
-	EEPROM EepromPacket
-	GPS    GpsPacket
+type ReportSimple struct {
+	HeaderReport
+	Vcu
+	Eeprom
+	Gps
 }
-type ReportFullPacket struct {
-	ReportSimplePacket
-	HBAR   HbarPacket
-	NET    NetPacket
-	MEMS   MemsPacket
-	Remote RemotePacket
-	Finger FingerPacket
-	Audio  AudioPacket
-	HMI1   Hmi1Packet
-	BMS    BmsPacket
-	MCU    McuPacket
-	TASK   TaskPacket
-}
-
-type VcuPacket struct {
-	FrameID     FrameID  `type:"uint8"`
-	LogDatetime int64    `type:"unix_time" len:"7"`
-	State       VcuState `type:"int8"`
-	Events      uint16   `type:"uint16"`
-	LogBuffered uint8    `type:"uint8"`
-	BatVoltage  float32  `type:"uint8" unit:"mVolt" factor:"18.0"`
-	Uptime      float32  `type:"uint32" unit:"hour" factor:"0.000277"`
+type ReportFull struct {
+	ReportSimple
+	Hbar
+	Net
+	Mems
+	Remote
+	Finger
+	Audio
+	Hmi1
+	Bms
+	Mcu
+	Task
 }
 
-type EepromPacket struct {
+type Vcu struct {
+	LogDatetime int64      `type:"unix_time" len:"7"`
+	State       BIKE_STATE `type:"int8"`
+	Events      uint16     `type:"uint16"`
+	LogBuffered uint8      `type:"uint8"`
+	BatVoltage  float32    `type:"uint8" unit:"mVolt" factor:"18.0"`
+	Uptime      float32    `type:"uint32" unit:"hour" factor:"0.000277"`
+}
+
+type Eeprom struct {
 	Active bool  `type:"uint8"`
 	Used   uint8 `type:"uint8" unit:"%"`
 }
 
-type GpsPacket struct {
+type Gps struct {
 	Active    bool    `type:"uint8"`
 	SatInUse  uint8   `type:"uint8" unit:"Sat"`
 	HDOP      float32 `type:"uint8" factor:"0.1"`
@@ -47,31 +46,31 @@ type GpsPacket struct {
 	Altitude  float32 `type:"uint16" unit:"m" factor:"0.1"`
 }
 
-type HbarPacket struct {
+type Hbar struct {
 	Reverse bool `type:"uint8"`
 	Mode    struct {
-		Drive      ModeDrive      `type:"uint8"`
-		Trip       ModeTrip       `type:"uint8"`
-		Prediction ModePrediction `type:"uint8"`
+		Drive   MODE_DRIVE `type:"uint8"`
+		Trip    MODE_TRIP  `type:"uint8"`
+		Average MODE_AVG   `type:"uint8"`
 	}
 	Trip struct {
 		A        uint16 `type:"uint16" unit:"Km"`
 		B        uint16 `type:"uint16" unit:"Km"`
 		Odometer uint16 `type:"uint16" unit:"Km"`
 	}
-	Prediction struct {
+	Average struct {
 		Range      uint8 `type:"uint8" unit:"Km"`
 		Efficiency uint8 `type:"uint8" unit:"Km/Kwh"`
 	}
 }
 
-type NetPacket struct {
-	Signal   uint8       `type:"uint8" unit:"%"`
-	State    NetState    `type:"int8"`
-	IpStatus NetIpStatus `type:"int8"`
+type Net struct {
+	Signal   uint8        `type:"uint8" unit:"%"`
+	State    NET_STATE    `type:"int8"`
+	IpStatus NET_IP_STATE `type:"int8"`
 }
 
-type MemsPacket struct {
+type Mems struct {
 	Active   bool `type:"uint8"`
 	Detector bool `type:"uint8"`
 	Accel    struct {
@@ -96,26 +95,26 @@ type MemsPacket struct {
 	}
 }
 
-type RemotePacket struct {
+type Remote struct {
 	Active bool `type:"uint8"`
 	Nearby bool `type:"uint8"`
 }
 
-type FingerPacket struct {
+type Finger struct {
 	Verified bool  `type:"uint8"`
 	DriverID uint8 `type:"uint8"`
 }
 
-type AudioPacket struct {
+type Audio struct {
 	Active bool  `type:"uint8"`
 	Mute   bool  `type:"uint8"`
 	Volume uint8 `type:"uint8" unit:"%"`
 }
-type Hmi1Packet struct {
+type Hmi1 struct {
 	Active bool `type:"uint8"`
 }
 
-type BmsPacket struct {
+type Bms struct {
 	Active bool   `type:"uint8"`
 	Run    bool   `type:"uint8"`
 	SOC    uint8  `type:"uint8" unit:"%"`
@@ -130,14 +129,14 @@ type BmsPacket struct {
 	}
 }
 
-type McuPacket struct {
-	Active      bool      `type:"uint8"`
-	Run         bool      `type:"uint8"`
-	Reverse     bool      `type:"uint8"`
-	DriveMode   ModeDrive `type:"uint8"`
-	Speed       uint8     `type:"uint8" unit:"Kph"`
-	RPM         int16     `type:"int16" unit:"rpm"`
-	Temperature float32   `type:"uint16" unit:"Celcius" factor:"0.1"`
+type Mcu struct {
+	Active      bool       `type:"uint8"`
+	Run         bool       `type:"uint8"`
+	Reverse     bool       `type:"uint8"`
+	DriveMode   MODE_DRIVE `type:"uint8"`
+	Speed       uint8      `type:"uint8" unit:"Kph"`
+	RPM         int16      `type:"int16" unit:"rpm"`
+	Temperature float32    `type:"uint16" unit:"Celcius" factor:"0.1"`
 	Fault       struct {
 		Post uint32 `type:"uint32"`
 		Run  uint32 `type:"uint32"`
@@ -151,9 +150,9 @@ type McuPacket struct {
 		Voltage float32 `type:"uint16" unit:"V" factor:"0.1"`
 	}
 	Inverter struct {
-		Enabled   bool            `type:"uint8"`
-		Lockout   bool            `type:"uint8"`
-		Discharge McuInvDischarge `type:"uint8"`
+		Enabled   bool              `type:"uint8"`
+		Lockout   bool              `type:"uint8"`
+		Discharge MCU_INV_DISCHARGE `type:"uint8"`
 	}
 	Template struct {
 		MaxRPM    int16 `type:"int16" unit:"rpm"`
@@ -165,7 +164,7 @@ type McuPacket struct {
 	}
 }
 
-type TaskPacket struct {
+type Task struct {
 	Stack struct {
 		Manager  uint16 `type:"uint16" unit:"Bytes"`
 		Network  uint16 `type:"uint16" unit:"Bytes"`

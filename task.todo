@@ -1,4 +1,8 @@
 ☐ handle error properly, dont discard with _
 ☐ fetch lengthOfType using reflect
-☐ multiply value with factor tag
-☐ how to use units ?
+☐ validate report properly
+✔ multiply value with factor tag @done(21-07-13 19:39)
+☐ use units in tags
+☐ add unit test
+☐ remove main.go, change as a package
+☐ add context.TODO 

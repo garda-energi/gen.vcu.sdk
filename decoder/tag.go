@@ -1,4 +1,4 @@
-package packet
+package decoder
 
 import (
 	"bytes"
@@ -20,7 +20,6 @@ func TagWalk(rdr *bytes.Reader, v reflect.Value, t reflect.StructTag) error {
 	}
 
 	v = reflect.Indirect(v)
-
 	switch v.Kind() {
 	case reflect.Struct:
 		for i := 0; i < v.NumField(); i++ {
@@ -43,9 +42,7 @@ func TagWalk(rdr *bytes.Reader, v reflect.Value, t reflect.StructTag) error {
 	if t == "" {
 		return errors.New("no meta defined")
 	}
-
 	meta := getMeta(t)
-
 	buf := make([]byte, meta.Len)
 	rdr.Read(buf)
 
@@ -59,7 +56,6 @@ func TagWalk(rdr *bytes.Reader, v reflect.Value, t reflect.StructTag) error {
 		}
 		v.SetInt(val)
 	case reflect.Float32:
-		// log.Println(buf, meta.Factor, toFloat64(buf, meta.Factor))
 		v.SetFloat(toFloat64(buf, meta.Factor))
 	case reflect.Bool:
 		v.SetBool(toBool(buf))

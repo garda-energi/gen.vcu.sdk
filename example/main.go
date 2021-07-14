@@ -16,7 +16,7 @@ func main() {
 			ClientId: "go_mqtt_client",
 		},
 		Listeners: mqtt.Listeners{
-			"VCU/+/RPT": handler.Report,
+			"VCU/+/RPT": handler.ReportHandler,
 		},
 	}
 
