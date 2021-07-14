@@ -8,3 +8,5 @@
 ☐ add context.TODO 
 ☐ add documentation/comment for each func
 ✔ add development branch @done(21-07-14 12:44)
+✔ add device status (online/offline) listener @done(21-07-14 13:27)
+☐ be carefull with concurency race-condition 

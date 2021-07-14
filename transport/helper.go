@@ -30,5 +30,5 @@ func connectHandler(client mqtt.Client) {
 }
 
 func disconnectHandler(client mqtt.Client, err error) {
-	log.Printf("[MQTT] Disconnected, %s\n", err.Error())
+	log.Printf("[MQTT] Disconnected, %v\n", err)
 }
