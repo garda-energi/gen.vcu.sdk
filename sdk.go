@@ -1,9 +1,7 @@
-package api
+package gen_vcu_sdk
 
 import (
-	"encoding/hex"
 	"log"
-	"strings"
 
 	// ttt "github.com/eclipse/paho.transport.golang"
 
@@ -18,13 +16,13 @@ const (
 
 type CallbackFunc func(interface{}, []byte)
 
-type Api struct {
+type Sdk struct {
 	config         transport.ClientConfig
 	reportCallback CallbackFunc
 }
 
-func New(host string, port int, user, pass string) Api {
-	return Api{
+func New(host string, port int, user, pass string) Sdk {
+	return Sdk{
 		config: transport.ClientConfig{
 			Host:     host,
 			Port:     port,
@@ -35,18 +33,18 @@ func New(host string, port int, user, pass string) Api {
 	}
 }
 
-func (a *Api) AddReportListener(cb CallbackFunc) {
-	a.reportCallback = cb
+func (s *Sdk) AddReportListener(cb CallbackFunc) {
+	s.reportCallback = cb
 }
 
-func (a *Api) ConnectAndListen() {
-	t := transport.New(a.config)
+func (s *Sdk) ConnectAndListen() {
+	t := transport.New(s.config)
 
 	if err := t.Connect(); err != nil {
 		log.Fatalf("[MQTT] Failed to connect, %s\n", err.Error())
 	}
 
-	if err := t.Subscribe(TOPIC_REPORT, a.reportHandler); err != nil {
+	if err := t.Subscribe(TOPIC_REPORT, s.reportHandler); err != nil {
 		log.Fatalf("[MQTT] Failed to subscribe, %s\n", err.Error())
 	}
 
@@ -54,15 +52,15 @@ func (a *Api) ConnectAndListen() {
 	t.Disconnect()
 }
 
-func (a *Api) reportHandler(client mqtt.Client, msg mqtt.Message) {
-	hexString := strings.ToUpper(hex.EncodeToString(msg.Payload()))
-	log.Printf("[REPORT] %s\n", hexString)
+func (s *Sdk) reportHandler(client mqtt.Client, msg mqtt.Message) {
+	// log.Printf("[REPORT] %s\n", util.HexString(msg.Payload()))
 
 	packet := &Report{Bytes: msg.Payload()}
 	report, err := packet.decodeReport()
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	// util.Debug(report)
-	a.reportCallback(report, msg.Payload())
+	s.reportCallback(report, msg.Payload())
 }

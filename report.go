@@ -1,4 +1,4 @@
-package api
+package gen_vcu_sdk
 
 import (
 	"bytes"

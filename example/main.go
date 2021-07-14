@@ -2,14 +2,14 @@ package main
 
 import (
 	"github.com/davecgh/go-spew/spew"
-	"github.com/pudjamansyurin/gen_vcu_sdk/api"
+	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
 )
 
 func main() {
-	api := api.New("test.mosquitto.org", 1883, "", "")
+	sdk := sdk.New("test.mosquitto.org", 1883, "", "")
 
-	api.AddReportListener(reportListener)
-	api.ConnectAndListen()
+	sdk.AddReportListener(reportListener)
+	sdk.ConnectAndListen()
 }
 
 func reportListener(report interface{}, bytes []byte) {

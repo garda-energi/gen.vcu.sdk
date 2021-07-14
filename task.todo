@@ -4,5 +4,5 @@
 ✔ multiply value with factor tag @done(21-07-13 19:39)
 ☐ use units in tags
 ☐ add unit test
-☐ remove main.go, change as a package
+✔ remove main.go, change as a package @done(21-07-14 12:32)
 ☐ add context.TODO 
