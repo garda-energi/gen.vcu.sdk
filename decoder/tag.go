@@ -39,9 +39,15 @@ func TagWalk(rdr *bytes.Reader, v reflect.Value, t reflect.StructTag) error {
 		return nil
 	}
 
+	err := decodeTag(rdr, v, t)
+	return err
+}
+
+func decodeTag(rdr *bytes.Reader, v reflect.Value, t reflect.StructTag) error {
 	if t == "" {
 		return errors.New("no meta defined")
 	}
+
 	meta := getMeta(t)
 	buf := make([]byte, meta.Len)
 	rdr.Read(buf)
@@ -65,7 +71,6 @@ func TagWalk(rdr *bytes.Reader, v reflect.Value, t reflect.StructTag) error {
 	default:
 		return errors.New("unsupported kind: " + v.Kind().String())
 	}
-
 	return nil
 }
 
