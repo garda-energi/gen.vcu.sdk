@@ -36,7 +36,7 @@ func toInt8(b []byte) int8 {
 	return int8(b[0])
 }
 
-func toFloat64(b []byte, factor float32) float64 {
+func toFloat64(b []byte, factor float64) float64 {
 	var data float64
 
 	switch len(b) {
@@ -54,7 +54,7 @@ func toFloat64(b []byte, factor float32) float64 {
 		binary.Read(bytes.NewBuffer(b), endian, &data)
 	}
 
-	return data * float64(factor)
+	return data * factor
 }
 
 func toInt64(b []byte) int64 {

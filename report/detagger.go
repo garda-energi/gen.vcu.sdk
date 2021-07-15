@@ -10,7 +10,7 @@ import (
 type Tagger struct {
 	Tipe   string
 	Len    int
-	Factor float32
+	Factor float64
 	Unit   string
 }
 
@@ -53,6 +53,10 @@ func decodePacket(rdr *bytes.Reader, v reflect.Value, t reflect.StructTag) error
 	rdr.Read(buf)
 
 	switch v.Kind() {
+	case reflect.Bool:
+		v.SetBool(toBool(buf))
+	case reflect.String:
+		v.SetString(toAscii(buf))
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		v.SetUint(toUint64(buf))
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -63,10 +67,6 @@ func decodePacket(rdr *bytes.Reader, v reflect.Value, t reflect.StructTag) error
 		v.SetInt(val)
 	case reflect.Float32:
 		v.SetFloat(toFloat64(buf, tagger.Factor))
-	case reflect.Bool:
-		v.SetBool(toBool(buf))
-	case reflect.String:
-		v.SetString(toAscii(buf))
 
 	default:
 		return errors.New("unsupported kind: " + v.Kind().String())
@@ -103,7 +103,7 @@ func decodeTag(tag reflect.StructTag) Tagger {
 
 	if factor, ok := tag.Lookup("factor"); ok {
 		if f, err := strconv.ParseFloat(factor, 32); err == nil {
-			tagger.Factor = float32(f)
+			tagger.Factor = float64(f)
 		}
 	}
 

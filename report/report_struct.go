@@ -7,33 +7,50 @@ type HeaderReport struct {
 	FrameID FRAME_ID `type:"uint8"`
 }
 
-type ReportSimple struct {
-	HeaderReport
-	Vcu
-	Eeprom
-	Gps
+type ReportPacket struct {
+	Header *HeaderReport
+	Vcu    *Vcu
+	Eeprom *Eeprom
+	Gps    *Gps
+	Hbar   *Hbar
+	Net    *Net
+	Mems   *Mems
+	Remote *Remote
+	Finger *Finger
+	Audio  *Audio
+	Hmi    *Hmi
+	Bms    *Bms
+	Mcu    *Mcu
+	Task   *Task
 }
 
-type ReportFull struct {
-	ReportSimple
-	Hbar
-	Net
-	Mems
-	Remote
-	Finger
-	Audio
-	Hmi
-	Bms
-	Mcu
-	Task
-}
+// type ReportSimple struct {
+// 	HeaderReport
+// 	Vcu
+// 	Eeprom
+// 	Gps
+// }
+
+// type ReportFull struct {
+// 	ReportSimple
+// 	Hbar
+// 	Net
+// 	Mems
+// 	Remote
+// 	Finger
+// 	Audio
+// 	Hmi
+// 	Bms
+// 	Mcu
+// 	Task
+// }
 
 type Vcu struct {
 	LogDatetime int64      `type:"unix_time" len:"7"`
 	State       BIKE_STATE `type:"int8"`
 	Events      uint16     `type:"uint16"`
 	LogBuffered uint8      `type:"uint8"`
-	BatVoltage  float32    `type:"uint8" unit:"mVolt" factor:"18.0"`
+	BatVoltage  float32    `type:"uint8" len:"1" unit:"mVolt" factor:"18.0"`
 	Uptime      float32    `type:"uint32" unit:"hour" factor:"0.000277"`
 }
 
@@ -45,13 +62,13 @@ type Eeprom struct {
 type Gps struct {
 	Active    bool    `type:"uint8"`
 	SatInUse  uint8   `type:"uint8" unit:"Sat"`
-	HDOP      float32 `type:"uint8" factor:"0.1"`
-	VDOP      float32 `type:"uint8" factor:"0.1"`
+	HDOP      float32 `type:"uint8" len:"1" factor:"0.1"`
+	VDOP      float32 `type:"uint8" len:"1" factor:"0.1"`
 	Speed     uint8   `type:"uint8" unit:"Kph"`
-	Heading   float32 `type:"uint8" unit:"Deg" factor:"2.0"`
+	Heading   float32 `type:"uint8" len:"1" unit:"Deg" factor:"2.0"`
 	Longitude float32 `type:"int32" factor:"0.0000001"`
 	Latitude  float32 `type:"int32" factor:"0.0000001"`
-	Altitude  float32 `type:"uint16" unit:"m" factor:"0.1"`
+	Altitude  float32 `type:"uint16" len:"2" unit:"m" factor:"0.1"`
 }
 
 type Hbar struct {
@@ -82,24 +99,24 @@ type Mems struct {
 	Active bool `type:"uint8"`
 	Motion bool `type:"uint8"`
 	Accel  struct {
-		X float32 `type:"int16" unit:"G" factor:"0.01"`
-		Y float32 `type:"int16" unit:"G" factor:"0.01"`
-		Z float32 `type:"int16" unit:"G" factor:"0.01"`
+		X float32 `type:"int16" len:"2" unit:"G" factor:"0.01"`
+		Y float32 `type:"int16" len:"2" unit:"G" factor:"0.01"`
+		Z float32 `type:"int16" len:"2" unit:"G" factor:"0.01"`
 	}
 	Gyro struct {
-		X float32 `type:"int16" unit:"rad/s" factor:"0.1"`
-		Y float32 `type:"int16" unit:"rad/s" factor:"0.1"`
-		Z float32 `type:"int16" unit:"rad/s" factor:"0.1"`
+		X float32 `type:"int16" len:"2" unit:"rad/s" factor:"0.1"`
+		Y float32 `type:"int16" len:"2" unit:"rad/s" factor:"0.1"`
+		Z float32 `type:"int16" len:"2" unit:"rad/s" factor:"0.1"`
 	}
 	Tilt struct {
-		Pitch float32 `type:"int16" unit:"Deg" factor:"0.1"`
-		Roll  float32 `type:"int16" unit:"Deg" factor:"0.1"`
+		Pitch float32 `type:"int16" len:"2" unit:"Deg" factor:"0.1"`
+		Roll  float32 `type:"int16" len:"2" unit:"Deg" factor:"0.1"`
 	}
 	Total struct {
-		Accel float32 `type:"uint16" unit:"G" factor:"0.01"`
-		Gyro  float32 `type:"uint16" unit:"rad/s" factor:"0.1"`
-		Tilt  float32 `type:"uint16" unit:"Deg" factor:"0.1"`
-		Temp  float32 `type:"uint16" unit:"Celcius" factor:"0.1"`
+		Accel float32 `type:"uint16" len:"2" unit:"G" factor:"0.01"`
+		Gyro  float32 `type:"uint16" len:"2" unit:"rad/s" factor:"0.1"`
+		Tilt  float32 `type:"uint16" len:"2" unit:"Deg" factor:"0.1"`
+		Temp  float32 `type:"uint16" len:"2" unit:"Celcius" factor:"0.1"`
 	}
 }
 
@@ -130,8 +147,8 @@ type Bms struct {
 	Pack   [BMS_PACK_CNT]struct {
 		ID      uint32  `type:"uint32"`
 		Fault   uint16  `type:"uint16"`
-		Voltage float32 `type:"uint16" unit:"Volt" factor:"0.01"`
-		Current float32 `type:"uint16" unit:"Ampere" factor:"0.1"`
+		Voltage float32 `type:"uint16" len:"2" unit:"Volt" factor:"0.01"`
+		Current float32 `type:"uint16" len:"2" unit:"Ampere" factor:"0.1"`
 		SOC     uint8   `type:"uint8" unit:"%"`
 		Temp    uint16  `type:"uint16" unit:"Celcius"`
 	}
@@ -144,18 +161,18 @@ type Mcu struct {
 	DriveMode MODE_DRIVE `type:"uint8"`
 	Speed     uint8      `type:"uint8" unit:"Kph"`
 	RPM       int16      `type:"int16" unit:"rpm"`
-	Temp      float32    `type:"uint16" unit:"Celcius" factor:"0.1"`
+	Temp      float32    `type:"uint16" len:"2" unit:"Celcius" factor:"0.1"`
 	Fault     struct {
 		Post uint32 `type:"uint32"`
 		Run  uint32 `type:"uint32"`
 	}
 	Torque struct {
-		Command  float32 `type:"uint16" unit:"Nm" factor:"0.1"`
-		Feedback float32 `type:"uint16" unit:"Nm" factor:"0.1"`
+		Command  float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
+		Feedback float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
 	}
 	DCBus struct {
-		Current float32 `type:"uint16" unit:"A" factor:"0.1"`
-		Voltage float32 `type:"uint16" unit:"V" factor:"0.1"`
+		Current float32 `type:"uint16" len:"2" unit:"A" factor:"0.1"`
+		Voltage float32 `type:"uint16" len:"2" unit:"V" factor:"0.1"`
 	}
 	Inverter struct {
 		Enabled   bool              `type:"uint8"`
@@ -167,7 +184,7 @@ type Mcu struct {
 		MaxSpeed  uint8 `type:"uint8" unit:"Kph"`
 		DriveMode [MODE_DRIVE_CNT]struct {
 			Discur uint16  `type:"uint16" unit:"A"`
-			Torque float32 `type:"uint16" unit:"Nm" factor:"0.1"`
+			Torque float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
 		}
 	}
 }

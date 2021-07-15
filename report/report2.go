@@ -57,7 +57,7 @@ func getItem(packet header.Packet, buf []byte) (Item, error) {
 		}
 		item.Value = v
 	case reflect.Float32:
-		item.Value = toFloat64(buf, packet.Factor)
+		item.Value = toFloat64(buf, float64(packet.Factor))
 	case reflect.Bool:
 		item.Value = toBool(buf)
 	case reflect.String:
