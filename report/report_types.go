@@ -1,7 +1,7 @@
 package report
 
 const BMS_PACK_CNT = 2
-const DRIVE_MODE_CNT = 3
+const MODE_DRIVE_CNT = 3
 
 var MODE_LIST = []string{
 	"drive",

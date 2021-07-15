@@ -13,10 +13,8 @@ const (
 )
 
 type Sdk struct {
-	config     transport.ClientConfig
-	logging    bool
-	statusFunc StatusListenerFunc
-	reportFunc ReportListenerFunc
+	config   transport.ClientConfig
+	listener Listener
 }
 
 func New(host string, port int, user, pass string) Sdk {
@@ -28,7 +26,9 @@ func New(host string, port int, user, pass string) Sdk {
 			Password: pass,
 			// ClientId: "go_mqtt_client",
 		},
-		logging: true,
+		listener: Listener{
+			logging: true,
+		},
 	}
 }
 
@@ -39,11 +39,11 @@ func (s *Sdk) ConnectAndListen() {
 		log.Fatalf("[MQTT] Failed to connect, %v\n", err)
 	}
 
-	if err := t.Subscribe(TOPIC_STATUS, s.statusListener); err != nil {
+	if err := t.Subscribe(TOPIC_STATUS, s.listener.status); err != nil {
 		log.Fatalf("[MQTT] Failed to subscribe, %v\n", err)
 	}
 
-	if err := t.Subscribe(TOPIC_REPORT, s.reportListener); err != nil {
+	if err := t.Subscribe(TOPIC_REPORT, s.listener.report); err != nil {
 		log.Fatalf("[MQTT] Failed to subscribe, %v\n", err)
 	}
 
@@ -51,14 +51,14 @@ func (s *Sdk) ConnectAndListen() {
 	t.Disconnect()
 }
 
-func (s *Sdk) AddReportListener(cb ReportListenerFunc) {
-	s.reportFunc = cb
+func (s *Sdk) AddStatusListener(cb StatusListenerFunc) {
+	s.listener.statusFunc = cb
 }
 
-func (s *Sdk) AddStatusListener(cb StatusListenerFunc) {
-	s.statusFunc = cb
+func (s *Sdk) AddReportListener(cb ReportListenerFunc) {
+	s.listener.reportFunc = cb
 }
 
 func (s *Sdk) Logging(enable bool) {
-	s.logging = enable
+	s.listener.logging = enable
 }

@@ -13,16 +13,22 @@ import (
 type StatusListenerFunc func(vin int, online bool) error
 type ReportListenerFunc func(vin int, result interface{}) error
 
-func (s *Sdk) statusListener(client mqtt.Client, msg mqtt.Message) {
-	s.logPaylod(msg)
+type Listener struct {
+	logging    bool
+	statusFunc StatusListenerFunc
+	reportFunc ReportListenerFunc
+}
 
-	if err := s.statusFunc(getVin(msg), isOnline(msg)); err != nil {
+func (l *Listener) status(client mqtt.Client, msg mqtt.Message) {
+	l.logPaylod(msg)
+
+	if err := l.statusFunc(getVin(msg), isOnline(msg)); err != nil {
 		log.Fatalf("Status callback error, %v\n", err)
 	}
 }
 
-func (s *Sdk) reportListener(client mqtt.Client, msg mqtt.Message) {
-	s.logPaylod(msg)
+func (l *Listener) report(client mqtt.Client, msg mqtt.Message) {
+	l.logPaylod(msg)
 
 	rpt := report.New(msg.Payload())
 	result, err := rpt.DecodeReport()
@@ -30,13 +36,13 @@ func (s *Sdk) reportListener(client mqtt.Client, msg mqtt.Message) {
 		log.Fatalf("Can't decode report package, %v\n", err)
 	}
 
-	if err := s.reportFunc(getVin(msg), result); err != nil {
+	if err := l.reportFunc(getVin(msg), result); err != nil {
 		log.Fatalf("Report callback error, %v\n", err)
 	}
 }
 
-func (s *Sdk) logPaylod(msg mqtt.Message) {
-	if !s.logging {
+func (l *Listener) logPaylod(msg mqtt.Message) {
+	if !l.logging {
 		log.Printf("[%s] %s\n", msg.Topic(), util.HexString(msg.Payload()))
 	}
 }

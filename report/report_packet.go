@@ -463,7 +463,7 @@ func McuPacket() []header.Packet {
 		},
 	}...)
 
-	for i := 0; i < DRIVE_MODE_CNT; i++ {
+	for i := 0; i < MODE_DRIVE_CNT; i++ {
 		DriveModePacket := []header.Packet{
 			{
 				Name: fmt.Sprintf("mcu.template.driveMode.%d.discur", i),

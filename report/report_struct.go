@@ -165,7 +165,7 @@ type Mcu struct {
 	Template struct {
 		MaxRPM    int16 `type:"int16" unit:"rpm"`
 		MaxSpeed  uint8 `type:"uint8" unit:"Kph"`
-		DriveMode [DRIVE_MODE_CNT]struct {
+		DriveMode [MODE_DRIVE_CNT]struct {
 			Discur uint16  `type:"uint16" unit:"A"`
 			Torque float32 `type:"uint16" unit:"Nm" factor:"0.1"`
 		}
