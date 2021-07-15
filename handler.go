@@ -2,11 +2,13 @@ package gen_vcu_sdk
 
 import (
 	"log"
+	"bytes"
 	"strconv"
 	"strings"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
+	"github.com/pudjamansyurin/gen_vcu_sdk/packet"
 )
 
 func (s *Sdk) statusHandler(client mqtt.Client, msg mqtt.Message) {
@@ -22,9 +24,19 @@ func (s *Sdk) statusHandler(client mqtt.Client, msg mqtt.Message) {
 func (s *Sdk) reportHandler(client mqtt.Client, msg mqtt.Message) {
 	s.logPaylod(msg)
 
-	packet := &Report{Bytes: msg.Payload()}
-	report, err := packet.decodeReport()
-	if err != nil {
+	// packet := &Report{Bytes: msg.Payload()}
+	// report, err := packet.decodeReport()
+
+	// if err != nil {
+	// 	log.Fatalf("Can't decode report package, %v\n", err)
+	// }
+
+	payload := msg.Payload()
+	lenPayload := len(payload)
+	buffer := bytes.NewReader(payload)
+
+	report := &packet.ReportPacket{}
+	if _, err := packet.Decode(buffer, report, lenPayload); err != nil {
 		log.Fatalf("Can't decode report package, %v\n", err)
 	}
 

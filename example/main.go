@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
-	"github.com/pudjamansyurin/gen_vcu_sdk/model"
+	// "github.com/pudjamansyurin/gen_vcu_sdk/model"
+	"github.com/pudjamansyurin/gen_vcu_sdk/packet"
 )
 
 func main() {
@@ -29,12 +30,20 @@ func statusListener(vin int, online bool) error {
 }
 
 func reportListener(vin int, report interface{}) error {
-	switch r := report.(type) {
-	case model.ReportSimple:
-		fmt.Printf("[S] %d  => %+v\n", vin, r)
-	case model.ReportFull:
-		fmt.Printf("[F] %d  => %+v\n", vin, r)
+	// switch r := report.(type) {
+	// case model.ReportSimple:
+	// 	fmt.Printf("[S] %d  => %+v\n", vin, r)
+	// case model.ReportFull:
+	// 	fmt.Printf("[F] %d  => %+v\n", vin, r)
+	// }
+	reportPacket := report.(*packet.ReportPacket)
+	fmt.Println("======= Report ========")
+	fmt.Printf("[vin] %d\n", vin)
+	fmt.Printf("[header]\n-prefix\t: %s\n-length\t: %d\n", reportPacket.Header.Prefix, reportPacket.Header.Size)
+	if reportPacket.Mems != nil {
+		fmt.Printf("[Mem]\n-active\t: %t\n-total\t: %.2f\n", reportPacket.Mems.Active, reportPacket.Mems.Total)
 	}
+	fmt.Println("======= ====== ========")
 
 	return nil
 }
