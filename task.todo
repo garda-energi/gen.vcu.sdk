@@ -1,14 +1,15 @@
+✔ multiply value with factor tag @done(21-07-13 19:39)
+✔ remove main.go, change as a package @done(21-07-14 12:32)
+✔ add development branch @done(21-07-14 12:44)
+✔ add device status (online/offline) listener @done(21-07-14 13:27)
+✔ add payload loggin control @done(21-07-14 13:52)
+✔ add command list @done(21-07-14 17:02)
 ☐ handle error properly, dont discard with _
 ☐ fetch lengthOfType using reflect
 ☐ validate report properly
-✔ multiply value with factor tag @done(21-07-13 19:39)
 ☐ use units in tags
 ☐ add unit test
-✔ remove main.go, change as a package @done(21-07-14 12:32)
 ☐ add context.TODO 
 ☐ add documentation/comment for each func
-✔ add development branch @done(21-07-14 12:44)
-✔ add device status (online/offline) listener @done(21-07-14 13:27)
 ☐ be carefull with concurency race-condition 
-✔ add payload loggin control @done(21-07-14 13:52)
-✔ add command list @done(21-07-14 17:02)
+☐ add multiple decode support for Struct and Array (_packet)
