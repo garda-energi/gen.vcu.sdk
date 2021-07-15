@@ -1,4 +1,11 @@
-package model
+package report
+
+import "github.com/pudjamansyurin/gen_vcu_sdk/header"
+
+type HeaderReport struct {
+	header.Header
+	FrameID FRAME_ID `type:"uint8"`
+}
 
 type ReportSimple struct {
 	HeaderReport
@@ -6,6 +13,7 @@ type ReportSimple struct {
 	Eeprom
 	Gps
 }
+
 type ReportFull struct {
 	ReportSimple
 	Hbar
@@ -14,7 +22,7 @@ type ReportFull struct {
 	Remote
 	Finger
 	Audio
-	Hmi1
+	Hmi
 	Bms
 	Mcu
 	Task
@@ -49,16 +57,16 @@ type Gps struct {
 type Hbar struct {
 	Reverse bool `type:"uint8"`
 	Mode    struct {
-		Drive   MODE_DRIVE `type:"uint8"`
-		Trip    MODE_TRIP  `type:"uint8"`
-		Average MODE_AVG   `type:"uint8"`
+		Drive MODE_DRIVE `type:"uint8"`
+		Trip  MODE_TRIP  `type:"uint8"`
+		Avg   MODE_AVG   `type:"uint8"`
 	}
 	Trip struct {
 		A        uint16 `type:"uint16" unit:"Km"`
 		B        uint16 `type:"uint16" unit:"Km"`
 		Odometer uint16 `type:"uint16" unit:"Km"`
 	}
-	Average struct {
+	Avg struct {
 		Range      uint8 `type:"uint8" unit:"Km"`
 		Efficiency uint8 `type:"uint8" unit:"Km/Kwh"`
 	}
@@ -71,9 +79,9 @@ type Net struct {
 }
 
 type Mems struct {
-	Active   bool `type:"uint8"`
-	Detector bool `type:"uint8"`
-	Accel    struct {
+	Active bool `type:"uint8"`
+	Motion bool `type:"uint8"`
+	Accel  struct {
 		X float32 `type:"int16" unit:"G" factor:"0.01"`
 		Y float32 `type:"int16" unit:"G" factor:"0.01"`
 		Z float32 `type:"int16" unit:"G" factor:"0.01"`
@@ -88,10 +96,10 @@ type Mems struct {
 		Roll  float32 `type:"int16" unit:"Deg" factor:"0.1"`
 	}
 	Total struct {
-		Accel       float32 `type:"uint16" unit:"G" factor:"0.01"`
-		Gyro        float32 `type:"uint16" unit:"rad/s" factor:"0.1"`
-		Tilt        float32 `type:"uint16" unit:"Deg" factor:"0.1"`
-		Temperature float32 `type:"uint16" unit:"Celcius" factor:"0.1"`
+		Accel float32 `type:"uint16" unit:"G" factor:"0.01"`
+		Gyro  float32 `type:"uint16" unit:"rad/s" factor:"0.1"`
+		Tilt  float32 `type:"uint16" unit:"Deg" factor:"0.1"`
+		Temp  float32 `type:"uint16" unit:"Celcius" factor:"0.1"`
 	}
 }
 
@@ -110,7 +118,7 @@ type Audio struct {
 	Mute   bool  `type:"uint8"`
 	Volume uint8 `type:"uint8" unit:"%"`
 }
-type Hmi1 struct {
+type Hmi struct {
 	Active bool `type:"uint8"`
 }
 
@@ -120,24 +128,24 @@ type Bms struct {
 	SOC    uint8  `type:"uint8" unit:"%"`
 	Fault  uint16 `type:"uint16"`
 	Pack   [BMS_PACK_CNT]struct {
-		ID          uint32  `type:"uint32"`
-		Fault       uint16  `type:"uint16"`
-		Voltage     float32 `type:"uint16" unit:"Volt" factor:"0.01"`
-		Current     float32 `type:"uint16" unit:"Ampere" factor:"0.1"`
-		SOC         uint8   `type:"uint8" unit:"%"`
-		Temperature uint16  `type:"uint16" unit:"Celcius"`
+		ID      uint32  `type:"uint32"`
+		Fault   uint16  `type:"uint16"`
+		Voltage float32 `type:"uint16" unit:"Volt" factor:"0.01"`
+		Current float32 `type:"uint16" unit:"Ampere" factor:"0.1"`
+		SOC     uint8   `type:"uint8" unit:"%"`
+		Temp    uint16  `type:"uint16" unit:"Celcius"`
 	}
 }
 
 type Mcu struct {
-	Active      bool       `type:"uint8"`
-	Run         bool       `type:"uint8"`
-	Reverse     bool       `type:"uint8"`
-	DriveMode   MODE_DRIVE `type:"uint8"`
-	Speed       uint8      `type:"uint8" unit:"Kph"`
-	RPM         int16      `type:"int16" unit:"rpm"`
-	Temperature float32    `type:"uint16" unit:"Celcius" factor:"0.1"`
-	Fault       struct {
+	Active    bool       `type:"uint8"`
+	Run       bool       `type:"uint8"`
+	Reverse   bool       `type:"uint8"`
+	DriveMode MODE_DRIVE `type:"uint8"`
+	Speed     uint8      `type:"uint8" unit:"Kph"`
+	RPM       int16      `type:"int16" unit:"rpm"`
+	Temp      float32    `type:"uint16" unit:"Celcius" factor:"0.1"`
+	Fault     struct {
 		Post uint32 `type:"uint32"`
 		Run  uint32 `type:"uint32"`
 	}

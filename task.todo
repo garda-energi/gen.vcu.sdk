@@ -11,3 +11,4 @@
 ✔ add device status (online/offline) listener @done(21-07-14 13:27)
 ☐ be carefull with concurency race-condition 
 ✔ add payload loggin control @done(21-07-14 13:52)
+✔ add command list @done(21-07-14 17:02)

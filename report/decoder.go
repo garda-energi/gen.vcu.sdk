@@ -1,4 +1,4 @@
-package coder
+package report
 
 import (
 	"bytes"
@@ -28,7 +28,7 @@ func toAscii(b []byte) string {
 	return reverse(string(b))
 }
 
-func ToUint8(b []byte) uint8 {
+func toUint8(b []byte) uint8 {
 	return uint8(b[0])
 }
 
@@ -83,7 +83,7 @@ func toUint64(b []byte) uint64 {
 
 	switch len(b) {
 	case 1:
-		data = uint64(ToUint8(b))
+		data = uint64(toUint8(b))
 	case 2:
 		data = uint64(endian.Uint16(b))
 	case 4:

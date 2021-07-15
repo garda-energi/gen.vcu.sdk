@@ -1,3 +1,3 @@
-package model
+package command
 
 type Response Command

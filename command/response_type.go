@@ -1,4 +1,4 @@
-package model
+package command
 
 type RSP_CODE uint8
 

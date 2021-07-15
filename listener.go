@@ -6,8 +6,12 @@ import (
 	"strings"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/pudjamansyurin/gen_vcu_sdk/report"
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
+
+type StatusListenerFunc func(vin int, online bool) error
+type ReportListenerFunc func(vin int, result interface{}) error
 
 func (s *Sdk) statusListener(client mqtt.Client, msg mqtt.Message) {
 	s.logPaylod(msg)
@@ -20,19 +24,19 @@ func (s *Sdk) statusListener(client mqtt.Client, msg mqtt.Message) {
 func (s *Sdk) reportListener(client mqtt.Client, msg mqtt.Message) {
 	s.logPaylod(msg)
 
-	packet := &Report{Bytes: msg.Payload()}
-	report, err := packet.decodeReport()
+	rpt := report.New(msg.Payload())
+	result, err := rpt.DecodeReport()
 	if err != nil {
 		log.Fatalf("Can't decode report package, %v\n", err)
 	}
 
-	if err := s.reportFunc(getVin(msg), report); err != nil {
+	if err := s.reportFunc(getVin(msg), result); err != nil {
 		log.Fatalf("Report callback error, %v\n", err)
 	}
 }
 
 func (s *Sdk) logPaylod(msg mqtt.Message) {
-	if s.logging {
+	if !s.logging {
 		log.Printf("[%s] %s\n", msg.Topic(), util.HexString(msg.Payload()))
 	}
 }

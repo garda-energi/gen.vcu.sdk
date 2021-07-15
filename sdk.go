@@ -12,9 +12,6 @@ const (
 	TOPIC_REPORT = "VCU/+/RPT"
 )
 
-type StatusListenerFunc func(vin int, online bool) error
-type ReportListenerFunc func(vin int, report interface{}) error
-
 type Sdk struct {
 	config     transport.ClientConfig
 	logging    bool

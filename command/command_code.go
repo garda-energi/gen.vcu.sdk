@@ -1,4 +1,4 @@
-package model
+package command
 
 type CMD_CODE uint8
 type CMD_SUBCODE uint8
