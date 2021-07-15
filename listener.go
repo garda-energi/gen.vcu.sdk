@@ -23,7 +23,7 @@ func (l *Listener) status(client mqtt.Client, msg mqtt.Message) {
 	l.logPaylod(msg)
 
 	if err := l.statusFunc(parseVin(msg.Topic()), isOnline(msg.Payload())); err != nil {
-		log.Fatalf("Status callback error, %v\n", err)
+		log.Fatalf("Status listener error, %v\n", err)
 	}
 }
 
@@ -37,12 +37,12 @@ func (l *Listener) report(client mqtt.Client, msg mqtt.Message) {
 	}
 
 	if err := l.reportFunc(parseVin(msg.Topic()), result); err != nil {
-		log.Fatalf("Report callback error, %v\n", err)
+		log.Fatalf("Report listener error, %v\n", err)
 	}
 }
 
 func (l *Listener) logPaylod(msg mqtt.Message) {
-	if !l.logging {
+	if l.logging {
 		log.Printf("[%s] %s\n", msg.Topic(), util.HexString(msg.Payload()))
 	}
 }
