@@ -13,3 +13,4 @@
 ☐ add documentation for each func
 ☐ be carefull with concurency race-condition 
 ☐ add multiple decode support for Struct and Array (_packet)
+✔ merge report2.go and report.go, refactor decoder.go to support both of them @done(21-07-15 12:39)

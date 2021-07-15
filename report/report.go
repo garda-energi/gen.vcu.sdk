@@ -15,11 +15,7 @@ func New(raw []byte) *Report {
 	}
 }
 
-// func (r *Report) DecodeReportPacket() (interface{}, error) {
-
-// }
-
-func (r *Report) DecodeReport() (interface{}, error) {
+func (r *Report) DecodeReportStruct() (interface{}, error) {
 	header := HeaderReport{}
 	if err := r.decode(&header); err != nil {
 		return nil, err

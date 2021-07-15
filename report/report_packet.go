@@ -43,7 +43,7 @@ var VcuPacket = []header.Packet{
 	},
 	{
 		Name: "vcu.events",
-		Dst:  reflect.Int8,
+		Dst:  reflect.Uint16,
 	},
 	{
 		Name: "vcu.logBuffered",

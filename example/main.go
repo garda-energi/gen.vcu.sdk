@@ -8,33 +8,55 @@ import (
 )
 
 func main() {
-	sdk := sdk.New("test.mosquitto.org", 1883, "", "")
+	api := sdk.New("test.mosquitto.org", 1883, "", "")
 
-	sdk.AddStatusListener(statusListener)
-	sdk.AddReportListener(reportListener)
+	api.AddStatusListener(statusListener)
 
-	sdk.Logging(false)
-	sdk.ConnectAndListen()
+	// only choose one data type, not both
+	dtype := sdk.DATA_TYPE_LIST
+	api.SetDataType(dtype)
+	if dtype == sdk.DATA_TYPE_LIST {
+		api.AddReportListener(reportListListener)
+	} else {
+		api.AddReportListener(reportStructListener)
+	}
+
+	api.Logging(false)
+	api.ConnectAndListen()
 }
 
 func statusListener(vin int, online bool) error {
-	// why go not support ternary operation ?
-	status := "OFFLINE"
 	if online {
-		status = "ONLINE"
+		fmt.Printf("%d => ONLINE\n", vin)
+	} else {
+		fmt.Printf("%d => OFFLINE\n", vin)
 	}
-	fmt.Printf("%d => %s\n", vin, status)
 
 	return nil
 }
 
-func reportListener(vin int, result interface{}) error {
+func reportStructListener(vin int, result interface{}) error {
 	switch r := result.(type) {
 	case report.ReportSimple:
-		fmt.Printf("[S] %d  => %+v\n", vin, r)
+		fmt.Printf("[SIMPLE] %d  => %+v\n", vin, r)
 	case report.ReportFull:
-		fmt.Printf("[F] %d  => %+v\n", vin, r)
+		fmt.Printf("[FULL] %d  => %+v\n", vin, r)
 	}
+
+	return nil
+}
+
+func reportListListener(vin int, result interface{}) error {
+	frame := "SIMPLE"
+
+	items, _ := result.(report.Items)
+	if frameId, ok := items["header.frameId"]; ok {
+		if frameId.Value.(report.FRAME_ID) == report.FRAME_ID_FULL {
+			frame = "FULL"
+		}
+	}
+
+	fmt.Printf("[%s] %d  => %+v\n", frame, vin, result)
 
 	return nil
 }
