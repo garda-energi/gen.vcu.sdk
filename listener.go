@@ -22,7 +22,7 @@ type Listener struct {
 func (l *Listener) status(client mqtt.Client, msg mqtt.Message) {
 	l.logPaylod(msg)
 
-	if err := l.statusFunc(getVin(msg), isOnline(msg)); err != nil {
+	if err := l.statusFunc(parseVin(msg.Topic()), isOnline(msg.Payload())); err != nil {
 		log.Fatalf("Status callback error, %v\n", err)
 	}
 }
@@ -36,7 +36,7 @@ func (l *Listener) report(client mqtt.Client, msg mqtt.Message) {
 		log.Fatalf("Can't decode report package, %v\n", err)
 	}
 
-	if err := l.reportFunc(getVin(msg), result); err != nil {
+	if err := l.reportFunc(parseVin(msg.Topic()), result); err != nil {
 		log.Fatalf("Report callback error, %v\n", err)
 	}
 }
@@ -47,13 +47,13 @@ func (l *Listener) logPaylod(msg mqtt.Message) {
 	}
 }
 
-func getVin(msg mqtt.Message) int {
-	s := strings.Split(msg.Topic(), "/")
+func parseVin(topic string) int {
+	s := strings.Split(topic, "/")
 	vin, _ := strconv.Atoi(s[1])
 
 	return vin
 }
 
-func isOnline(msg mqtt.Message) bool {
-	return msg.Payload()[0] == '1'
+func isOnline(b []byte) bool {
+	return b[0] == '1'
 }
