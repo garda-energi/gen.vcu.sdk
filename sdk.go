@@ -13,19 +13,13 @@ const (
 )
 
 type Sdk struct {
-	config   transport.ClientConfig
-	listener Listener
+	transport transport.Transport
+	listener  Listener
 }
 
 func New(host string, port int, user, pass string) Sdk {
 	return Sdk{
-		config: transport.ClientConfig{
-			Host:     host,
-			Port:     port,
-			Username: user,
-			Password: pass,
-			// ClientId: "go_mqtt_client",
-		},
+		transport: transport.New(host, port, user, pass),
 		listener: Listener{
 			logging: true,
 		},
@@ -33,22 +27,20 @@ func New(host string, port int, user, pass string) Sdk {
 }
 
 func (s *Sdk) ConnectAndListen() {
-	t := transport.New(s.config)
-
-	if err := t.Connect(); err != nil {
+	if err := s.transport.Connect(); err != nil {
 		log.Fatalf("[MQTT] Failed to connect, %v\n", err)
 	}
 
-	if err := t.Subscribe(TOPIC_STATUS, s.listener.status); err != nil {
+	if err := s.transport.Subscribe(TOPIC_STATUS, s.listener.status); err != nil {
 		log.Fatalf("[MQTT] Failed to subscribe, %v\n", err)
 	}
 
-	if err := t.Subscribe(TOPIC_REPORT, s.listener.report); err != nil {
+	if err := s.transport.Subscribe(TOPIC_REPORT, s.listener.report); err != nil {
 		log.Fatalf("[MQTT] Failed to subscribe, %v\n", err)
 	}
 
 	util.WaitForCtrlC()
-	t.Disconnect()
+	s.transport.Disconnect()
 }
 
 func (s *Sdk) AddStatusListener(cb StatusListenerFunc) {

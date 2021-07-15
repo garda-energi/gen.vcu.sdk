@@ -6,7 +6,7 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-type ClientConfig struct {
+type clientConfig struct {
 	Host     string
 	Port     int
 	ClientId string
@@ -15,12 +15,18 @@ type ClientConfig struct {
 }
 
 type Transport struct {
-	config ClientConfig
+	config clientConfig
 	client mqtt.Client
 }
 
-func New(config ClientConfig) Transport {
-	return Transport{config: config}
+func New(host string, port int, user, pass string) Transport {
+	return Transport{config: clientConfig{
+		Host:     host,
+		Port:     port,
+		Username: user,
+		Password: pass,
+		// ClientId: "go_mqtt_client",
+	}}
 }
 
 func (t *Transport) Connect() error {
