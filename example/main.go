@@ -4,46 +4,64 @@ import (
 	"fmt"
 
 	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
-	// "github.com/pudjamansyurin/gen_vcu_sdk/model"
-	"github.com/pudjamansyurin/gen_vcu_sdk/packet"
+	"github.com/pudjamansyurin/gen_vcu_sdk/report"
+	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 func main() {
-	sdk := sdk.New("test.mosquitto.org", 1883, "", "")
+	api := sdk.New("test.mosquitto.org", 1883, "", "")
 
-	sdk.AddStatusListener(statusListener)
-	sdk.AddReportListener(reportListener)
+	api.AddStatusListener(statusListener)
 
-	sdk.Logging(false)
-	sdk.ConnectAndListen()
+	// only choose one data type, not both
+	dtype := sdk.DATA_TYPE_STRUCT
+	api.SetDataType(dtype)
+	if dtype == sdk.DATA_TYPE_LIST {
+		api.AddReportListener(reportListListener)
+	} else {
+		api.AddReportListener(reportStructListener)
+	}
+
+	api.Logging(false)
+	api.ConnectAndListen()
 }
 
 func statusListener(vin int, online bool) error {
-	// why go not support ternary operation ?
-	status := "OFFLINE"
 	if online {
-		status = "ONLINE"
+		fmt.Printf("%d => ONLINE\n", vin)
+	} else {
+		fmt.Printf("%d => OFFLINE\n", vin)
 	}
-	fmt.Printf("%d => %s\n", vin, status)
 
 	return nil
 }
 
-func reportListener(vin int, report interface{}) error {
-	// switch r := report.(type) {
-	// case model.ReportSimple:
-	// 	fmt.Printf("[S] %d  => %+v\n", vin, r)
-	// case model.ReportFull:
-	// 	fmt.Printf("[F] %d  => %+v\n", vin, r)
+func reportStructListener(vin int, result interface{}) error {
+	// switch r := result.(type) {
+	// case report.ReportSimple:
+	// 	fmt.Printf("[SIMPLE] %d  => %+v\n", vin, r)
+	// case report.ReportFull:
+	// 	fmt.Printf("[FULL] %d  => %+v\n", vin, r)
 	// }
-	reportPacket := report.(*packet.ReportPacket)
-	fmt.Println("======= Report ========")
-	fmt.Printf("[vin] %d\n", vin)
-	fmt.Printf("[header]\n-prefix\t: %s\n-length\t: %d\n", reportPacket.Header.Prefix, reportPacket.Header.Size)
-	if reportPacket.Mems != nil {
-		fmt.Printf("[Mem]\n-active\t: %t\n-total\t: %.2f\n", reportPacket.Mems.Active, reportPacket.Mems.Total)
+
+	reportPacket := result.(*report.ReportPacket)
+	util.Debug(reportPacket)
+
+	return nil
+}
+
+func reportListListener(vin int, result interface{}) error {
+	frame := "SIMPLE"
+
+	items, _ := result.(report.Items)
+	if frameId, ok := items["header.frameId"]; ok {
+		if frameId.Value.(report.FRAME_ID) == report.FRAME_ID_FULL {
+			frame = "FULL"
+		}
 	}
 	fmt.Println("======= ====== ========")
+
+	fmt.Printf("[%s] %d  => %+v\n", frame, vin, result)
 
 	return nil
 }

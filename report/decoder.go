@@ -1,4 +1,4 @@
-package decoder
+package report
 
 import (
 	"bytes"
@@ -28,12 +28,20 @@ func toAscii(b []byte) string {
 	return reverse(string(b))
 }
 
-func toFloat64(b []byte, factor float32) float64 {
+func toUint8(b []byte) uint8 {
+	return uint8(b[0])
+}
+
+func toInt8(b []byte) int8 {
+	return int8(b[0])
+}
+
+func toFloat64(b []byte, factor float64) float64 {
 	var data float64
 
 	switch len(b) {
 	case 1:
-		data = float64(int8(b[0]))
+		data = float64(toInt8(b))
 	case 2:
 		var d int16
 		binary.Read(bytes.NewBuffer(b), endian, &d)
@@ -46,24 +54,7 @@ func toFloat64(b []byte, factor float32) float64 {
 		binary.Read(bytes.NewBuffer(b), endian, &data)
 	}
 
-	return data * float64(factor)
-}
-
-func toUint64(b []byte) uint64 {
-	var data uint64
-
-	switch len(b) {
-	case 1:
-		data = uint64(uint8(b[0]))
-	case 2:
-		data = uint64(endian.Uint16(b))
-	case 4:
-		data = uint64(endian.Uint32(b))
-	case 8:
-		data = endian.Uint64(b)
-	}
-
-	return data
+	return data * factor
 }
 
 func toInt64(b []byte) int64 {
@@ -71,7 +62,7 @@ func toInt64(b []byte) int64 {
 
 	switch len(b) {
 	case 1:
-		data = int64(int8(b[0]))
+		data = int64(toInt8(b))
 	case 2:
 		var d int16
 		binary.Read(bytes.NewBuffer(b), endian, &d)
@@ -82,6 +73,23 @@ func toInt64(b []byte) int64 {
 		data = int64(d)
 	case 8:
 		binary.Read(bytes.NewBuffer(b), endian, &data)
+	}
+
+	return data
+}
+
+func toUint64(b []byte) uint64 {
+	var data uint64
+
+	switch len(b) {
+	case 1:
+		data = uint64(toUint8(b))
+	case 2:
+		data = uint64(endian.Uint16(b))
+	case 4:
+		data = uint64(endian.Uint32(b))
+	case 8:
+		data = endian.Uint64(b)
 	}
 
 	return data
