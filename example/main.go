@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
 	"github.com/pudjamansyurin/gen_vcu_sdk/report"
-	"github.com/pudjamansyurin/gen_vcu_sdk/util"
+	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
 func main() {
@@ -45,7 +45,7 @@ func reportStructListener(vin int, result interface{}) error {
 	// }
 
 	reportPacket := result.(*report.ReportPacket)
-	util.Debug(reportPacket)
+	fmt.Printf("%+v\n", reportPacket)
 	return nil
 }
 
@@ -54,7 +54,7 @@ func reportListListener(vin int, result interface{}) error {
 
 	items, _ := result.(report.Items)
 	if frameId, ok := items["header.frameId"]; ok {
-		if frameId.Value.(report.FRAME_ID) == report.FRAME_ID_FULL {
+		if frameId.Value.(shared.FRAME_ID) == shared.FRAME_ID_FULL {
 			frame = "FULL"
 		}
 	}

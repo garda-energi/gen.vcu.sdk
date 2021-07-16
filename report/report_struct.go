@@ -1,10 +1,10 @@
 package report
 
-import "github.com/pudjamansyurin/gen_vcu_sdk/header"
+import "github.com/pudjamansyurin/gen_vcu_sdk/shared"
 
 type HeaderReport struct {
-	header.Header
-	FrameID FRAME_ID `type:"uint8"`
+	shared.Header
+	FrameID shared.FRAME_ID `type:"uint8"`
 }
 
 type ReportPacket struct {
@@ -46,12 +46,12 @@ type ReportPacket struct {
 // }
 
 type Vcu struct {
-	LogDatetime int64      `type:"unix_time" len:"7"`
-	State       BIKE_STATE `type:"int8"`
-	Events      uint16     `type:"uint16"`
-	LogBuffered uint8      `type:"uint8"`
-	BatVoltage  float32    `type:"uint8" len:"1" unit:"mVolt" factor:"18.0"`
-	Uptime      float32    `type:"uint32" unit:"hour" factor:"0.000277"`
+	LogDatetime int64             `type:"unix_time" len:"7"`
+	State       shared.BIKE_STATE `type:"int8"`
+	Events      uint16            `type:"uint16"`
+	LogBuffered uint8             `type:"uint8"`
+	BatVoltage  float32           `type:"uint8" len:"1" unit:"mVolt" factor:"18.0"`
+	Uptime      float32           `type:"uint32" unit:"hour" factor:"0.000277"`
 }
 
 type Eeprom struct {
@@ -74,9 +74,9 @@ type Gps struct {
 type Hbar struct {
 	Reverse bool `type:"uint8"`
 	Mode    struct {
-		Drive MODE_DRIVE `type:"uint8"`
-		Trip  MODE_TRIP  `type:"uint8"`
-		Avg   MODE_AVG   `type:"uint8"`
+		Drive shared.MODE_DRIVE `type:"uint8"`
+		Trip  shared.MODE_TRIP  `type:"uint8"`
+		Avg   shared.MODE_AVG   `type:"uint8"`
 	}
 	Trip struct {
 		A        uint16 `type:"uint16" unit:"Km"`
@@ -90,9 +90,9 @@ type Hbar struct {
 }
 
 type Net struct {
-	Signal   uint8        `type:"uint8" unit:"%"`
-	State    NET_STATE    `type:"int8"`
-	IpStatus NET_IP_STATE `type:"int8"`
+	Signal   uint8               `type:"uint8" unit:"%"`
+	State    shared.NET_STATE    `type:"int8"`
+	IpStatus shared.NET_IP_STATE `type:"int8"`
 }
 
 type Mems struct {
@@ -144,7 +144,7 @@ type Bms struct {
 	Run    bool   `type:"uint8"`
 	SOC    uint8  `type:"uint8" unit:"%"`
 	Fault  uint16 `type:"uint16"`
-	Pack   [BMS_PACK_CNT]struct {
+	Pack   [shared.BMS_PACK_CNT]struct {
 		ID      uint32  `type:"uint32"`
 		Fault   uint16  `type:"uint16"`
 		Voltage float32 `type:"uint16" len:"2" unit:"Volt" factor:"0.01"`
@@ -155,13 +155,13 @@ type Bms struct {
 }
 
 type Mcu struct {
-	Active    bool       `type:"uint8"`
-	Run       bool       `type:"uint8"`
-	Reverse   bool       `type:"uint8"`
-	DriveMode MODE_DRIVE `type:"uint8"`
-	Speed     uint8      `type:"uint8" unit:"Kph"`
-	RPM       int16      `type:"int16" unit:"rpm"`
-	Temp      float32    `type:"uint16" len:"2" unit:"Celcius" factor:"0.1"`
+	Active    bool              `type:"uint8"`
+	Run       bool              `type:"uint8"`
+	Reverse   bool              `type:"uint8"`
+	DriveMode shared.MODE_DRIVE `type:"uint8"`
+	Speed     uint8             `type:"uint8" unit:"Kph"`
+	RPM       int16             `type:"int16" unit:"rpm"`
+	Temp      float32           `type:"uint16" len:"2" unit:"Celcius" factor:"0.1"`
 	Fault     struct {
 		Post uint32 `type:"uint32"`
 		Run  uint32 `type:"uint32"`
@@ -175,14 +175,14 @@ type Mcu struct {
 		Voltage float32 `type:"uint16" len:"2" unit:"V" factor:"0.1"`
 	}
 	Inverter struct {
-		Enabled   bool              `type:"uint8"`
-		Lockout   bool              `type:"uint8"`
-		Discharge MCU_INV_DISCHARGE `type:"uint8"`
+		Enabled   bool                     `type:"uint8"`
+		Lockout   bool                     `type:"uint8"`
+		Discharge shared.MCU_INV_DISCHARGE `type:"uint8"`
 	}
 	Template struct {
 		MaxRPM    int16 `type:"int16" unit:"rpm"`
 		MaxSpeed  uint8 `type:"uint8" unit:"Kph"`
-		DriveMode [MODE_DRIVE_CNT]struct {
+		DriveMode [shared.MODE_DRIVE_limit]struct {
 			Discur uint16  `type:"uint16" unit:"A"`
 			Torque float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
 		}

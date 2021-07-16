@@ -1,19 +1,24 @@
 package command
 
-import "reflect"
+import (
+	"reflect"
+	"time"
+
+	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
+)
 
 type ValidatorFunc func(b []byte) bool
 type EncoderFunc func(b []byte) []byte
 
 type Cmd struct {
-	Name       string
-	Desc       string
-	Code       CMD_CODE
-	SubCode    CMD_SUBCODE
-	Tipe       reflect.Kind
-	TimeoutSec int64
-	Validator  ValidatorFunc
-	Encoder    EncoderFunc
+	Name      string
+	Desc      string
+	Code      CMD_CODE
+	SubCode   CMD_SUBCODE
+	Tipe      reflect.Kind
+	Timeout   time.Duration
+	Validator ValidatorFunc
+	Encoder   EncoderFunc
 }
 
 var CMD_LIST = []Cmd{
@@ -74,7 +79,7 @@ var CMD_LIST = []Cmd{
 		SubCode: CMD_SUBCODE(CMD_OVD_STATE),
 		Tipe:    reflect.Uint8,
 		Validator: func(b []byte) bool {
-			return toUint8(b) <= 3
+			return max(b, 3)
 		},
 	},
 	{
@@ -91,7 +96,7 @@ var CMD_LIST = []Cmd{
 		SubCode: CMD_SUBCODE(CMD_OVD_RPT_FRAME),
 		Tipe:    reflect.Uint8,
 		Validator: func(b []byte) bool {
-			return toUint8(b) <= 2
+			return max(b, 2)
 		},
 	},
 	{
@@ -113,57 +118,57 @@ var CMD_LIST = []Cmd{
 		SubCode: CMD_SUBCODE(CMD_AUDIO_BEEP),
 	},
 	{
-		Name:       "FINGER_FETCH",
-		Desc:       "Get all registered id",
-		Code:       CMDC_FGR,
-		SubCode:    CMD_SUBCODE(CMD_FGR_FETCH),
-		TimeoutSec: 15,
+		Name:    "FINGER_FETCH",
+		Desc:    "Get all registered id",
+		Code:    CMDC_FGR,
+		SubCode: CMD_SUBCODE(CMD_FGR_FETCH),
+		Timeout: 15 * time.Second,
 	},
 	{
-		Name:       "FINGER_ADD",
-		Desc:       "Add a new fingerprint",
-		Code:       CMDC_FGR,
-		SubCode:    CMD_SUBCODE(CMD_FGR_ADD),
-		TimeoutSec: 20,
+		Name:    "FINGER_ADD",
+		Desc:    "Add a new fingerprint",
+		Code:    CMDC_FGR,
+		SubCode: CMD_SUBCODE(CMD_FGR_ADD),
+		Timeout: 20 * time.Second,
 	},
 	{
-		Name:       "FINGER_DEL",
-		Desc:       "Delete a fingerprint",
-		Code:       CMDC_FGR,
-		SubCode:    CMD_SUBCODE(CMD_FGR_DEL),
-		Tipe:       reflect.Uint8,
-		TimeoutSec: 15,
+		Name:    "FINGER_DEL",
+		Desc:    "Delete a fingerprint",
+		Code:    CMDC_FGR,
+		SubCode: CMD_SUBCODE(CMD_FGR_DEL),
+		Tipe:    reflect.Uint8,
+		Timeout: 15 * time.Second,
 		Validator: func(b []byte) bool {
-			return toUint8(b) >= 1 && toUint8(b) <= FINGERPRINT_MAX
+			return between(b, 1, shared.FINGERPRINT_MAX)
 		},
 	},
 	{
-		Name:       "FINGER_RST",
-		Desc:       "Reset all fingerprints",
-		Code:       CMDC_FGR,
-		SubCode:    CMD_SUBCODE(CMD_FGR_RST),
-		TimeoutSec: 15,
+		Name:    "FINGER_RST",
+		Desc:    "Reset all fingerprints",
+		Code:    CMDC_FGR,
+		SubCode: CMD_SUBCODE(CMD_FGR_RST),
+		Timeout: 15 * time.Second,
 	},
 	{
-		Name:       "REMOTE_PAIRING",
-		Desc:       "Keyless pairing mode",
-		Code:       CMDC_RMT,
-		SubCode:    CMD_SUBCODE(CMD_RMT_PAIRING),
-		TimeoutSec: 15,
+		Name:    "REMOTE_PAIRING",
+		Desc:    "Keyless pairing mode",
+		Code:    CMDC_RMT,
+		SubCode: CMD_SUBCODE(CMD_RMT_PAIRING),
+		Timeout: 15 * time.Second,
 	},
 	{
-		Name:       "FOTA_VCU",
-		Desc:       "Upgrade VCU firmware",
-		Code:       CMDC_FOTA,
-		SubCode:    CMD_SUBCODE(CMD_FOTA_VCU),
-		TimeoutSec: 6 * 60,
+		Name:    "FOTA_VCU",
+		Desc:    "Upgrade VCU firmware",
+		Code:    CMDC_FOTA,
+		SubCode: CMD_SUBCODE(CMD_FOTA_VCU),
+		Timeout: 6 * 60 * time.Second,
 	},
 	{
-		Name:       "FOTA_HMI",
-		Desc:       "Upgrade HMI firmware",
-		Code:       CMDC_FOTA,
-		SubCode:    CMD_SUBCODE(CMD_FOTA_HMI),
-		TimeoutSec: 12 * 60,
+		Name:    "FOTA_HMI",
+		Desc:    "Upgrade HMI firmware",
+		Code:    CMDC_FOTA,
+		SubCode: CMD_SUBCODE(CMD_FOTA_HMI),
+		Timeout: 12 * 60 * time.Second,
 	},
 	// {
 	//   Name: "NET_SEND_USSD",
@@ -234,7 +239,7 @@ var CMD_LIST = []Cmd{
 		SubCode: CMD_SUBCODE(CMD_HBAR_DRIVE),
 		Tipe:    reflect.Uint8,
 		Validator: func(b []byte) bool {
-			return toUint8(b) <= 2
+			return max(b, 2)
 		},
 	},
 	{
@@ -244,7 +249,7 @@ var CMD_LIST = []Cmd{
 		SubCode: CMD_SUBCODE(CMD_HBAR_TRIP),
 		Tipe:    reflect.Uint8,
 		Validator: func(b []byte) bool {
-			return toUint8(b) <= 2
+			return max(b, 2)
 		},
 	},
 	{
@@ -254,7 +259,7 @@ var CMD_LIST = []Cmd{
 		SubCode: CMD_SUBCODE(CMD_HBAR_AVG),
 		Tipe:    reflect.Uint8,
 		Validator: func(b []byte) bool {
-			return toUint8(b) <= 1
+			return max(b, 1)
 		},
 	},
 	{
@@ -262,10 +267,7 @@ var CMD_LIST = []Cmd{
 		Desc:    "Set handlebar reverse state",
 		Code:    CMDC_HBAR,
 		SubCode: CMD_SUBCODE(CMD_HBAR_REVERSE),
-		Tipe:    reflect.Uint8,
-		Validator: func(b []byte) bool {
-			return toUint8(b) <= 1
-		},
+		Tipe:    reflect.Bool,
 	},
 	{
 		Name:    "MCU_SPEED_MAX",
@@ -273,6 +275,9 @@ var CMD_LIST = []Cmd{
 		Code:    CMDC_MCU,
 		SubCode: CMD_SUBCODE(CMD_MCU_SPEED_MAX),
 		Tipe:    reflect.Uint8,
+		Validator: func(b []byte) bool {
+			return max(b, shared.SPEED_MAX)
+		},
 	},
 	// {
 	//   Name: "MCU_TEMPLATES",

@@ -3,6 +3,8 @@ package report
 import (
 	"bytes"
 	"reflect"
+
+	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
 type Report struct {
@@ -50,5 +52,5 @@ func (r *Report) decode(dst interface{}) error {
 }
 
 func simpleFrame(header HeaderReport) bool {
-	return header.FrameID == FRAME_ID_SIMPLE
+	return header.FrameID == shared.FRAME_ID_SIMPLE
 }

@@ -1,4 +1,4 @@
-package header
+package shared
 
 type Header struct {
 	Prefix       string `type:"string" len:"2"`

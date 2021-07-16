@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/pudjamansyurin/gen_vcu_sdk/header"
+	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
-func ReportSimplePacket() []header.Packet {
-	packets := header.HeaderReportPacket
+func ReportSimplePacket() []shared.Packet {
+	packets := shared.HeaderReportPacket
 	packets = append(packets, VcuPacket...)
 	packets = append(packets, EepromPacket...)
 	packets = append(packets, GpsPacket...)
@@ -16,7 +16,7 @@ func ReportSimplePacket() []header.Packet {
 	return packets
 }
 
-func ReportFullPacket() []header.Packet {
+func ReportFullPacket() []shared.Packet {
 	packets := ReportSimplePacket()
 	packets = append(packets, HbarPacket()...)
 	packets = append(packets, NetPacket...)
@@ -32,7 +32,7 @@ func ReportFullPacket() []header.Packet {
 	return packets
 }
 
-var VcuPacket = []header.Packet{
+var VcuPacket = []shared.Packet{
 	{
 		Name:     "vcu.logDatetime",
 		Datetime: true,
@@ -64,7 +64,7 @@ var VcuPacket = []header.Packet{
 	},
 }
 
-var EepromPacket = []header.Packet{
+var EepromPacket = []shared.Packet{
 	{
 		Name: "eeprom.active",
 		Dst:  reflect.Bool,
@@ -76,7 +76,7 @@ var EepromPacket = []header.Packet{
 	},
 }
 
-var GpsPacket = []header.Packet{
+var GpsPacket = []shared.Packet{
 	{
 		Name: "gps.active",
 		Dst:  reflect.Bool,
@@ -130,46 +130,41 @@ var GpsPacket = []header.Packet{
 	},
 }
 
-func HbarPacket() []header.Packet {
-	packets := []header.Packet{
+func HbarPacket() []shared.Packet {
+	packets := []shared.Packet{
 		{
 			Name: "hbar.reverse",
 			Dst:  reflect.Bool,
 		},
 	}
 
-	for _, mode := range MODE_LIST {
-		packets = append(packets, header.Packet{
+	for mode := shared.MODE(0); mode < shared.MODE_SUB_limit; mode++ {
+		packets = append(packets, shared.Packet{
 			Name: fmt.Sprintf("hbar.mode.%s", mode),
 			Dst:  reflect.Uint8,
 		})
 	}
 
-	for _, trip := range MODE_TRIP_LIST {
-		packets = append(packets, header.Packet{
+	for trip := shared.MODE_TRIP(0); trip < shared.MODE_TRIP_limit; trip++ {
+		packets = append(packets, shared.Packet{
 			Name: fmt.Sprintf("hbar.trip.%s", trip),
 			Dst:  reflect.Uint16,
 			Unit: "Km",
 		})
 	}
 
-	for _, avg := range MODE_AVG_LIST {
-		unit := "Km"
-		if avg == "efficiency" {
-			unit = "Km/Kwh"
-		}
-
-		packets = append(packets, header.Packet{
+	for avg := shared.MODE_AVG(0); avg < shared.MODE_AVG_limit; avg++ {
+		packets = append(packets, shared.Packet{
 			Name: fmt.Sprintf("hbar.avg.%s", avg),
 			Dst:  reflect.Uint8,
-			Unit: unit,
+			Unit: avg.Unit(),
 		})
 	}
 
 	return packets
 }
 
-var NetPacket = []header.Packet{
+var NetPacket = []shared.Packet{
 	{
 		Name: "net.signal",
 		Dst:  reflect.Uint8,
@@ -185,8 +180,8 @@ var NetPacket = []header.Packet{
 	},
 }
 
-func MemsPacket() []header.Packet {
-	packets := []header.Packet{
+func MemsPacket() []shared.Packet {
+	packets := []shared.Packet{
 		{
 			Name: "mems.active",
 			Dst:  reflect.Bool,
@@ -198,7 +193,7 @@ func MemsPacket() []header.Packet {
 	}
 
 	for _, accel := range []string{"x", "y", "z"} {
-		packets = append(packets, header.Packet{
+		packets = append(packets, shared.Packet{
 			Name:   fmt.Sprintf("mems.accel.%s", accel),
 			Dst:    reflect.Float32,
 			Src:    reflect.Int16,
@@ -208,7 +203,7 @@ func MemsPacket() []header.Packet {
 	}
 
 	for _, gyro := range []string{"x", "y", "z"} {
-		packets = append(packets, header.Packet{
+		packets = append(packets, shared.Packet{
 			Name:   fmt.Sprintf("mems.gyro.%s", gyro),
 			Dst:    reflect.Float32,
 			Src:    reflect.Int16,
@@ -218,7 +213,7 @@ func MemsPacket() []header.Packet {
 	}
 
 	for _, tilt := range []string{"pitch", "roll"} {
-		packets = append(packets, header.Packet{
+		packets = append(packets, shared.Packet{
 			Name:   fmt.Sprintf("mems.tilt.%s", tilt),
 			Dst:    reflect.Float32,
 			Src:    reflect.Int16,
@@ -227,7 +222,7 @@ func MemsPacket() []header.Packet {
 		})
 	}
 
-	packets = append(packets, []header.Packet{
+	packets = append(packets, []shared.Packet{
 
 		{
 			Name:   "mems.total.accel",
@@ -262,7 +257,7 @@ func MemsPacket() []header.Packet {
 	return packets
 }
 
-var RemotePacket = []header.Packet{
+var RemotePacket = []shared.Packet{
 	{
 		Name: "remote.active",
 		Dst:  reflect.Bool,
@@ -273,7 +268,7 @@ var RemotePacket = []header.Packet{
 	},
 }
 
-var FingerPacket = []header.Packet{
+var FingerPacket = []shared.Packet{
 	{
 		Name: "finger.verified",
 		Dst:  reflect.Bool,
@@ -284,7 +279,7 @@ var FingerPacket = []header.Packet{
 	},
 }
 
-var AudioPacket = []header.Packet{
+var AudioPacket = []shared.Packet{
 	{
 		Name: "audio.active",
 		Dst:  reflect.Bool,
@@ -300,15 +295,15 @@ var AudioPacket = []header.Packet{
 	},
 }
 
-var HmiPacket = []header.Packet{
+var HmiPacket = []shared.Packet{
 	{
 		Name: "hmi.active",
 		Dst:  reflect.Bool,
 	},
 }
 
-func BmsPackPacket() []header.Packet {
-	var packets = []header.Packet{
+func BmsPackPacket() []shared.Packet {
+	var packets = []shared.Packet{
 		{
 			Name: "bms.active",
 			Dst:  reflect.Bool,
@@ -328,8 +323,8 @@ func BmsPackPacket() []header.Packet {
 		},
 	}
 
-	for i := 0; i < BMS_PACK_CNT; i++ {
-		PackPacket := []header.Packet{
+	for i := 0; i < shared.BMS_PACK_CNT; i++ {
+		PackPacket := []shared.Packet{
 			{
 				Name: fmt.Sprintf("bms.pack.%d.id", i),
 				Dst:  reflect.Uint32,
@@ -369,8 +364,8 @@ func BmsPackPacket() []header.Packet {
 	return packets
 }
 
-func McuPacket() []header.Packet {
-	packets := []header.Packet{
+func McuPacket() []shared.Packet {
+	packets := []shared.Packet{
 		{
 			Name: "mcu.active",
 			Dst:  reflect.Bool,
@@ -407,14 +402,14 @@ func McuPacket() []header.Packet {
 	}
 
 	for _, fault := range []string{"run", "post"} {
-		packets = append(packets, header.Packet{
+		packets = append(packets, shared.Packet{
 			Name: fmt.Sprintf("mcu.fault.%s", fault),
 			Dst:  reflect.Uint32,
 		})
 	}
 
 	for _, torque := range []string{"command", "feedback"} {
-		packets = append(packets, header.Packet{
+		packets = append(packets, shared.Packet{
 			Name:   fmt.Sprintf("mcu.torque.%s", torque),
 			Dst:    reflect.Float32,
 			Src:    reflect.Uint16,
@@ -429,7 +424,7 @@ func McuPacket() []header.Packet {
 			unit = "Volt"
 		}
 
-		packets = append(packets, header.Packet{
+		packets = append(packets, shared.Packet{
 			Name:   fmt.Sprintf("mcu.dcbus.%s", dcbus),
 			Dst:    reflect.Float32,
 			Src:    reflect.Uint16,
@@ -438,7 +433,7 @@ func McuPacket() []header.Packet {
 		})
 	}
 
-	packets = append(packets, []header.Packet{
+	packets = append(packets, []shared.Packet{
 		{
 			Name: "mcu.inverter.enabled",
 			Dst:  reflect.Bool,
@@ -463,8 +458,8 @@ func McuPacket() []header.Packet {
 		},
 	}...)
 
-	for i := 0; i < MODE_DRIVE_CNT; i++ {
-		DriveModePacket := []header.Packet{
+	for i := 0; i < int(shared.MODE_DRIVE_limit); i++ {
+		DriveModePacket := []shared.Packet{
 			{
 				Name: fmt.Sprintf("mcu.template.driveMode.%d.discur", i),
 				Dst:  reflect.Uint16,
@@ -485,19 +480,19 @@ func McuPacket() []header.Packet {
 	return packets
 }
 
-func TaskPacket() []header.Packet {
-	var packets []header.Packet
+func TaskPacket() []shared.Packet {
+	var packets []shared.Packet
 
-	for _, task := range TASK_LIST {
-		packets = append(packets, header.Packet{
+	for _, task := range shared.TASK_LIST {
+		packets = append(packets, shared.Packet{
 			Name: fmt.Sprintf("task.stack.%s", task),
 			Dst:  reflect.Uint16,
 			Unit: "Bytes",
 		})
 	}
 
-	for _, task := range TASK_LIST {
-		packets = append(packets, header.Packet{
+	for _, task := range shared.TASK_LIST {
+		packets = append(packets, shared.Packet{
 			Name: fmt.Sprintf("task.wakeup.%s", task),
 			Dst:  reflect.Uint8,
 			Unit: "Seconds",

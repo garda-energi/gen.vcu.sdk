@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/pudjamansyurin/gen_vcu_sdk/header"
+	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
 type Items map[string]Item
@@ -38,7 +38,7 @@ func (r *Report) DecodeReportList() (Items, error) {
 	return result, nil
 }
 
-func getItem(packet header.Packet, buf []byte) (Item, error) {
+func getItem(packet shared.Packet, buf []byte) (Item, error) {
 	item := Item{
 		Unit: packet.Unit,
 	}
@@ -74,7 +74,7 @@ func getItem(packet header.Packet, buf []byte) (Item, error) {
 	return item, nil
 }
 
-func getLen(packet header.Packet) int {
+func getLen(packet shared.Packet) int {
 	var len int
 
 	if packet.Len != 0 {
