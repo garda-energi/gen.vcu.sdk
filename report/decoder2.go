@@ -3,11 +3,15 @@ package report
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"math"
 	"reflect"
 	"strconv"
+	"time"
 )
+
+var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 
 func (r *Report) Decode(v interface{}) error {
 	var err error
@@ -39,9 +43,15 @@ func (r *Report) Decode(v interface{}) error {
 					}
 
 				case reflect.Struct:
-					err = r.Decode(rvField.Addr().Interface())
-					if err != nil {
-						return err
+					if rvField.Type() == typeOfTime {
+						b := make([]byte, tag.Len)
+						binary.Read(r.reader, binary.LittleEndian, &b)
+						rvField.Set(reflect.ValueOf(parseTime(b[:6])))
+					} else {
+						err = r.Decode(rvField.Addr().Interface())
+						if err != nil {
+							return err
+						}
 					}
 
 				case reflect.Array:
@@ -222,4 +232,17 @@ func convert2Float64(typedata string, x uint64) (result float64) {
 		result = float64(tmpIntr.(int64))
 	}
 	return result
+}
+
+func parseTime(b []byte) time.Time {
+	var data string
+	for _, v := range b {
+		if v < 10 {
+			data += "0"
+		}
+		data += fmt.Sprintf("%d", uint8(v))
+	}
+
+	datetime, _ := time.Parse("060102030405", data)
+	return datetime
 }
