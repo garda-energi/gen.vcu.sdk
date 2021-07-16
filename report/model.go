@@ -1,6 +1,8 @@
 package report
 
 import (
+	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
@@ -28,26 +30,19 @@ type ReportPacket struct {
 	Task   *Task
 }
 
-// type ReportSimple struct {
-// 	HeaderReport
-// 	Vcu
-// 	Eeprom
-// 	Gps
-// }
+func (r *ReportPacket) String() string {
+	var out string
 
-// type ReportFull struct {
-// 	ReportSimple
-// 	Hbar
-// 	Net
-// 	Mems
-// 	Remote
-// 	Finger
-// 	Audio
-// 	Hmi
-// 	Bms
-// 	Mcu
-// 	Task
-// }
+	rv := reflect.ValueOf(r).Elem()
+	for i := 0; i < rv.NumField(); i++ {
+		rvField := rv.Field(i)
+		if !rvField.IsNil() {
+			rvElem := rvField.Elem()
+			out += fmt.Sprintf("%s => %+v\n", rvElem.Type().Name(), rvElem)
+		}
+	}
+	return out
+}
 
 type Vcu struct {
 	LogDatetime time.Time         `type:"int64" len:"7"`

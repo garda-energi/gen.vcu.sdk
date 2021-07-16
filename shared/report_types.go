@@ -25,6 +25,14 @@ const (
 	FRAME_ID_FULL
 )
 
+func (m FRAME_ID) String() string {
+	return [...]string{
+		"INVALID",
+		"SIMPLE",
+		"FULL",
+	}[m]
+}
+
 type BIKE_STATE int8
 
 const (
@@ -49,9 +57,9 @@ const (
 
 func (m MODE) String() string {
 	return [...]string{
-		"drive",
-		"trip",
-		"avg",
+		"DRIVE",
+		"TRIP",
+		"AVG",
 	}[m]
 }
 
@@ -66,9 +74,9 @@ const (
 
 func (m MODE_DRIVE) String() string {
 	return [...]string{
-		"economy",
-		"standard",
-		"sport",
+		"ECONOMY",
+		"STANDARD",
+		"SPORT",
 	}[m]
 }
 
@@ -83,9 +91,9 @@ const (
 
 func (m MODE_TRIP) String() string {
 	return [...]string{
-		"a",
-		"b",
-		"odo",
+		"A",
+		"B",
+		"ODO",
 	}[m]
 }
 
@@ -99,15 +107,15 @@ const (
 
 func (m MODE_AVG) String() string {
 	return [...]string{
-		"range",
-		"efficiency",
+		"RANGE",
+		"EFFICIENCY",
 	}[m]
 }
 
 func (m MODE_AVG) Unit() string {
 	return [...]string{
-		"Km",
-		"Km/Kwh",
+		"KM",
+		"KM/KWH",
 	}[m]
 }
 

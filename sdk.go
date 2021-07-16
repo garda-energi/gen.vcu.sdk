@@ -22,7 +22,6 @@ func New(host string, port int, user, pass string) Sdk {
 		transport: transport.New(host, port, user, pass),
 		listener: Listener{
 			logging: true,
-			dtype:   DATA_TYPE_LIST,
 		},
 	}
 }
@@ -54,8 +53,4 @@ func (s *Sdk) AddReportListener(cb ReportListenerFunc) {
 
 func (s *Sdk) Logging(enable bool) {
 	s.listener.logging = enable
-}
-
-func (s *Sdk) SetDataType(dtype DATA_TYPE) {
-	s.listener.dtype = dtype
 }
