@@ -2,11 +2,10 @@ package util
 
 import (
 	"encoding/hex"
+	"fmt"
 	"os"
 	"os/signal"
 	"strings"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 func WaitForCtrlC() {
@@ -16,8 +15,8 @@ func WaitForCtrlC() {
 }
 
 func Debug(data interface{}) {
-	// fmt.Printf("%+v\n", data)
-	spew.Dump(data)
+	fmt.Printf("%+v\n", data)
+	// spew.Dump(data)
 }
 
 func HexString(payload []byte) string {

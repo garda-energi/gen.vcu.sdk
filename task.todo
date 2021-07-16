@@ -4,13 +4,14 @@
 ✔ add device status (online/offline) listener @done(21-07-14 13:27)
 ✔ add payload logging control @done(21-07-14 13:52)
 ✔ add command list @done(21-07-14 17:02)
+✔ add multiple decode support for Struct and Array (_packet) @done(21-07-16 08:48)
+✔ merge report2.go and report.go, refactor decoder.go to support both of them @done(21-07-15 12:39)
 ☐ handle error properly, dont discard with _
 ☐ get lengthOfType using reflect
 ☐ validate report properly
+☐ discard duplicate reports
 ☐ use units in tags
 ☐ add unit test
 ☐ add context.TODO 
 ☐ add documentation for each func
 ☐ be carefull with concurency race-condition 
-☐ add multiple decode support for Struct and Array (_packet)
-✔ merge report2.go and report.go, refactor decoder.go to support both of them @done(21-07-15 12:39)

@@ -30,7 +30,9 @@ type Listener struct {
 func (l *Listener) status(client mqtt.Client, msg mqtt.Message) {
 	l.logPaylod(msg)
 
-	if err := l.statusFunc(parseVin(msg.Topic()), isOnline(msg.Payload())); err != nil {
+	vin := parseVin(msg.Topic())
+	online := isOnline(msg.Payload())
+	if err := l.statusFunc(vin, online); err != nil {
 		log.Fatalf("Status listener error, %v\n", err)
 	}
 }
@@ -40,8 +42,8 @@ func (l *Listener) report(client mqtt.Client, msg mqtt.Message) {
 
 	var err error
 	var result interface{}
-	rpt := report.New(msg.Payload())
 
+	rpt := report.New(msg.Payload())
 	if l.dtype == DATA_TYPE_STRUCT {
 		result, err = rpt.DecodeReportStruct()
 	} else {
@@ -51,7 +53,8 @@ func (l *Listener) report(client mqtt.Client, msg mqtt.Message) {
 		log.Fatalf("Can't decode report package, %v\n", err)
 	}
 
-	if err := l.reportFunc(parseVin(msg.Topic()), result); err != nil {
+	vin := parseVin(msg.Topic())
+	if err := l.reportFunc(vin, result); err != nil {
 		log.Fatalf("Report listener error, %v\n", err)
 	}
 }

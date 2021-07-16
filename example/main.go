@@ -27,12 +27,12 @@ func main() {
 }
 
 func statusListener(vin int, online bool) error {
-	if online {
-		fmt.Printf("%d => ONLINE\n", vin)
-	} else {
-		fmt.Printf("%d => OFFLINE\n", vin)
+	status := map[bool]string{
+		false: "OFFLINE",
+		true:  "ONFLINE",
 	}
 
+	fmt.Printf("%d => %s\n", vin, status[online])
 	return nil
 }
 
@@ -46,7 +46,6 @@ func reportStructListener(vin int, result interface{}) error {
 
 	reportPacket := result.(*report.ReportPacket)
 	util.Debug(reportPacket)
-
 	return nil
 }
 
@@ -61,6 +60,5 @@ func reportListListener(vin int, result interface{}) error {
 	}
 
 	fmt.Printf("[%s] %d  => %+v\n", frame, vin, result)
-
 	return nil
 }
