@@ -1,6 +1,10 @@
 package report
 
-import "github.com/pudjamansyurin/gen_vcu_sdk/shared"
+import (
+	"time"
+
+	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
+)
 
 type HeaderReport struct {
 	shared.Header
@@ -46,7 +50,7 @@ type ReportPacket struct {
 // }
 
 type Vcu struct {
-	LogDatetime int64             `type:"unix_time" len:"7"`
+	LogDatetime time.Time         `type:"int64" len:"7"`
 	State       shared.BIKE_STATE `type:"int8"`
 	Events      uint16            `type:"uint16"`
 	LogBuffered uint8             `type:"uint8"`

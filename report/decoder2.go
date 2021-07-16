@@ -3,11 +3,15 @@ package report
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"math"
 	"reflect"
 	"strconv"
+	"time"
 )
+
+var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 
 func (r *Report) Decode(v interface{}) error {
 	var err error
@@ -39,9 +43,15 @@ func (r *Report) Decode(v interface{}) error {
 					}
 
 				case reflect.Struct:
-					err = r.Decode(rvField.Addr().Interface())
-					if err != nil {
-						return err
+					if rvField.Type() == typeOfTime {
+						b := make([]byte, tag.Len)
+						binary.Read(r.reader, binary.LittleEndian, &b)
+						rvField.Set(reflect.ValueOf(parseTime(b[:6])))
+					} else {
+						err = r.Decode(rvField.Addr().Interface())
+						if err != nil {
+							return err
+						}
 					}
 
 				case reflect.Array:
@@ -75,34 +85,29 @@ func (r *Report) Decode(v interface{}) error {
 						rvField.SetInt(x_int)
 					}
 
-				case reflect.Float32:
-					var x32 float32
-					var x64 float64
-
-					x := readUint(r.reader, tag.Len)
-					n := uint32(x)
-
-					if tag.Factor != 1 {
-						x64 = float64(n) * tag.Factor
-					} else {
-						x32 = math.Float32frombits(n)
-						x64 = float64(x32)
-					}
-
-					if !rvField.OverflowFloat(x64) {
-						rvField.SetFloat(x64)
-					}
-
-				case reflect.Float64:
+				case reflect.Float32, reflect.Float64:
 					var x64 float64
 
 					x := readUint(r.reader, tag.Len)
 
 					if tag.Factor != 1 {
-						x64 = float64(x) * tag.Factor
+						x64 = convert2Float64(tag.Tipe, x)
+						if rk == reflect.Float32 {
+							x64 *= tag.Factor
+						} else {
+							x64 *= tag.Factor
+						}
+
 					} else {
-						x64 = math.Float64frombits(x)
+						// set sesuai biner
+						if rk == reflect.Float32 {
+							x32 := math.Float32frombits(uint32(x))
+							x64 = float64(x32)
+						} else {
+							x64 = math.Float64frombits(x)
+						}
 					}
+
 					if !rvField.OverflowFloat(x64) {
 						rvField.SetFloat(x64)
 					}
@@ -121,6 +126,7 @@ func untag(tag reflect.StructTag, rk reflect.Kind) Tagger {
 	t := Tagger{
 		Len:    1,
 		Factor: 1.0,
+		Tipe:   "uint64",
 	}
 
 	if len, ok := tag.Lookup("len"); ok {
@@ -144,6 +150,10 @@ func untag(tag reflect.StructTag, rk reflect.Kind) Tagger {
 		t.Factor = v
 	}
 
+	if tipe, ok := tag.Lookup("type"); ok {
+		t.Tipe = tipe
+	}
+
 	return t
 }
 
@@ -157,4 +167,82 @@ func readUint(rdr io.Reader, len int) uint64 {
 	}
 
 	return binary.LittleEndian.Uint64(newb)
+}
+
+func convert2Float64(typedata string, x uint64) (result float64) {
+	// deklarasi
+	var tmpIntr interface{}
+	var rv reflect.Value
+	switch typedata {
+	case "uint8":
+		var tmp uint8
+		rv = reflect.ValueOf(&tmp).Elem()
+	case "uint16":
+		var tmp uint16
+		rv = reflect.ValueOf(&tmp).Elem()
+	case "uint32":
+		var tmp uint32
+		rv = reflect.ValueOf(&tmp).Elem()
+	case "uint64", "uint":
+		var tmp uint64
+		rv = reflect.ValueOf(&tmp).Elem()
+	case "int8":
+		var tmp int8
+		rv = reflect.ValueOf(&tmp).Elem()
+	case "int16":
+		var tmp int16
+		rv = reflect.ValueOf(&tmp).Elem()
+	case "int32":
+		var tmp int32
+		rv = reflect.ValueOf(&tmp).Elem()
+	case "int64", "int":
+		var tmp int64
+		rv = reflect.ValueOf(&tmp).Elem()
+	default:
+		var tmp uint64
+		rv = reflect.ValueOf(&tmp).Elem()
+	}
+
+	// set sesuai memori yang dideklarasi
+	switch rv.Kind() {
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
+		rv.SetUint(x)
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+		rv.SetInt(int64(x))
+	}
+	tmpIntr = rv.Interface()
+
+	// convert ke float
+	switch tmpIntr.(type) {
+	case uint8:
+		result = float64(tmpIntr.(uint8))
+	case uint16:
+		result = float64(tmpIntr.(uint16))
+	case uint32:
+		result = float64(tmpIntr.(uint32))
+	case uint64:
+		result = float64(tmpIntr.(uint64))
+	case int8:
+		result = float64(tmpIntr.(int8))
+	case int16:
+		result = float64(tmpIntr.(int16))
+	case int32:
+		result = float64(tmpIntr.(int32))
+	case int64:
+		result = float64(tmpIntr.(int64))
+	}
+	return result
+}
+
+func parseTime(b []byte) time.Time {
+	var data string
+	for _, v := range b {
+		if v < 10 {
+			data += "0"
+		}
+		data += fmt.Sprintf("%d", uint8(v))
+	}
+
+	datetime, _ := time.Parse("060102030405", data)
+	return datetime
 }
