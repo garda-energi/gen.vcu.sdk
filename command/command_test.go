@@ -1,10 +1,13 @@
-package command
+package command_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/pudjamansyurin/gen_vcu_sdk/command"
+)
 
 func TestCommand(t *testing.T) {
-	cmd := Cmd{}
+	cmd := command.New(nil)
 
-	cmd.ExecuteEmpty(CMDC_GEN, CMD_SUBCODE(CMD_GEN_INFO))
-
+	cmd.GenInfo()
 }

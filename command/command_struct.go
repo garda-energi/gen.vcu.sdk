@@ -4,13 +4,13 @@ import (
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
-type HeaderCommand struct {
+type HeaderCmd struct {
 	shared.Header
 	Code    CMD_CODE    `type:"uint8"`
 	SubCode CMD_SUBCODE `type:"uint8"`
 }
 
-type Command struct {
-	HeaderCommand
+type Cmd struct {
+	HeaderCmd
 	Payload [200]byte
 }
