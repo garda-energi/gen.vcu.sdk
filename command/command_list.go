@@ -74,12 +74,12 @@ var CMD_LIST = []Cmd{
 	},
 	{
 		Name:    "OVD_STATE",
-		Desc:    "Override vehicle state",
+		Desc:    "Override bike state",
 		Code:    CMDC_OVD,
 		SubCode: CMD_SUBCODE(CMD_OVD_STATE),
 		Tipe:    reflect.Uint8,
 		Validator: func(b []byte) bool {
-			return max(b, 3)
+			return between(b, uint8(shared.BIKE_STATE_NORMAL), uint8(shared.BIKE_STATE_RUN))
 		},
 	},
 	{
@@ -96,7 +96,7 @@ var CMD_LIST = []Cmd{
 		SubCode: CMD_SUBCODE(CMD_OVD_RPT_FRAME),
 		Tipe:    reflect.Uint8,
 		Validator: func(b []byte) bool {
-			return max(b, 2)
+			return contains(b, uint8(shared.FRAME_ID_SIMPLE), uint8(shared.FRAME_ID_FULL))
 		},
 	},
 	{
@@ -239,7 +239,7 @@ var CMD_LIST = []Cmd{
 		SubCode: CMD_SUBCODE(CMD_HBAR_DRIVE),
 		Tipe:    reflect.Uint8,
 		Validator: func(b []byte) bool {
-			return max(b, 2)
+			return max(b, uint8(shared.MODE_DRIVE_limit)-1)
 		},
 	},
 	{
@@ -249,7 +249,7 @@ var CMD_LIST = []Cmd{
 		SubCode: CMD_SUBCODE(CMD_HBAR_TRIP),
 		Tipe:    reflect.Uint8,
 		Validator: func(b []byte) bool {
-			return max(b, 2)
+			return max(b, uint8(shared.MODE_TRIP_limit)-1)
 		},
 	},
 	{
@@ -259,7 +259,7 @@ var CMD_LIST = []Cmd{
 		SubCode: CMD_SUBCODE(CMD_HBAR_AVG),
 		Tipe:    reflect.Uint8,
 		Validator: func(b []byte) bool {
-			return max(b, 1)
+			return max(b, uint8(shared.MODE_AVG_limit)-1)
 		},
 	},
 	{
