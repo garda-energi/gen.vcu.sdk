@@ -7,7 +7,7 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-func createClientOptions(config ClientConfig) *mqtt.ClientOptions {
+func createClientOptions(config clientConfig) *mqtt.ClientOptions {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", config.Host, config.Port))
 	opts.SetClientID(config.ClientId)

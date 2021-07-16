@@ -1,30 +1,7 @@
-package report
+package shared
 
+// TODO: sync max count with enums automatically
 const BMS_PACK_CNT = 2
-const DRIVE_MODE_CNT = 3
-
-var MODE_LIST = []string{
-	"drive",
-	"trip",
-	"avg",
-}
-
-var MODE_DRIVE_LIST = []string{
-	"economy",
-	"standard",
-	"sport",
-}
-
-var MODE_TRIP_LIST = []string{
-	"a",
-	"b",
-	"odo",
-}
-
-var MODE_AVG_LIST = []string{
-	"range",
-	"efficiency",
-}
 
 var TASK_LIST = []string{
 	"manager",
@@ -48,17 +25,43 @@ const (
 	FRAME_ID_FULL
 )
 
+func (m FRAME_ID) String() string {
+	return [...]string{
+		"INVALID",
+		"SIMPLE",
+		"FULL",
+	}[m]
+}
+
 type BIKE_STATE int8
 
 const (
-	BIKE_STATE_UNKNOWN = iota - 3
+	BIKE_STATE_UNKNOWN BIKE_STATE = iota - 3
 	BIKE_STATE_LOST
 	BIKE_STATE_BACKUP
 	BIKE_STATE_NORMAL
 	BIKE_STATE_STANDBY
 	BIKE_STATE_READY
 	BIKE_STATE_RUN
+	BIKE_STATE_limit
 )
+
+type MODE uint8
+
+const (
+	MODE_SUB_DRIVE MODE = iota
+	MODE_SUB_TRIP
+	MODE_SUB_AVG
+	MODE_SUB_limit
+)
+
+func (m MODE) String() string {
+	return [...]string{
+		"DRIVE",
+		"TRIP",
+		"AVG",
+	}[m]
+}
 
 type MODE_DRIVE uint8
 
@@ -66,7 +69,16 @@ const (
 	MODE_DRIVE_ECONOMY MODE_DRIVE = iota
 	MODE_DRIVE_STANDARD
 	MODE_DRIVE_SPORT
+	MODE_DRIVE_limit
 )
+
+func (m MODE_DRIVE) String() string {
+	return [...]string{
+		"ECONOMY",
+		"STANDARD",
+		"SPORT",
+	}[m]
+}
 
 type MODE_TRIP uint8
 
@@ -74,14 +86,38 @@ const (
 	MODE_TRIP_A MODE_TRIP = iota
 	MODE_TRIP_B
 	MODE_TRIP_ODO
+	MODE_TRIP_limit
 )
+
+func (m MODE_TRIP) String() string {
+	return [...]string{
+		"A",
+		"B",
+		"ODO",
+	}[m]
+}
 
 type MODE_AVG uint8
 
 const (
 	MODE_AVG_RANGE MODE_AVG = iota
 	MODE_AVG_EFFICIENCY
+	MODE_AVG_limit
 )
+
+func (m MODE_AVG) String() string {
+	return [...]string{
+		"RANGE",
+		"EFFICIENCY",
+	}[m]
+}
+
+func (m MODE_AVG) Unit() string {
+	return [...]string{
+		"KM",
+		"KM/KWH",
+	}[m]
+}
 
 type NET_STATE int8
 
