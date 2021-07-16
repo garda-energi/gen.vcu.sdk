@@ -2,8 +2,6 @@ package gen_vcu_sdk
 
 import (
 	"log"
-	"strconv"
-	"strings"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/pudjamansyurin/gen_vcu_sdk/report"
@@ -19,16 +17,16 @@ type Listener struct {
 	reportFunc ReportListenerFunc
 }
 
-func (l *Listener) berforHook(msg mqtt.Message) int {
+func (l *Listener) berforeHook(msg mqtt.Message) int {
 	if l.logging {
-		logPaylod(msg)
+		util.LogMessage(msg)
 	}
-	vin := parseVin(msg.Topic())
+	vin := util.TopicVin(msg.Topic())
 	return vin
 }
 
 func (l *Listener) status(client mqtt.Client, msg mqtt.Message) {
-	vin := l.berforHook(msg)
+	vin := l.berforeHook(msg)
 	online := parseOnline(msg.Payload())
 
 	if l.statusFunc != nil {
@@ -39,7 +37,7 @@ func (l *Listener) status(client mqtt.Client, msg mqtt.Message) {
 }
 
 func (l *Listener) report(client mqtt.Client, msg mqtt.Message) {
-	vin := l.berforHook(msg)
+	vin := l.berforeHook(msg)
 
 	result, err := report.New(msg.Payload()).Decode()
 	if err != nil {
@@ -51,17 +49,6 @@ func (l *Listener) report(client mqtt.Client, msg mqtt.Message) {
 			log.Fatalf("Report listener error, %v\n", err)
 		}
 	}
-}
-
-func logPaylod(msg mqtt.Message) {
-	log.Printf("[%s] %s\n", msg.Topic(), util.HexString(msg.Payload()))
-}
-
-func parseVin(topic string) int {
-	s := strings.Split(topic, "/")
-	vin, _ := strconv.Atoi(s[1])
-
-	return vin
 }
 
 func parseOnline(b []byte) bool {

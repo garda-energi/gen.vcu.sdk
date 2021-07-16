@@ -1,59 +1,123 @@
 package command
 
 import (
+	"bytes"
 	"errors"
-	"reflect"
+	"fmt"
+	"strings"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 type Command struct {
-	client *mqtt.Client
+	client mqtt.Client
+	cmd    *CommandList
 }
 
-func New(client *mqtt.Client) *Command {
+func New(client mqtt.Client) *Command {
 	return &Command{
 		client: client,
+		cmd:    NewCommandList(),
 	}
 }
 
-func (c *Command) GenInfo() (string, error) {
-	cmd, err := getCmdPacket(CMDC_GEN, CMD_SUBCODE(CMD_GEN_INFO))
+// GenInfo Gather device information
+func (c *Command) GenInfo(vin int) (string, error) {
+	cmd := c.cmd.GEN.INFO
+
+	packet := c.encode(vin, cmd, nil)
+	c.publish(vin, packet)
+
+	if err := waitAck(vin, cmd); err != nil {
+		return "", err
+	}
+
+	res, err := waitResponse(vin, cmd)
 	if err != nil {
 		return "", err
 	}
 
-	util.Debug(cmd)
-	return "", nil
+	return string(res), nil
 }
 
-func (c *Command) ExecuteEmpty(code CMD_CODE, subCode CMD_SUBCODE) error {
-
-	cmd, ok := CmdList[code][subCode]
-	if !ok {
-		return errors.New("command not found")
-	}
-
-	if cmd.Tipe != reflect.Invalid {
-		return errors.New("command need payload")
-	}
-
-	util.Debug(cmd)
-
-	return nil
+func (c *Command) publish(vin int, packet []byte) {
+	// OnCommand[vin] = true
+	t := c.client.Publish(cmdTopic(vin), 1, false, packet)
+	t.Wait()
 }
 
-func getCmdPacket(code CMD_CODE, subCode CMD_SUBCODE) (CmdPacket, error) {
-	// for _, cmd := range CMD_LIST {
-	// 	if cmd.Code == code && cmd.SubCode == subCode {
-	// 		return cmd, nil
-	// 	}
-	// }
+func waitAck(vin int, cmd Commander) error {
+	RX.Reset(vin)
 
-	cmd, ok := CmdList[code][subCode]
-	if ok {
-		return cmd, nil
+	ack := util.Reverse([]byte(shared.PREFIX_ACK))
+	done := make(chan struct{})
+	go func() {
+		for {
+			if rx, ok := RX.Get(vin); ok {
+				if bytes.Equal(rx, ack) {
+					done <- struct{}{}
+				}
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+	}()
+
+	select {
+	case <-done:
+		return nil
+	case <-time.After(5 * time.Second):
 	}
-	return CmdPacket{}, errors.New("command code not found")
+
+	return errors.New("ack timeout")
 }
+
+func waitResponse(vin int, cmd Commander) ([]byte, error) {
+	RX.Reset(vin)
+
+	done := make(chan []byte)
+	go func() {
+		for {
+			if rx, ok := RX.Get(vin); ok {
+				done <- rx
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+	}()
+
+	select {
+	case res := <-done:
+		return res, nil
+	case <-time.After(getTimeout(cmd)):
+	}
+
+	return nil, errors.New("response timeout")
+}
+
+func getTimeout(cmd Commander) time.Duration {
+	timeout := cmd.Timeout
+	if timeout == 0 {
+		timeout = 5 * time.Second
+	}
+	return timeout
+}
+
+func cmdTopic(vin int) string {
+	return strings.Replace(shared.TOPIC_COMMAND, "+", fmt.Sprint(vin), 1)
+}
+
+// func getCmdPacket(code CMD_CODE, subCode CMD_SUBCODE) (CmdPacket, error) {
+// 	// for _, cmd := range CMD_LIST {
+// 	// 	if cmd.Code == code && cmd.SubCode == subCode {
+// 	// 		return cmd, nil
+// 	// 	}
+// 	// }
+
+// 	cmd, ok := CmdList[code][subCode]
+// 	if ok {
+// 		return cmd, nil
+// 	}
+// 	return CmdPacket{}, errors.New("command code not found")
+// }

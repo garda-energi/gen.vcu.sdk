@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
 	"github.com/pudjamansyurin/gen_vcu_sdk/report"
+	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 func main() {
@@ -14,7 +16,14 @@ func main() {
 	api.AddReportListener(reportListener)
 
 	api.Logging(false)
-	api.ConnectAndListen()
+	go api.ConnectAndListen()
+
+	time.Sleep(5 * time.Second)
+	if res, err := api.Command.GenInfo(354313); err == nil {
+		fmt.Println(res)
+	}
+
+	util.WaitForCtrlC()
 }
 
 func statusListener(vin int, online bool) error {
@@ -28,6 +37,6 @@ func statusListener(vin int, online bool) error {
 }
 
 func reportListener(vin int, report *report.ReportPacket) error {
-	fmt.Println(report)
+	// fmt.Println(report)
 	return nil
 }
