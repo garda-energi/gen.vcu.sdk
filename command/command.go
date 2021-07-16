@@ -2,32 +2,42 @@ package command
 
 import (
 	"errors"
+	"reflect"
+
+	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
-// type Command struct{}
+type Cmd struct{}
 
-// func (c *Command) ExecuteEmpty(code CMD_CODE, subCode CMD_SUBCODE) error {
-// 	cmd, err := getCmd(code, subCode)
-// 	if err != nil {
-// 		return err
-// 	}
+func (c *Cmd) ExecuteEmpty(code CMD_CODE, subCode CMD_SUBCODE) error {
+	// cmd, err := getCmdPacket(code, subCode)
+	// if err != nil {
+	// 	return err
+	// }
 
-// 	if cmd.Tipe != reflect.Invalid {
-// 		return errors.New("command has payload")
-// 	}
+	cmd, ok := CmdList[code][subCode]
+	if !ok {
+		return errors.New("command not found")
+	}
 
-// 	return nil
-// }
+	if cmd.Tipe != reflect.Invalid {
+		return errors.New("command need payload")
+	}
+
+	util.Debug(cmd)
+
+	return nil
+}
 
 // func (c *Command) GenInfo() (string, error) {
 
 // }
 
-func getCmd(code CMD_CODE, subCode CMD_SUBCODE) (Cmd, error) {
+func getCmdPacket(code CMD_CODE, subCode CMD_SUBCODE) (CmdPacket, error) {
 	for _, cmd := range CMD_LIST {
 		if cmd.Code == code && cmd.SubCode == subCode {
 			return cmd, nil
 		}
 	}
-	return Cmd{}, errors.New("command code not found")
+	return CmdPacket{}, errors.New("command code not found")
 }

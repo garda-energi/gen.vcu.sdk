@@ -10,7 +10,7 @@ import (
 type ValidatorFunc func(b []byte) bool
 type EncoderFunc func(b []byte) []byte
 
-type Cmd struct {
+type CmdPacket struct {
 	Name      string
 	Desc      string
 	Code      CMD_CODE
@@ -21,7 +21,7 @@ type Cmd struct {
 	Encoder   EncoderFunc
 }
 
-var CMD_LIST = []Cmd{
+var CMD_LIST = []CmdPacket{
 	{
 		Name:    "GEN_INFO",
 		Desc:    "Gather device information",
