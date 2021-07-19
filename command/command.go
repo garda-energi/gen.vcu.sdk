@@ -7,20 +7,20 @@ import (
 	"strings"
 	"time"
 
-	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/pudjamansyurin/gen_vcu_sdk/transport"
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 type Command struct {
-	client mqtt.Client
+	transport *transport.Transport
 	cmd    *CommandList
 }
 
-func New(client mqtt.Client) *Command {
+func New(tr *transport.Transport) *Command {
 	return &Command{
-		client: client,
-		cmd:    NewCommandList(),
+		transport: tr,
+		cmd      : NewCommandList(),
 	}
 }
 
@@ -45,8 +45,7 @@ func (c *Command) GenInfo(vin int) (string, error) {
 
 func (c *Command) publish(vin int, packet []byte) {
 	// OnCommand[vin] = true
-	t := c.client.Publish(cmdTopic(vin), 1, false, packet)
-	t.Wait()
+	c.transport.Pub(cmdTopic(vin), 1, false, packet)
 }
 
 func waitAck(vin int, cmd Commander) error {
