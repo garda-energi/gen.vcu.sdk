@@ -16,6 +16,7 @@ func main() {
 	if err := api.Connect(); err != nil {
 		log.Fatal(err)
 	}
+	defer api.Disconnect()
 
 	api.Listen(sdk.Listener{
 		StatusFunc: statusListener,
@@ -23,9 +24,12 @@ func main() {
 	})
 	time.Sleep(5 * time.Second)
 
-	//if res, err := api.Command.GenInfo(354313); err == nil {
-	//	fmt.Println(res)
-	//}
+	dev354313 := api.NewCommand(354313)
+	res, err := dev354313.GenInfo()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(res)
 
 	util.WaitForCtrlC()
 }

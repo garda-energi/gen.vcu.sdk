@@ -1,13 +1,12 @@
 package gen_vcu_sdk
 
 import (
-	"github.com/pudjamansyurin/gen_vcu_sdk/command"
+	cmd "github.com/pudjamansyurin/gen_vcu_sdk/command"
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 	"github.com/pudjamansyurin/gen_vcu_sdk/transport"
 )
 
 type Sdk struct {
-	command  *command.Command
 	transport *transport.Transport
 	logging  bool
 }
@@ -30,20 +29,30 @@ func (s *Sdk) Connect() error {
 		return err
 	}
 
+	if err := s.transport.Sub(shared.TOPIC_COMMAND, cmd.CommandListener); err != nil {
+        	return err
+        }
+
+	if err := s.transport.Sub(shared.TOPIC_RESPONSE, cmd.ResponseListener); err != nil {
+        	return err
+        }
+
 	return nil
+}
+
+func (s *Sdk) Disconnect() {
+	s.transport.Disconnect()
 }
 
 func (s *Sdk) Listen(l Listener) error {
 	if l.StatusFunc != nil {
-		err := s.transport.Sub(shared.TOPIC_STATUS, StatusListener(l.StatusFunc, s.logging))
-		if err != nil {
+		if err := s.transport.Sub(shared.TOPIC_STATUS, StatusListener(l.StatusFunc, s.logging)); err != nil {
 			return err
 		}
 	}
 
 	if l.ReportFunc != nil {
-		err := s.transport.Sub(shared.TOPIC_REPORT, ReportListener(l.ReportFunc, s.logging))
-		if err != nil {
+		if err := s.transport.Sub(shared.TOPIC_REPORT, ReportListener(l.ReportFunc, s.logging)); err != nil {
 			return err
 		}
 	}
@@ -51,16 +60,6 @@ func (s *Sdk) Listen(l Listener) error {
 	return nil
 }
 
-func (s *Sdk) NewCommand() error {
-	s.command = command.New(s.transport)
-
-        if err := s.transport.Sub(shared.TOPIC_COMMAND, command.CommandListener); err != nil {
-                return err
-        }
-
-        if err := s.transport.Sub(shared.TOPIC_RESPONSE, command.ResponseListener); err != nil {
-                return err
-        }
-
-	return nil
+func (s *Sdk) NewCommand(vin int) *cmd.Command {
+	return cmd.New(vin, s.transport)
 }

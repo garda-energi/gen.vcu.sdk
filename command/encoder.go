@@ -13,7 +13,7 @@ func toUint8(b []byte) uint8 {
 	return uint8(b[0])
 }
 
-func (c *Command) encode(vin int, cmd Commander, payload []byte) []byte {
+func (c *Command) encode(cmd Commander, payload []byte) []byte {
 	var sb strings.Builder
 
 	sb.Write(payload)
@@ -22,7 +22,7 @@ func (c *Command) encode(vin int, cmd Commander, payload []byte) []byte {
 	sb.Write(buildTime(time.Now()))
 
 	vin32 := make([]byte, 4)
-	binary.BigEndian.PutUint32(vin32, uint32(vin))
+	binary.BigEndian.PutUint32(vin32, uint32(c.vin))
 	sb.Write(vin32)
 
 	sb.WriteByte(byte(sb.Len()))

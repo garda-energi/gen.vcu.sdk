@@ -6,105 +6,106 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"log"
+	"context"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/transport"
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
+var CMD_LIST = NewCommandList()
+
 type Command struct {
+	vin int
 	transport *transport.Transport
-	cmd    *CommandList
 }
 
-func New(tr *transport.Transport) *Command {
+func New(vin int, tport *transport.Transport) *Command {
 	return &Command{
-		transport: tr,
-		cmd      : NewCommandList(),
+		vin: vin,
+		transport: tport,
 	}
 }
 
 // GenInfo Gather device information
-func (c *Command) GenInfo(vin int) (string, error) {
-	cmd := c.cmd.GEN.INFO
+func (c *Command) GenInfo() (string, error) {
+	cmd := CMD_LIST.GEN.INFO
 
-	packet := c.encode(vin, cmd, nil)
-	c.publish(vin, packet)
+	packet := c.encode(cmd, nil)
+	c.exec(packet)
 
-	if err := waitAck(vin, cmd); err != nil {
+	if err := c.waitResponse(cmd); err != nil {
 		return "", err
 	}
 
-	res, err := waitResponse(vin, cmd)
-	if err != nil {
-		return "", err
-	}
-
-	return string(res), nil
+	return "", nil
 }
 
-func (c *Command) publish(vin int, packet []byte) {
+func (c *Command) exec(packet []byte) {
 	// OnCommand[vin] = true
-	c.transport.Pub(cmdTopic(vin), 1, false, packet)
+	topic := strings.Replace(shared.TOPIC_COMMAND, "+", fmt.Sprint(c.vin), 1)
+	c.transport.Pub(topic, 1, false, packet)
 }
 
-func waitAck(vin int, cmd Commander) error {
-	RX.Reset(vin)
-
+func (c *Command) waitResponse(cmd Commander) error {
+	// wait ack
+	packet, err := c.waitPacket(5*time.Second);
+	if err != nil {
+		return err
+	}
+	// check ack
 	ack := util.Reverse([]byte(shared.PREFIX_ACK))
-	done := make(chan struct{})
-	go func() {
-		for {
-			if rx, ok := RX.Get(vin); ok {
-				if bytes.Equal(rx, ack) {
-					done <- struct{}{}
-				}
-			}
-			time.Sleep(10 * time.Millisecond)
-		}
-	}()
-
-	select {
-	case <-done:
-		return nil
-	case <-time.After(5 * time.Second):
+	if !bytes.Equal(packet, ack) {
+                return errors.New("ack corrupt")
 	}
 
-	return errors.New("ack timeout")
-}
-
-func waitResponse(vin int, cmd Commander) ([]byte, error) {
-	RX.Reset(vin)
-
-	done := make(chan []byte)
-	go func() {
-		for {
-			if rx, ok := RX.Get(vin); ok {
-				done <- rx
-			}
-			time.Sleep(10 * time.Millisecond)
-		}
-	}()
-
-	select {
-	case res := <-done:
-		return res, nil
-	case <-time.After(getTimeout(cmd)):
-	}
-
-	return nil, errors.New("response timeout")
-}
-
-func getTimeout(cmd Commander) time.Duration {
+	// wait response
 	timeout := cmd.Timeout
 	if timeout == 0 {
-		timeout = 5 * time.Second
+		timeout = 5*time.Second
 	}
-	return timeout
+	packet, err = c.waitPacket(timeout);
+	if err != nil {
+		return err
+	}
+	// decode response
+	log.Println(packet)
+
+	return nil
 }
 
-func cmdTopic(vin int) string {
-	return strings.Replace(shared.TOPIC_COMMAND, "+", fmt.Sprint(vin), 1)
+func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
+	RX.Reset(c.vin)
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	data := make(chan []byte, 1)
+	go func() {
+	   for {
+		if rx, ok := RX.Get(c.vin); ok {
+                	data<- rx
+                        return
+                }
+
+		select {
+		case <-ctx.Done():
+			return
+		default:
+                        time.Sleep(10 * time.Millisecond)
+		}
+	   }
+	}()
+
+	select {
+	case <-ctx.Done():
+		return nil, errors.New("packet timeout")
+	case dat := <-data:
+		return dat, nil
+	}
+
+	return nil, errors.New("packet error")
 }
 
 // func getCmdPacket(code CMD_CODE, subCode CMD_SUBCODE) (CmdPacket, error) {
