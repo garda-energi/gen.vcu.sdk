@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-	"log"
 	"context"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/transport"
@@ -33,14 +32,19 @@ func (c *Command) GenInfo() (string, error) {
 		return "", err
 	}
 
-	packet := c.encode(cmder, nil)
-	c.exec(packet)
-
-	if err := c.waitResponse(cmder); err != nil {
+	packet, err := c.encode(cmder, nil)
+	if err != nil {
 		return "", err
 	}
 
-	return "", nil
+	c.exec(packet)
+
+	msg, err := c.waitResponse(cmder)
+	if err != nil {
+		return "", err
+	}
+
+	return string(msg), nil
 }
 
 func (c *Command) exec(packet []byte) {
@@ -49,27 +53,26 @@ func (c *Command) exec(packet []byte) {
 	c.transport.Pub(topic, 1, false, packet)
 }
 
-func (c *Command) waitResponse(cmder *Commander) error {
+func (c *Command) waitResponse(cmder *Commander) ([]byte, error) {
 	// wait ack
 	packet, err := c.waitPacket(5*time.Second);
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// check ack
 	ack := util.Reverse([]byte(shared.PREFIX_ACK))
 	if !bytes.Equal(packet, ack) {
-                return errors.New("ack corrupt")
+                return nil, errors.New("ack corrupt")
 	}
 
 	// wait response
 	packet, err = c.waitPacket(cmder.Timeout);
 	if err != nil {
-		return err
+		return nil, err
 	}
-	// decode response
-	log.Println(packet)
+	// decode & check response
 
-	return nil
+	return packet, err
 }
 
 func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {

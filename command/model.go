@@ -4,6 +4,8 @@ import (
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
+const PAYLOAD_LEN = 200
+
 type HeaderCommand struct {
 	shared.Header
 	Code    uint8 `type:"uint8"`
@@ -12,13 +14,13 @@ type HeaderCommand struct {
 
 type CommandPacket struct {
 	HeaderCommand
-	Payload [200]byte
+	Payload [PAYLOAD_LEN]byte
 }
 
 type ResponsePacket struct {
 	HeaderCommand
 	ResCode	RES_CODE `type:"uint8"`
-	Message [200]byte
+	Message [PAYLOAD_LEN]byte
 }
 
 type RES_CODE uint8

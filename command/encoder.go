@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"strings"
 	"time"
+	"errors"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
@@ -13,9 +14,12 @@ func toUint8(b []byte) uint8 {
 	return uint8(b[0])
 }
 
-func (c *Command) encode(cmder *Commander, payload []byte) []byte {
+func (c *Command) encode(cmder *Commander, payload []byte) ([]byte, error) {
 	var sb strings.Builder
 
+	if len(payload) > PAYLOAD_LEN {
+		return nil, errors.New("payload overload")
+	}
 	sb.Write(payload)
 	sb.WriteByte(byte(cmder.SubCode))
 	sb.WriteByte(byte(cmder.Code))
@@ -30,7 +34,8 @@ func (c *Command) encode(cmder *Commander, payload []byte) []byte {
 
 	bytes := sbToPacket(sb)
 	// util.Debug(util.HexString(bytes))
-	return bytes
+
+	return bytes, nil
 }
 
 func buildTime(t time.Time) []byte {
