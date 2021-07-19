@@ -6,46 +6,40 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-type clientConfig struct {
-	Host     string
-	Port     int
-	ClientId string
-	Username string
-	Password string
+type Config struct {
+	Host string
+	Port int
+	User string
+	Pass string
 }
 
 type Transport struct {
-	config clientConfig
-	client mqtt.Client
+	config Config
+	Client mqtt.Client
 }
 
-func New(host string, port int, user, pass string) Transport {
-	return Transport{config: clientConfig{
-		Host:     host,
-		Port:     port,
-		Username: user,
-		Password: pass,
-		// ClientId: "go_mqtt_client",
-	}}
+func New(config Config) *Transport {
+	return &Transport{config: config}
 }
 
 func (t *Transport) Connect() error {
 	opts := createClientOptions(t.config)
-	t.client = mqtt.NewClient(opts)
+	t.Client = mqtt.NewClient(opts)
 
-	token := t.client.Connect()
+	token := t.Client.Connect()
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
+
 	return nil
 }
 
 func (t *Transport) Disconnect() {
-	t.client.Disconnect(100)
+	t.Client.Disconnect(100)
 }
 
 func (t *Transport) Subscribe(topic string, handler mqtt.MessageHandler) error {
-	token := t.client.Subscribe(topic, 1, handler)
+	token := t.Client.Subscribe(topic, 1, handler)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}

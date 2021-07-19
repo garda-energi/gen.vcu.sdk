@@ -10,7 +10,7 @@ type HeaderCommand struct {
 	SubCode CMD_SUBCODE `type:"uint8"`
 }
 
-type Command struct {
+type CommandPacket struct {
 	HeaderCommand
 	Payload [200]byte
 }

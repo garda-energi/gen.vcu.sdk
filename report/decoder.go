@@ -7,8 +7,9 @@ import (
 	"io"
 	"math"
 	"reflect"
-	"strings"
 	"time"
+
+	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
@@ -91,6 +92,7 @@ func (r *Report) decode(v interface{}) error {
 
 				if tag.Factor != 1 {
 					x64 = convert2Float64(tag.Tipe, x)
+					// it looks like same operation ?
 					if rk == reflect.Float32 {
 						x64 *= tag.Factor
 					} else {
@@ -138,32 +140,33 @@ func convert2Float64(typedata string, x uint64) (result float64) {
 	switch typedata {
 	case "uint8":
 		var tmp uint8
-		rv = reflect.ValueOf(&tmp).Elem()
+		rv = reflect.ValueOf(&tmp)
 	case "uint16":
 		var tmp uint16
-		rv = reflect.ValueOf(&tmp).Elem()
+		rv = reflect.ValueOf(&tmp)
 	case "uint32":
 		var tmp uint32
-		rv = reflect.ValueOf(&tmp).Elem()
+		rv = reflect.ValueOf(&tmp)
 	case "uint64", "uint":
 		var tmp uint64
-		rv = reflect.ValueOf(&tmp).Elem()
+		rv = reflect.ValueOf(&tmp)
 	case "int8":
 		var tmp int8
-		rv = reflect.ValueOf(&tmp).Elem()
+		rv = reflect.ValueOf(&tmp)
 	case "int16":
 		var tmp int16
-		rv = reflect.ValueOf(&tmp).Elem()
+		rv = reflect.ValueOf(&tmp)
 	case "int32":
 		var tmp int32
-		rv = reflect.ValueOf(&tmp).Elem()
+		rv = reflect.ValueOf(&tmp)
 	case "int64", "int":
 		var tmp int64
-		rv = reflect.ValueOf(&tmp).Elem()
+		rv = reflect.ValueOf(&tmp)
 	default:
 		var tmp uint64
-		rv = reflect.ValueOf(&tmp).Elem()
+		rv = reflect.ValueOf(&tmp)
 	}
+	rv = rv.Elem()
 
 	// set sesuai memori yang dideklarasi
 	switch rv.Kind() {
@@ -206,12 +209,5 @@ func parseTime(b []byte) time.Time {
 }
 
 func parseString(b []byte) string {
-	var sb strings.Builder
-
-	s := string(b)
-	sb.Grow(len(s))
-	for i := len(s) - 1; i >= 0; i-- {
-		sb.WriteByte(s[i])
-	}
-	return sb.String()
+	return string(util.Reverse(b))
 }

@@ -1,10 +1,6 @@
 package gen_vcu_sdk
 
 import (
-	"log"
-	"strconv"
-	"strings"
-
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/pudjamansyurin/gen_vcu_sdk/report"
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
@@ -14,48 +10,17 @@ type StatusListenerFunc func(vin int, online bool) error
 type ReportListenerFunc func(vin int, report *report.ReportPacket) error
 
 type Listener struct {
-	logging    bool
-	statusFunc StatusListenerFunc
-	reportFunc ReportListenerFunc
+	StatusFunc StatusListenerFunc
+	ReportFunc ReportListenerFunc
 }
 
-func (l *Listener) status(client mqtt.Client, msg mqtt.Message) {
-	l.logPaylod(msg)
-
-	vin := parseVin(msg.Topic())
-	online := isOnline(msg.Payload())
-	if err := l.statusFunc(vin, online); err != nil {
-		log.Fatalf("Status listener error, %v\n", err)
-	}
+func listenerHook(msg mqtt.Message, logging bool) int {
+        if logging {
+                util.LogMessage(msg)                                                                         }
+        vin := util.TopicVin(msg.Topic())
+        return vin
 }
 
-func (l *Listener) report(client mqtt.Client, msg mqtt.Message) {
-	l.logPaylod(msg)
-
-	result, err := report.New(msg.Payload()).Decode()
-	if err != nil {
-		log.Fatalf("Can't decode report package, %v\n", err)
-	}
-
-	vin := parseVin(msg.Topic())
-	if err := l.reportFunc(vin, result); err != nil {
-		log.Fatalf("Report listener error, %v\n", err)
-	}
-}
-
-func (l *Listener) logPaylod(msg mqtt.Message) {
-	if l.logging {
-		log.Printf("[%s] %s\n", msg.Topic(), util.HexString(msg.Payload()))
-	}
-}
-
-func parseVin(topic string) int {
-	s := strings.Split(topic, "/")
-	vin, _ := strconv.Atoi(s[1])
-
-	return vin
-}
-
-func isOnline(b []byte) bool {
+func parseOnline(b []byte) bool {
 	return b[0] == '1'
 }

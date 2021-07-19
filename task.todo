@@ -15,3 +15,4 @@
 ☐ add context.TODO 
 ☐ add documentation for each func
 ☐ be carefull with concurency race-condition 
+☐ check goroutine leak

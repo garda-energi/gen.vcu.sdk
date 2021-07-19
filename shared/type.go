@@ -1,6 +1,19 @@
 package shared
 
-// TODO: sync max count with enums automatically
+const (
+	TOPIC_STATUS   = "VCU/+/STS"
+	TOPIC_REPORT   = "VCU/+/RPT"
+	TOPIC_COMMAND  = "VCU/+/CMD"
+	TOPIC_RESPONSE = "VCU/+/RSP"
+)
+
+const (
+	PREFIX_ACK      = "@A"
+	PREFIX_REPORT   = "@T"
+	PREFIX_COMMAND  = "@C"
+	PREFIX_RESPONSE = "@S"
+)
+
 const BMS_PACK_CNT = 2
 
 var TASK_LIST = []string{
