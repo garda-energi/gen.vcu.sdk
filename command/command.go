@@ -28,12 +28,15 @@ func New(vin int, tport *transport.Transport) *Command {
 
 // GenInfo Gather device information
 func (c *Command) GenInfo() (string, error) {
-	cmd := CMD_LIST.GEN.INFO
+	cmder, err := getCmder("GEN_INFO")
+	if err != nil {
+		return "", err
+	}
 
-	packet := c.encode(cmd, nil)
+	packet := c.encode(cmder, nil)
 	c.exec(packet)
 
-	if err := c.waitResponse(cmd); err != nil {
+	if err := c.waitResponse(cmder); err != nil {
 		return "", err
 	}
 
@@ -46,7 +49,7 @@ func (c *Command) exec(packet []byte) {
 	c.transport.Pub(topic, 1, false, packet)
 }
 
-func (c *Command) waitResponse(cmd Commander) error {
+func (c *Command) waitResponse(cmder *Commander) error {
 	// wait ack
 	packet, err := c.waitPacket(5*time.Second);
 	if err != nil {
@@ -59,11 +62,7 @@ func (c *Command) waitResponse(cmd Commander) error {
 	}
 
 	// wait response
-	timeout := cmd.Timeout
-	if timeout == 0 {
-		timeout = 5*time.Second
-	}
-	packet, err = c.waitPacket(timeout);
+	packet, err = c.waitPacket(cmder.Timeout);
 	if err != nil {
 		return err
 	}
@@ -106,16 +105,21 @@ func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
 	return nil, errors.New("packet error")
 }
 
-// func getCmdPacket(code CMD_CODE, subCode CMD_SUBCODE) (CmdPacket, error) {
-// 	// for _, cmd := range CMD_LIST {
-// 	// 	if cmd.Code == code && cmd.SubCode == subCode {
-// 	// 		return cmd, nil
-// 	// 	}
-// 	// }
+func getCmder(name string) (*Commander, error) {
+	for code, subCodes := range CMDERS {
+		for subCode, cmder := range subCodes {
+			if cmder.Name == name {
+				cmder.Code = uint8(code)
+				cmder.SubCode = uint8(subCode)
 
-// 	cmd, ok := CmdList[code][subCode]
-// 	if ok {
-// 		return cmd, nil
-// 	}
-// 	return CmdPacket{}, errors.New("command code not found")
-// }
+ 				if cmder.Timeout == 0 {
+ 					cmder.Timeout = 5*time.Second
+ 				}
+
+				return &cmder, nil
+			}
+		}
+	}
+
+	return nil, errors.New("command invalid")
+}
