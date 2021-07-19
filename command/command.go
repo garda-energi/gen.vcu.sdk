@@ -1,7 +1,6 @@
 package command
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"strings"
@@ -10,7 +9,6 @@ import (
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/transport"
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
-	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 type Command struct {
@@ -60,8 +58,7 @@ func (c *Command) waitResponse(cmder *Commander) ([]byte, error) {
 		return nil, err
 	}
 	// check ack
-	ack := util.Reverse([]byte(shared.PREFIX_ACK))
-	if !bytes.Equal(packet, ack) {
+	if !validAck(packet) {
                 return nil, errors.New("ack corrupt")
 	}
 
