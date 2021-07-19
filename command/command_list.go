@@ -94,8 +94,7 @@ type McuCommand struct {
 	TEMPLATES Commander
 }
 
-func NewCommandList() *CommandList {
-	return &CommandList{
+var CMD_LIST = &CommandList{
 		GEN: GenCommand{
 			INFO: Commander{
 				Name:    "GEN_INFO",
@@ -113,8 +112,8 @@ func NewCommandList() *CommandList {
 			RTC: Commander{
 				Name: "GEN_RTC",
 				Desc: "Set datetime (d[1-7])",
-				//   Code: CMDC_GEN,
-				//   SubCode: 2,
+				Code: CMDC_GEN,
+				SubCode: CMD_SUBCODE(CMD_GEN_RTC),
 				//   size: 7,
 				//   Tipe: "uint8_t",
 				//   range: ["YYMMDDHHmmss0d"],
@@ -388,4 +387,3 @@ func NewCommandList() *CommandList {
 			},
 		},
 	}
-}

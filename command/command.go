@@ -14,8 +14,6 @@ import (
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
-var CMD_LIST = NewCommandList()
-
 type Command struct {
 	vin int
 	transport *transport.Transport
