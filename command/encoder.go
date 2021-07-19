@@ -13,12 +13,12 @@ func toUint8(b []byte) uint8 {
 	return uint8(b[0])
 }
 
-func (c *Command) encode(cmd Commander, payload []byte) []byte {
+func (c *Command) encode(cmder *Commander, payload []byte) []byte {
 	var sb strings.Builder
 
 	sb.Write(payload)
-	sb.WriteByte(byte(cmd.SubCode))
-	sb.WriteByte(byte(cmd.Code))
+	sb.WriteByte(byte(cmder.SubCode))
+	sb.WriteByte(byte(cmder.Code))
 	sb.Write(buildTime(time.Now()))
 
 	vin32 := make([]byte, 4)
@@ -28,7 +28,7 @@ func (c *Command) encode(cmd Commander, payload []byte) []byte {
 	sb.WriteByte(byte(sb.Len()))
 	sb.WriteString(shared.PREFIX_COMMAND)
 
-	bytes := builderToPacket(sb)
+	bytes := sbToPacket(sb)
 	// util.Debug(util.HexString(bytes))
 	return bytes
 }
@@ -44,10 +44,10 @@ func buildTime(t time.Time) []byte {
 	sb.WriteByte(byte(t.Second()))
 	sb.WriteByte(byte(t.Weekday()))
 
-	bytes := builderToPacket(sb)
+	bytes := sbToPacket(sb)
 	return bytes
 }
 
-func builderToPacket(sb strings.Builder) []byte {
+func sbToPacket(sb strings.Builder) []byte {
 	return util.Reverse([]byte(sb.String()))
 }
