@@ -30,12 +30,9 @@ func (c *Command) GenInfo() (string, error) {
 		return "", err
 	}
 
-	packet, err := c.encode(cmder, nil)
-	if err != nil {
+	if err := c.sendCommand(cmder, nil); err != nil {
 		return "", err
 	}
-
-	c.exec(packet)
 
 	msg, err := c.waitResponse(cmder)
 	if err != nil {
@@ -45,10 +42,17 @@ func (c *Command) GenInfo() (string, error) {
 	return string(msg), nil
 }
 
-func (c *Command) exec(packet []byte) {
+func (c *Command) sendCommand(cmder *Commander, payload []byte) error {
+	packet, err := c.encode(cmder, payload)
+	if err != nil {
+		return err
+	}
+
 	// OnCommand[vin] = true
 	topic := strings.Replace(shared.TOPIC_COMMAND, "+", fmt.Sprint(c.vin), 1)
 	c.transport.Pub(topic, 1, false, packet)
+
+	return nil
 }
 
 func (c *Command) waitResponse(cmder *Commander) ([]byte, error) {
