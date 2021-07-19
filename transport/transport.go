@@ -18,20 +18,19 @@ type Transport struct {
 	Client mqtt.Client
 }
 
-func New(config Config) Transport {
-	return Transport{config: config}
+func New(config Config) *Transport {
+	return &Transport{config: config}
 }
 
 func (t *Transport) Connect() error {
 	opts := createClientOptions(t.config)
-	client := mqtt.NewClient(opts)
+	t.Client = mqtt.NewClient(opts)
 
-	token := client.Connect()
+	token := t.Client.Connect()
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 
-	t.Client = client
 	return nil
 }
 
