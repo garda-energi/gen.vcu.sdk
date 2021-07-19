@@ -29,11 +29,11 @@ func (s *Sdk) Connect() error {
 		return err
 	}
 
-	if err := s.transport.Sub(shared.TOPIC_COMMAND, cmd.CommandListener); err != nil {
+	if err := s.transport.Sub(shared.TOPIC_COMMAND, 1, cmd.CommandListener); err != nil {
         	return err
         }
 
-	if err := s.transport.Sub(shared.TOPIC_RESPONSE, cmd.ResponseListener); err != nil {
+	if err := s.transport.Sub(shared.TOPIC_RESPONSE, 1,  cmd.ResponseListener); err != nil {
         	return err
         }
 
@@ -46,13 +46,13 @@ func (s *Sdk) Disconnect() {
 
 func (s *Sdk) Listen(l Listener) error {
 	if l.StatusFunc != nil {
-		if err := s.transport.Sub(shared.TOPIC_STATUS, StatusListener(l.StatusFunc, s.logging)); err != nil {
+		if err := s.transport.Sub(shared.TOPIC_STATUS, 1, StatusListener(l.StatusFunc, s.logging)); err != nil {
 			return err
 		}
 	}
 
 	if l.ReportFunc != nil {
-		if err := s.transport.Sub(shared.TOPIC_REPORT, ReportListener(l.ReportFunc, s.logging)); err != nil {
+		if err := s.transport.Sub(shared.TOPIC_REPORT, 1,  ReportListener(l.ReportFunc, s.logging)); err != nil {
 			return err
 		}
 	}

@@ -38,8 +38,8 @@ func (t *Transport) Disconnect() {
         t.client.Disconnect(100)
 }
 
-func (t *Transport) Sub(topic string, handler mqtt.MessageHandler) error {
-	token := t.client.Subscribe(topic, 1, handler)
+func (t *Transport) Sub(topic string, qos byte, handler mqtt.MessageHandler) error {
+	token := t.client.Subscribe(topic, qos, handler)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
