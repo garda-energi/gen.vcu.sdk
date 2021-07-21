@@ -1,4 +1,4 @@
-package report
+package shared
 
 import (
 	"reflect"

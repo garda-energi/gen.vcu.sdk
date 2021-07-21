@@ -32,7 +32,7 @@ func (d *OnResponse) Reset(k int) {
 	delete(d.Data, k)
 }
 
-var RX = &OnResponse{
+var BufResponse = &OnResponse{
 	Mutex: sync.RWMutex{},
 	Data:  map[int][]byte{},
 }

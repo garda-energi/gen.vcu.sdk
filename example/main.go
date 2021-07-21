@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"time"
 	"log"
+	"time"
 
 	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
 	"github.com/pudjamansyurin/gen_vcu_sdk/report"
@@ -25,11 +25,11 @@ func main() {
 	time.Sleep(5 * time.Second)
 
 	dev354313 := api.NewCommand(354313)
-	res, err := dev354313.GenInfo()
+	_, err := dev354313.GenInfo()
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(res)
+	// log.Println(res)
 
 	util.WaitForCtrlC()
 }

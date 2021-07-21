@@ -72,12 +72,13 @@ func (c *Command) waitResponse(cmder *Commander) ([]byte, error) {
 		return nil, err
 	}
 	// decode & check response
+	msg, err := c.decode(packet)
 
-	return packet, err
+	return msg, err
 }
 
 func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
-	RX.Reset(c.vin)
+	BufResponse.Reset(c.vin)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
@@ -85,7 +86,7 @@ func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
 	data := make(chan []byte, 1)
 	go func() {
 		for {
-			if rx, ok := RX.Get(c.vin); ok {
+			if rx, ok := BufResponse.Get(c.vin); ok {
 				data <- rx
 				return
 			}
@@ -105,8 +106,6 @@ func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
 	case dat := <-data:
 		return dat, nil
 	}
-
-	return nil, errors.New("packet error")
 }
 
 func getCmder(name string) (*Commander, error) {

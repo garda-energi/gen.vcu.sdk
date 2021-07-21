@@ -2,9 +2,9 @@ package command
 
 import (
 	"encoding/binary"
+	"errors"
 	"strings"
 	"time"
-	"errors"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
@@ -33,8 +33,6 @@ func (c *Command) encode(cmder *Commander, payload []byte) ([]byte, error) {
 	sb.WriteString(shared.PREFIX_COMMAND)
 
 	bytes := sbToPacket(sb)
-	// util.Debug(util.HexString(bytes))
-
 	return bytes, nil
 }
 
