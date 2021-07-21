@@ -2,22 +2,14 @@ package command
 
 import (
 	"errors"
-	"reflect"
 	"time"
 )
-
-type ValidatorFunc func(b []byte) bool
-type EncoderFunc func(b []byte) []byte
 
 type commander struct {
 	name     string
 	code     uint8
 	sub_code uint8
 	timeout  time.Duration
-	// TODO: remove if not used
-	Tipe      reflect.Kind
-	Validator ValidatorFunc
-	Encoder   EncoderFunc
 }
 
 func getCmder(name string) (*commander, error) {
@@ -72,69 +64,50 @@ var commands = [][]commander{
 		},
 		commander{
 			name: "OVD_RPT_FRAME",
-			// desc: "Override report frame",
-			// Tipe:    reflect.Uint8,
-			// Validator: func(b []byte) bool {
-			// 	return contains(b, uint8(shared.FRAME_ID_SIMPLE), uint8(shared.FRAME_ID_FULL))
-			// },
 		},
 		commander{
 			name: "OVD_RMT_SEAT",
-			// desc: "Override remote seat button",
 		},
 		commander{
 			name: "OVD_RMT_ALARM",
-			// desc: "Override remote alarm button",
 		},
 	},
 	{
 		commander{
 			name: "AUDIO_BEEP",
-			// desc: "Beep the audio module",
 		},
 	},
 	{
 		commander{
-			name: "FINGER_FETCH",
-			// desc: "Get all registered id",
+			name:    "FINGER_FETCH",
 			timeout: 15 * time.Second,
 		},
 		commander{
-			name: "FINGER_ADD",
-			// desc: "Add a new fingerprint",
+			name:    "FINGER_ADD",
 			timeout: 20 * time.Second,
 		},
 		commander{
-			name: "FINGER_DEL",
-			// desc: "Delete a fingerprint",
-			// Tipe:    reflect.Uint8,
+			name:    "FINGER_DEL",
 			timeout: 15 * time.Second,
-			// Validator: func(b []byte) bool {
-			// 	return between(b, 1, shared.FINGERPRINT_MAX)
-			// },
 		},
 		commander{
-			name: "FINGER_RST",
-			// desc: "Reset all fingerprints",
+			name:    "FINGER_RST",
 			timeout: 15 * time.Second,
 		},
 	},
 	{
 		commander{
-			name: "REMOTE_PAIRING",
-			// desc: "Keyless pairing mode",
+			name:    "REMOTE_PAIRING",
 			timeout: 15 * time.Second,
 		},
 	},
 	{
 		commander{
-			name: "FOTA_VCU",
-			// desc: "Upgrade VCU firmware",
+			name:    "FOTA_VCU",
 			timeout: 6 * 60 * time.Second,
 		},
 		commander{
-			name: "FOTA_HMI",
-			// desc: "Upgrade HMI firmware",
+			name:    "FOTA_HMI",
 			timeout: 12 * 60 * time.Second,
 		},
 	},
