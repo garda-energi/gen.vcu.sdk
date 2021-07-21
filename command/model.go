@@ -12,21 +12,25 @@ type HeaderCommand struct {
 	SubCode uint8 `type:"uint8"`
 }
 
-type CommandPacket struct {
+type HeaderResponse struct {
 	HeaderCommand
-	Payload [PAYLOAD_LEN]byte
+	ResCode RES_CODE `type:"uint8"`
+}
+
+type CommandPacket struct {
+	Header  *HeaderCommand
+	Payload []byte
 }
 
 type ResponsePacket struct {
-	HeaderCommand
-	ResCode	RES_CODE `type:"uint8"`
-	Message [PAYLOAD_LEN]byte
+	Header  *HeaderResponse
+	Message []byte `type:"char"`
 }
 
 type RES_CODE uint8
 
 const (
-        RES_CODE_ERROR RES_CODE = iota
+	RES_CODE_ERROR RES_CODE = iota
 	RES_CODE_OK
-        RES_CODE_INVALID
+	RES_CODE_INVALID
 )

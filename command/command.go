@@ -36,9 +36,8 @@ func (c *Command) GenInfo() (string, error) {
 
 	msg, err := c.waitResponse(cmder)
 	if err != nil {
-		return "", err
+		return string(msg), err
 	}
-
 	return string(msg), nil
 }
 
@@ -62,8 +61,8 @@ func (c *Command) waitResponse(cmder *Commander) ([]byte, error) {
 		return nil, err
 	}
 	// check ack
-	if !validAck(packet) {
-		return nil, errors.New("ack corrupt")
+	if err := checkAck(packet); err != nil {
+		return nil, err
 	}
 
 	// wait response
@@ -71,10 +70,19 @@ func (c *Command) waitResponse(cmder *Commander) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	// decode & check response
-	msg, err := c.decode(packet)
 
-	return msg, err
+	// decode response
+	res, err := c.decode(cmder, packet)
+	if err != nil {
+		return nil, err
+	}
+
+	// check response
+	if err := checkResponse(cmder, res); err != nil {
+		return res.Message, err
+	}
+
+	return res.Message, nil
 }
 
 func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
@@ -116,7 +124,7 @@ func getCmder(name string) (*Commander, error) {
 				cmder.SubCode = uint8(subCode)
 
 				if cmder.Timeout == 0 {
-					cmder.Timeout = 5 * time.Second
+					cmder.Timeout = DEFAULT_CMD_TIMEOUT
 				}
 
 				return &cmder, nil

@@ -25,11 +25,11 @@ func main() {
 	time.Sleep(5 * time.Second)
 
 	dev354313 := api.NewCommand(354313)
-	_, err := dev354313.GenInfo()
+	msg, err := dev354313.GenInfo()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("%v, %s", err, msg)
 	}
-	// log.Println(res)
+	log.Println(msg)
 
 	util.WaitForCtrlC()
 }
@@ -45,6 +45,6 @@ func statusListener(vin int, online bool) error {
 }
 
 func reportListener(vin int, report *report.ReportPacket) error {
-	fmt.Println(report)
+	// fmt.Println(report)
 	return nil
 }

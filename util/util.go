@@ -23,12 +23,17 @@ func Debug(data interface{}) {
 	// spew.Dump(data)
 }
 
-func HexString(payload []byte) string {
-	return strings.ToUpper(hex.EncodeToString(payload))
+func Byte2Hex(b []byte) string {
+	return strings.ToUpper(hex.EncodeToString(b))
+}
+
+func Hex2Byte(s string) []byte {
+	b, _ := hex.DecodeString(s)
+	return b
 }
 
 func LogMessage(msg mqtt.Message) {
-	log.Printf("[%s] %s\n", msg.Topic(), HexString(msg.Payload()))
+	log.Printf("[%s] %s\n", msg.Topic(), Byte2Hex(msg.Payload()))
 }
 
 func Reverse(b []byte) []byte {

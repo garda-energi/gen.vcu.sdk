@@ -15,11 +15,11 @@ func toUint8(b []byte) uint8 {
 }
 
 func (c *Command) encode(cmder *Commander, payload []byte) ([]byte, error) {
-	var sb strings.Builder
-
 	if len(payload) > PAYLOAD_LEN {
 		return nil, errors.New("payload overload")
 	}
+
+	var sb strings.Builder
 	sb.Write(payload)
 	sb.WriteByte(byte(cmder.SubCode))
 	sb.WriteByte(byte(cmder.Code))

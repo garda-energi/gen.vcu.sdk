@@ -19,3 +19,4 @@
 ☐ watch-out with goroutine race-condition 
 ☐ watch-out with goroutine leakage
 ☐ write readable code, we work as team
+☐ reverse command encoder

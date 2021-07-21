@@ -11,28 +11,13 @@ type Tagger struct {
 	Factor float64
 }
 
-func deTag(tag reflect.StructTag, rk reflect.Kind) Tagger {
+func DeTag(tag reflect.StructTag, rk reflect.Kind) Tagger {
 	t := Tagger{
-		Len:    1,
 		Factor: 1.0,
 		Tipe:   "uint64",
 	}
 
-	if len, ok := tag.Lookup("len"); ok {
-		v, _ := strconv.ParseInt(len, 10, 64)
-		t.Len = int(v)
-	} else {
-		switch rk {
-		case reflect.Uint8, reflect.Int8:
-			t.Len = 1
-		case reflect.Uint16, reflect.Int16:
-			t.Len = 2
-		case reflect.Uint32, reflect.Int32, reflect.Float32:
-			t.Len = 4
-		case reflect.Uint64, reflect.Uint, reflect.Int64, reflect.Int, reflect.Float64:
-			t.Len = 8
-		}
-	}
+	t.Len = DeTagLen(tag, rk)
 
 	if factor, ok := tag.Lookup("factor"); ok {
 		v, _ := strconv.ParseFloat(factor, 64)
@@ -44,4 +29,26 @@ func deTag(tag reflect.StructTag, rk reflect.Kind) Tagger {
 	}
 
 	return t
+}
+
+func DeTagLen(tag reflect.StructTag, rk reflect.Kind) int {
+	len := 1
+
+	if l, ok := tag.Lookup("len"); ok {
+		v, _ := strconv.ParseInt(l, 10, 64)
+		len = int(v)
+	} else {
+		switch rk {
+		case reflect.Uint8, reflect.Int8:
+			len = 1
+		case reflect.Uint16, reflect.Int16:
+			len = 2
+		case reflect.Uint32, reflect.Int32, reflect.Float32:
+			len = 4
+		case reflect.Uint64, reflect.Uint, reflect.Int64, reflect.Int, reflect.Float64:
+			len = 8
+		}
+	}
+
+	return len
 }
