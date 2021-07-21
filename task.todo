@@ -20,4 +20,4 @@
 ☐ watch-out with goroutine race-condition 
 ☐ watch-out with goroutine leakage
 ☐ write readable code, we work as team
-☐ add mutex for command to specific device
+☐ add mutex for multiple command to same device

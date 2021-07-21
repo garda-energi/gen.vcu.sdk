@@ -19,45 +19,52 @@ func main() {
 	defer api.Disconnect()
 
 	api.Listen(sdk.Listener{
-		StatusFunc: statusListener,
-		ReportFunc: reportListener,
+		StatusFunc: func(vin int, online bool) error {
+			status := map[bool]string{
+				false: "OFFLINE",
+				true:  "ONFLINE",
+			}[online]
+
+			fmt.Printf("%d => %s\n", vin, status)
+			return nil
+		},
+		ReportFunc: func(vin int, report *report.ReportPacket) error {
+			// fmt.Println(report)
+			return nil
+		},
 	})
-	// time.Sleep(5 * time.Second)
 
 	dev354313 := api.NewCommand(354313)
 	{
-		info, err := dev354313.GenInfo()
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(info)
+		// info, err := dev354313.GenInfo()
+		// if err != nil {
+		// 	fmt.Println(err)
+		// }
+		// fmt.Println(info)
 
-		ids, err := dev354313.FingerFetch()
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(ids)
+		// if err := dev354313.GenLed(true); err != nil {
+		// 	fmt.Println(err)
+		// }
 
 		rtc := time.Now()
 		if err := dev354313.GenRtc(rtc); err != nil {
 			fmt.Println(err)
 		}
+
+		// if err := dev354313.GenOdo(0); err != nil {
+		// 	fmt.Println(err)
+		// }
+
+		// if err := dev354313.OvdState(shared.BIKE_STATE_NORMAL); err != nil {
+		// 	fmt.Println(err)
+		// }
+
+		// ids, err := dev354313.FingerFetch()
+		// if err != nil {
+		// 	fmt.Println(err)
+		// }
+		// fmt.Println(ids)
 	}
 
 	util.WaitForCtrlC()
-}
-
-func statusListener(vin int, online bool) error {
-	status := map[bool]string{
-		false: "OFFLINE",
-		true:  "ONFLINE",
-	}
-
-	fmt.Printf("%d => %s\n", vin, status[online])
-	return nil
-}
-
-func reportListener(vin int, report *report.ReportPacket) error {
-	// fmt.Println(report)
-	return nil
 }

@@ -50,10 +50,16 @@ func makeTime(t time.Time) []byte {
 	return util.Reverse([]byte(sb.String()))
 }
 
-func makeBool(b bool) []byte {
-	enc := []byte{0}
-	if b {
-		enc[0] = 1
+func makeBool(d bool) []byte {
+	b := []byte{0}
+	if d {
+		b[0] = 1
 	}
-	return enc
+	return b
+}
+
+func makeU16(d uint16) []byte {
+	b := make([]byte, 2)
+	binary.BigEndian.PutUint16(b, d)
+	return b
 }
