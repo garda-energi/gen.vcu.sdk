@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"time"
 	"log"
+	"time"
 
 	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
 	"github.com/pudjamansyurin/gen_vcu_sdk/report"
@@ -22,14 +22,27 @@ func main() {
 		StatusFunc: statusListener,
 		ReportFunc: reportListener,
 	})
-	time.Sleep(5 * time.Second)
+	// time.Sleep(5 * time.Second)
 
 	dev354313 := api.NewCommand(354313)
-	res, err := dev354313.GenInfo()
-	if err != nil {
-		log.Fatal(err)
+	{
+		info, err := dev354313.GenInfo()
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(info)
+
+		ids, err := dev354313.FingerFetch()
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(ids)
+
+		rtc := time.Now()
+		if err := dev354313.GenRtc(rtc); err != nil {
+			fmt.Println(err)
+		}
 	}
-	log.Println(res)
 
 	util.WaitForCtrlC()
 }
@@ -45,6 +58,6 @@ func statusListener(vin int, online bool) error {
 }
 
 func reportListener(vin int, report *report.ReportPacket) error {
-	fmt.Println(report)
+	// fmt.Println(report)
 	return nil
 }

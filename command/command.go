@@ -1,125 +1,72 @@
 package command
 
 import (
-	"bytes"
-	"errors"
-	"fmt"
-	"strings"
+	"strconv"
 	"time"
-	"log"
-	"context"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/transport"
-	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
-	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 type Command struct {
-	vin int
+	vin       int
 	transport *transport.Transport
 }
 
 func New(vin int, tport *transport.Transport) *Command {
 	return &Command{
-		vin: vin,
+		vin:       vin,
 		transport: tport,
 	}
 }
 
 // GenInfo Gather device information
 func (c *Command) GenInfo() (string, error) {
-	cmder, err := getCmder("GEN_INFO")
+	msg, err := c.exec("GEN_INFO", nil)
 	if err != nil {
 		return "", err
 	}
-
-	packet := c.encode(cmder, nil)
-	c.exec(packet)
-
-	if err := c.waitResponse(cmder); err != nil {
-		return "", err
-	}
-
-	return "", nil
+	return string(msg), nil
 }
 
-func (c *Command) exec(packet []byte) {
-	// OnCommand[vin] = true
-	topic := strings.Replace(shared.TOPIC_COMMAND, "+", fmt.Sprint(c.vin), 1)
-	c.transport.Pub(topic, 1, false, packet)
+// GenLed Set buil-in led on board
+func (c *Command) GenLed(on bool) error {
+	_, err := c.exec("GEN_LED", makeBool(on))
+	return err
 }
 
-func (c *Command) waitResponse(cmder *Commander) error {
-	// wait ack
-	packet, err := c.waitPacket(5*time.Second);
+// GenRtc Set real time clock on board
+func (c *Command) GenRtc(time time.Time) error {
+	_, err := c.exec("GEN_RTC", makeTime(time))
+	return err
+}
+
+// FingerFetch Get all registered fingerprint ids
+func (c *Command) FingerFetch() ([]int, error) {
+	msg, err := c.exec("FINGER_FETCH", nil)
 	if err != nil {
-		return err
-	}
-	// check ack
-	ack := util.Reverse([]byte(shared.PREFIX_ACK))
-	if !bytes.Equal(packet, ack) {
-                return errors.New("ack corrupt")
+		return nil, err
 	}
 
-	// wait response
-	packet, err = c.waitPacket(cmder.Timeout);
+	// decode
+	ids := make([]int, len(msg))
+	for i := range ids {
+		id, _ := strconv.Atoi(string(msg[i]))
+		ids[i] = id
+	}
+
+	return ids, nil
+}
+
+func (c *Command) exec(cmd_name string, payload []byte) ([]byte, error) {
+	cmder, err := getCmder(cmd_name)
 	if err != nil {
-		return err
-	}
-	// decode response
-	log.Println(packet)
-
-	return nil
-}
-
-func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
-	RX.Reset(c.vin)
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	data := make(chan []byte, 1)
-	go func() {
-	   for {
-		if rx, ok := RX.Get(c.vin); ok {
-                	data<- rx
-                        return
-                }
-
-		select {
-		case <-ctx.Done():
-			return
-		default:
-                        time.Sleep(10 * time.Millisecond)
-		}
-	   }
-	}()
-
-	select {
-	case <-ctx.Done():
-		return nil, errors.New("packet timeout")
-	case dat := <-data:
-		return dat, nil
+		return nil, err
 	}
 
-	return nil, errors.New("packet error")
-}
-
-func getCmder(name string) (*Commander, error) {
-	for code, subCodes := range CMDERS {
-		for subCode, cmder := range subCodes {
-			if cmder.Name == name {
-				cmder.Code = uint8(code)
-				cmder.SubCode = uint8(subCode)
-
- 				if cmder.Timeout == 0 {
- 					cmder.Timeout = 5*time.Second
- 				}
-
-				return &cmder, nil
-			}
-		}
+	if err := c.sendCommand(cmder, payload); err != nil {
+		return nil, err
 	}
 
-	return nil, errors.New("command invalid")
+	msg, err := c.waitResponse(cmder)
+	return msg, err
 }

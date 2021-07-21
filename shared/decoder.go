@@ -1,10 +1,12 @@
-package report
+package shared
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"reflect"
 	"time"
@@ -14,7 +16,7 @@ import (
 
 var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 
-func (r *Report) decode(v interface{}) error {
+func Decode(rdr *bytes.Reader, v interface{}) error {
 	var err error
 
 	rv := reflect.ValueOf(v)
@@ -22,64 +24,63 @@ func (r *Report) decode(v interface{}) error {
 	if rv.Kind() == reflect.Ptr {
 		rv = rv.Elem()
 	}
+
 	if rv.Kind() != reflect.Struct {
+		log.Fatal(rv.Kind())
 		return errors.New("type not match")
 	}
 
-	for i := 0; i < rv.NumField() && r.reader.Len() > 0; i++ {
+	for i := 0; i < rv.NumField() && rdr.Len() > 0; i++ {
 		rvField := rv.Field(i)
 		rtField := rv.Type().Field(i)
 
 		if rvField.IsValid() && rvField.CanSet() {
-			tag := deTag(rtField.Tag, rvField.Kind())
+			tag := DeTag(rtField.Tag, rvField.Kind())
 
 			switch rk := rvField.Kind(); rk {
 
 			case reflect.Ptr:
 				rvField.Set(reflect.New(rvField.Type().Elem()))
-				err = r.decode(rvField.Interface())
-				if err != nil {
+				if err = Decode(rdr, rvField.Interface()); err != nil {
 					return err
 				}
 
 			case reflect.Struct:
 				if rvField.Type() == typeOfTime {
 					b := make([]byte, tag.Len)
-					binary.Read(r.reader, binary.LittleEndian, &b)
-					rvField.Set(reflect.ValueOf(parseTime(b[:6])))
+					binary.Read(rdr, binary.LittleEndian, &b)
+					rvField.Set(reflect.ValueOf(parseTime(b)))
 				} else {
-					err = r.decode(rvField.Addr().Interface())
-					if err != nil {
+					if err = Decode(rdr, rvField.Addr().Interface()); err != nil {
 						return err
 					}
 				}
 
 			case reflect.Array:
 				for j := 0; j < rvField.Len(); j++ {
-					err = r.decode(rvField.Index(j).Addr().Interface())
-				}
-				if err != nil {
-					return err
+					if err = Decode(rdr, rvField.Index(j).Addr().Interface()); err != nil {
+						return err
+					}
 				}
 
 			case reflect.String:
 				x := make([]byte, tag.Len)
-				binary.Read(r.reader, binary.LittleEndian, &x)
+				binary.Read(rdr, binary.LittleEndian, &x)
 				rvField.SetString(parseString(x))
 
 			case reflect.Bool:
 				var x bool
-				binary.Read(r.reader, binary.LittleEndian, &x)
+				binary.Read(rdr, binary.LittleEndian, &x)
 				rvField.SetBool(x)
 
 			case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
-				x := readUint(r.reader, tag.Len)
+				x := readUint(rdr, tag.Len)
 				if !rvField.OverflowUint(x) {
 					rvField.SetUint(x)
 				}
 
 			case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-				x := readUint(r.reader, tag.Len)
+				x := readUint(rdr, tag.Len)
 				x_int := int64(x)
 				if !rvField.OverflowInt(x_int) {
 					rvField.SetInt(x_int)
@@ -88,7 +89,7 @@ func (r *Report) decode(v interface{}) error {
 			case reflect.Float32, reflect.Float64:
 				var x64 float64
 
-				x := readUint(r.reader, tag.Len)
+				x := readUint(rdr, tag.Len)
 
 				if tag.Factor != 1 {
 					x64 = convert2Float64(tag.Tipe, x)
@@ -200,7 +201,7 @@ func convert2Float64(typedata string, x uint64) (result float64) {
 
 func parseTime(b []byte) time.Time {
 	var data string
-	for _, v := range b {
+	for _, v := range b[:6] {
 		data += fmt.Sprintf("%02d", uint8(v))
 	}
 

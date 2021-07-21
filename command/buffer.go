@@ -7,32 +7,32 @@ import "sync"
 // 	Data map[int]bool
 // }
 
-type OnResponse struct {
-	Mutex sync.RWMutex
-	Data  map[int][]byte
+type dataResponses struct {
+	mutex sync.RWMutex
+	data  map[int][]byte
 }
 
-func (d *OnResponse) Get(k int) ([]byte, bool) {
-	d.Mutex.RLock()
-	defer d.Mutex.RUnlock()
+func (d *dataResponses) get(k int) ([]byte, bool) {
+	d.mutex.RLock()
+	defer d.mutex.RUnlock()
 
-	data, ok := d.Data[k]
+	data, ok := d.data[k]
 	return data, ok
 }
 
-func (d *OnResponse) Set(k int, v []byte) {
-	d.Mutex.Lock()
-	defer d.Mutex.Unlock()
-	d.Data[k] = v
+func (d *dataResponses) set(k int, v []byte) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+	d.data[k] = v
 }
 
-func (d *OnResponse) Reset(k int) {
-	d.Mutex.Lock()
-	defer d.Mutex.Unlock()
-	delete(d.Data, k)
+func (d *dataResponses) reset(k int) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+	delete(d.data, k)
 }
 
-var RX = &OnResponse{
-	Mutex: sync.RWMutex{},
-	Data:  map[int][]byte{},
+var responses = &dataResponses{
+	mutex: sync.RWMutex{},
+	data:  map[int][]byte{},
 }

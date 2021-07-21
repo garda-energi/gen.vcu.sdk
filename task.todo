@@ -6,13 +6,18 @@
 ✔ add command list @done(21-07-14 17:02)
 ✔ add multiple decode support for Struct and Array (_packet) @done(21-07-16 08:48)
 ✔ merge report2.go and report.go, refactor decoder.go to support both of them @done(21-07-15 12:39)
+✔ don't subscribe to report & status for nil Listener @done(21-07-21 08:06)
+✘ try to reverse command encoder @cancelled(21-07-21 11:22)
+✘ get lengthOfType using reflect @cancelled(21-07-21 08:06)
 ☐ handle error properly, dont discard with _
-☐ get lengthOfType using reflect
 ☐ validate report properly
 ☐ discard duplicate reports
 ☐ use units in tags
 ☐ add unit test
-☐ add context.TODO 
+☐ add context.TODO, pass as function arguments
 ☐ add documentation for each func
-☐ be carefull with concurency race-condition 
-☐ check goroutine leak
+☐ don't export local only components
+☐ watch-out with goroutine race-condition 
+☐ watch-out with goroutine leakage
+☐ write readable code, we work as team
+☐ add mutex for command to specific device

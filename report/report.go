@@ -2,6 +2,8 @@ package report
 
 import (
 	"bytes"
+
+	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
 type Report struct {
@@ -16,7 +18,7 @@ func New(raw []byte) *Report {
 
 func (r *Report) Decode() (*ReportPacket, error) {
 	result := &ReportPacket{}
-	if err := r.decode(result); err != nil {
+	if err := shared.Decode(r.reader, result); err != nil {
 		return nil, err
 	}
 
