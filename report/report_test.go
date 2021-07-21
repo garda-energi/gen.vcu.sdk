@@ -1,16 +1,15 @@
 package report
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
+	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 func Test_report(t *testing.T) {
@@ -27,21 +26,12 @@ func Test_report(t *testing.T) {
 	if err := openFileJSON("report_test_data.json", &testData); err != nil {
 		log.Fatal(err)
 	}
-	// jsonFile, err := os.Open("report_test_data.json")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// byteValue, _ := ioutil.ReadAll(jsonFile)
-	// json.Unmarshal(byteValue, &testData)
-	// jsonFile.Close()
 
-	// can it be simpler?
 	// it was. cz i paste from hex lib example
 	tests := make([]tester, len(testData))
 	for i, d := range testData {
 		tests[i].name = "data #" + strconv.Itoa(i)
-		tests[i].args.b = hexToBytes(d)
+		tests[i].args.b = util.Hex2Byte(d)
 		tests[i].want = d
 	}
 
@@ -67,7 +57,7 @@ func Test_report(t *testing.T) {
 					t.Errorf("encode error")
 				}
 
-				hexRes := bytesToHex(encRes)
+				hexRes := util.Byte2Hex(encRes)
 				isMatch := true
 				notMatchIdx := 0
 				for i, v := range hexRes {
@@ -95,6 +85,7 @@ func Test_report(t *testing.T) {
 	}
 }
 
+// openFileJSON open and decode json file
 func openFileJSON(filename string, testData *[]string) error {
 	jsonFile, err := os.Open(filename)
 	if err != nil {
@@ -107,21 +98,21 @@ func openFileJSON(filename string, testData *[]string) error {
 	return nil
 }
 
-// it's to convert src:hexstring to dst:bytes
-func hexToBytes(hexString string) []byte {
-	src := []byte(strings.ToLower(hexString))
-	dst := make([]byte, hex.DecodedLen(len(src)))
-	n, err := hex.Decode(dst, src)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return dst[:n]
-}
+// // hexToBytes convert src:hexstring to dst:bytes
+// func hexToBytes(hexString string) []byte {
+// 	src := []byte(strings.ToLower(hexString))
+// 	dst := make([]byte, hex.DecodedLen(len(src)))
+// 	n, err := hex.Decode(dst, src)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	return dst[:n]
+// }
 
-// it's to convert dst:bytes to src:hexstring
-func bytesToHex(b []byte) string {
-	dst := make([]byte, hex.EncodedLen(len(b)))
-	n := hex.Encode(dst, b)
-	hexString := string(dst[:n])
-	return strings.ToUpper(hexString)
-}
+// // bytesToHex convert dst:bytes to src:hexstring
+// func bytesToHex(b []byte) string {
+// 	dst := make([]byte, hex.EncodedLen(len(b)))
+// 	n := hex.Encode(dst, b)
+// 	hexString := string(dst[:n])
+// 	return strings.ToUpper(hexString)
+// }

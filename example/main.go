@@ -46,8 +46,7 @@ func main() {
 		// 	fmt.Println(err)
 		// }
 
-		rtc := time.Now()
-		if err := dev354313.GenRtc(rtc); err != nil {
+		if err := dev354313.GenRtc(time.Now()); err != nil {
 			fmt.Println(err)
 		}
 
