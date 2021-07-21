@@ -19,10 +19,20 @@ func main() {
 	defer api.Disconnect()
 
 	api.Listen(sdk.Listener{
-		StatusFunc: statusListener,
-		ReportFunc: reportListener,
+		StatusFunc: func(vin int, online bool) error {
+			status := map[bool]string{
+				false: "OFFLINE",
+				true:  "ONFLINE",
+			}[online]
+
+			fmt.Printf("%d => %s\n", vin, status)
+			return nil
+		},
+		ReportFunc: func(vin int, report *report.ReportPacket) error {
+			// fmt.Println(report)
+			return nil
+		},
 	})
-	// time.Sleep(5 * time.Second)
 
 	dev354313 := api.NewCommand(354313)
 	{
@@ -57,19 +67,4 @@ func main() {
 	}
 
 	util.WaitForCtrlC()
-}
-
-func statusListener(vin int, online bool) error {
-	status := map[bool]string{
-		false: "OFFLINE",
-		true:  "ONFLINE",
-	}
-
-	fmt.Printf("%d => %s\n", vin, status[online])
-	return nil
-}
-
-func reportListener(vin int, report *report.ReportPacket) error {
-	// fmt.Println(report)
-	return nil
 }
