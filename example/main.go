@@ -26,22 +26,34 @@ func main() {
 
 	dev354313 := api.NewCommand(354313)
 	{
-		info, err := dev354313.GenInfo()
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(info)
+		// info, err := dev354313.GenInfo()
+		// if err != nil {
+		// 	fmt.Println(err)
+		// }
+		// fmt.Println(info)
 
-		ids, err := dev354313.FingerFetch()
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(ids)
+		// if err := dev354313.GenLed(true); err != nil {
+		// 	fmt.Println(err)
+		// }
 
 		rtc := time.Now()
 		if err := dev354313.GenRtc(rtc); err != nil {
 			fmt.Println(err)
 		}
+
+		// if err := dev354313.GenOdo(0); err != nil {
+		// 	fmt.Println(err)
+		// }
+
+		// if err := dev354313.OvdState(shared.BIKE_STATE_NORMAL); err != nil {
+		// 	fmt.Println(err)
+		// }
+
+		// ids, err := dev354313.FingerFetch()
+		// if err != nil {
+		// 	fmt.Println(err)
+		// }
+		// fmt.Println(ids)
 	}
 
 	util.WaitForCtrlC()

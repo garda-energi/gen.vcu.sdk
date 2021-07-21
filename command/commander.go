@@ -52,36 +52,23 @@ var commands = [][]commander{
 		},
 		commander{
 			name: "GEN_ODO",
-			// desc: "Set odometer (km)",
-			// Tipe:    reflect.Uint16,
 		},
 		commander{
-			name: "GEN_ANTITHIEF",
-			// desc: "Toggle anti-thief motion detector",
+			name: "GEN_ANTI_THIEF",
 		},
 		commander{
 			name: "GEN_RPT_FLUSH",
-			// desc: "Flush report buffer",
 		},
 		commander{
 			name: "GEN_RPT_BLOCK",
-			// desc: "Block report buffer",
-			// Tipe:    reflect.Bool,
 		},
 	},
 	{
 		commander{
 			name: "OVD_STATE",
-			// desc: "Override bike state",
-			// Tipe:    reflect.Uint8,
-			// Validator: func(b []byte) bool {
-			// 	return between(b, uint8(shared.BIKE_STATE_NORMAL), uint8(shared.BIKE_STATE_RUN))
-			// },
 		},
 		commander{
 			name: "OVD_RPT_INTERVAL",
-			// desc: "Override report interval",
-			// Tipe:    reflect.Uint16,
 		},
 		commander{
 			name: "OVD_RPT_FRAME",
