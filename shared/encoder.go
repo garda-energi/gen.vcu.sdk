@@ -193,7 +193,7 @@ func timeToBytes(t time.Time) []byte {
 			b[i] = uint8(tmp)
 		}
 	}
-	b[6] = 1
+	b[6] = byte(t.Weekday())
 
 	return b
 }
