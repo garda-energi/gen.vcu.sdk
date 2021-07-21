@@ -35,7 +35,7 @@ func (t *Transport) Connect() error {
 }
 
 func (t *Transport) Disconnect() {
-        t.client.Disconnect(100)
+	t.client.Disconnect(100)
 }
 
 func (t *Transport) Sub(topic string, qos byte, handler mqtt.MessageHandler) error {
@@ -50,5 +50,5 @@ func (t *Transport) Sub(topic string, qos byte, handler mqtt.MessageHandler) err
 
 func (t *Transport) Pub(topic string, qos byte, retained bool, payload []byte) {
 	token := t.client.Publish(topic, qos, retained, payload)
-        token.Wait()
+	token.Wait()
 }

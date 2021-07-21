@@ -8,19 +8,19 @@ import (
 
 type Sdk struct {
 	transport *transport.Transport
-	logging  bool
+	logging   bool
 }
 
 func New(host string, port int, user, pass string, logging bool) Sdk {
 	tport := transport.New(transport.Config{
-                           Host: host,
-                           Port: port,
-                           User: user,
-                           Pass: pass,
-        })
+		Host: host,
+		Port: port,
+		User: user,
+		Pass: pass,
+	})
 	return Sdk{
 		transport: tport,
-		logging: logging,
+		logging:   logging,
 	}
 }
 
@@ -30,12 +30,12 @@ func (s *Sdk) Connect() error {
 	}
 
 	if err := s.transport.Sub(shared.TOPIC_COMMAND, 1, cmd.CommandListener); err != nil {
-        	return err
-        }
+		return err
+	}
 
-	if err := s.transport.Sub(shared.TOPIC_RESPONSE, 1,  cmd.ResponseListener); err != nil {
-        	return err
-        }
+	if err := s.transport.Sub(shared.TOPIC_RESPONSE, 1, cmd.ResponseListener); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -52,7 +52,7 @@ func (s *Sdk) Listen(l Listener) error {
 	}
 
 	if l.ReportFunc != nil {
-		if err := s.transport.Sub(shared.TOPIC_REPORT, 1,  ReportListener(l.ReportFunc, s.logging)); err != nil {
+		if err := s.transport.Sub(shared.TOPIC_REPORT, 1, ReportListener(l.ReportFunc, s.logging)); err != nil {
 			return err
 		}
 	}

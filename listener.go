@@ -17,37 +17,37 @@ type Listener struct {
 }
 
 func StatusListener(sFunc StatusListenerFunc, logging bool) mqtt.MessageHandler {
-	return func (client mqtt.Client, msg mqtt.Message) {
+	return func(client mqtt.Client, msg mqtt.Message) {
 		if logging {
-                	util.LogMessage(msg)
+			util.LogMessage(msg)
 		}
 
-                vin := util.TopicVin(msg.Topic())
-                online := parseOnline(msg.Payload())
+		vin := util.TopicVin(msg.Topic())
+		online := parseOnline(msg.Payload())
 
-                if err := sFunc(vin, online); err != nil {
-             		log.Fatalf("listener callback, %v\n", err)
+		if err := sFunc(vin, online); err != nil {
+			log.Fatalf("listener callback, %v\n", err)
 		}
-      	}
+	}
 }
 
 func ReportListener(rFunc ReportListenerFunc, logging bool) mqtt.MessageHandler {
-	return func (client mqtt.Client, msg mqtt.Message) {
+	return func(client mqtt.Client, msg mqtt.Message) {
 		if logging {
 			util.LogMessage(msg)
 		}
 
 		vin := util.TopicVin(msg.Topic())
 
-                result, err := report.New(msg.Payload()).Decode()
-                if err != nil {
-                        log.Fatalf("cant decode, %v\n", err)
-                }
+		result, err := report.New(msg.Payload()).Decode()
+		if err != nil {
+			log.Fatalf("cant decode, %v\n", err)
+		}
 
-                if err := rFunc(vin, result); err != nil {
-                	log.Fatalf("listener callback %v\n", err)
-        	}
-        }
+		if err := rFunc(vin, result); err != nil {
+			log.Fatalf("listener callback %v\n", err)
+		}
+	}
 }
 
 func parseOnline(b []byte) bool {

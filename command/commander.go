@@ -1,8 +1,8 @@
 package command
 
 import (
-	"time"
 	"reflect"
+	"time"
 )
 
 type ValidatorFunc func(b []byte) bool
@@ -19,14 +19,10 @@ type Commander struct {
 	Encoder   EncoderFunc
 }
 
-
 var CMDERS = [][]Commander{
 	{
 		Commander{
 			Name: "GEN_INFO",
-			Desc: "Gather device information",
-			// Code:    CMDC_GEN,
-			// SubCode: CMD_SUBCODE(CMD_GEN_INFO),
 		},
 		Commander{
 			Name: "GEN_LED",

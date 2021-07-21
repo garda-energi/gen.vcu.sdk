@@ -1,24 +1,24 @@
 package command
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
 	"time"
-	"context"
 
-	"github.com/pudjamansyurin/gen_vcu_sdk/transport"
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
+	"github.com/pudjamansyurin/gen_vcu_sdk/transport"
 )
 
 type Command struct {
-	vin int
+	vin       int
 	transport *transport.Transport
 }
 
 func New(vin int, tport *transport.Transport) *Command {
 	return &Command{
-		vin: vin,
+		vin:       vin,
 		transport: tport,
 	}
 }
@@ -57,17 +57,17 @@ func (c *Command) sendCommand(cmder *Commander, payload []byte) error {
 
 func (c *Command) waitResponse(cmder *Commander) ([]byte, error) {
 	// wait ack
-	packet, err := c.waitPacket(5*time.Second);
+	packet, err := c.waitPacket(5 * time.Second)
 	if err != nil {
 		return nil, err
 	}
 	// check ack
 	if !validAck(packet) {
-                return nil, errors.New("ack corrupt")
+		return nil, errors.New("ack corrupt")
 	}
 
 	// wait response
-	packet, err = c.waitPacket(cmder.Timeout);
+	packet, err = c.waitPacket(cmder.Timeout)
 	if err != nil {
 		return nil, err
 	}
@@ -84,19 +84,19 @@ func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
 
 	data := make(chan []byte, 1)
 	go func() {
-	   for {
-		if rx, ok := RX.Get(c.vin); ok {
-                	data<- rx
-                        return
-                }
+		for {
+			if rx, ok := RX.Get(c.vin); ok {
+				data <- rx
+				return
+			}
 
-		select {
-		case <-ctx.Done():
-			return
-		default:
-                        time.Sleep(10 * time.Millisecond)
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				time.Sleep(10 * time.Millisecond)
+			}
 		}
-	   }
 	}()
 
 	select {
@@ -116,9 +116,9 @@ func getCmder(name string) (*Commander, error) {
 				cmder.Code = uint8(code)
 				cmder.SubCode = uint8(subCode)
 
- 				if cmder.Timeout == 0 {
- 					cmder.Timeout = 5*time.Second
- 				}
+				if cmder.Timeout == 0 {
+					cmder.Timeout = 5 * time.Second
+				}
 
 				return &cmder, nil
 			}
