@@ -25,19 +25,7 @@ func New(host string, port int, user, pass string, logging bool) Sdk {
 }
 
 func (s *Sdk) Connect() error {
-	if err := s.transport.Connect(); err != nil {
-		return err
-	}
-
-	if err := s.transport.Sub(shared.TOPIC_COMMAND, 1, cmd.CommandListener); err != nil {
-		return err
-	}
-
-	if err := s.transport.Sub(shared.TOPIC_RESPONSE, 1, cmd.ResponseListener); err != nil {
-		return err
-	}
-
-	return nil
+	return s.transport.Connect()
 }
 
 func (s *Sdk) Disconnect() {
@@ -55,6 +43,14 @@ func (s *Sdk) Listen(l Listener) error {
 		if err := s.transport.Sub(shared.TOPIC_REPORT, 1, ReportListener(l.ReportFunc, s.logging)); err != nil {
 			return err
 		}
+	}
+
+	if err := s.transport.Sub(shared.TOPIC_COMMAND, 1, cmd.CommandListener); err != nil {
+		return err
+	}
+
+	if err := s.transport.Sub(shared.TOPIC_RESPONSE, 1, cmd.ResponseListener); err != nil {
+		return err
 	}
 
 	return nil
