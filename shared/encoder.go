@@ -17,6 +17,8 @@ import (
 // next problem in implementation.
 // header has length and length get after encode.
 // alternative solution : change bit #3 after encode as length of body
+
+// Encode struct or pointer of struct to bytes
 func Encode(v interface{}) (resBytes []byte, resError error) {
 	buf := &bytes.Buffer{}
 
@@ -50,9 +52,6 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 
 		case reflect.Struct:
 			if rvField.Type() == typeOfTime {
-				// b := make([]byte, tag.Len)
-				// binary.Read(rdr, binary.LittleEndian, &b)
-				// rvField.Set(reflect.ValueOf(parseTime(b)))
 				t := rvField.Interface().(time.Time)
 				b := timeToBytes(t)
 				buf.Write(b)
@@ -102,7 +101,7 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 
 			if tag.Factor != 1 {
 				n /= tag.Factor
-				b = convertFloat64(tag.Tipe, n)
+				b = convertFloat64ToBytes(tag.Tipe, n)
 
 			} else {
 				// set sesuai biner
@@ -139,7 +138,10 @@ func uintToBytes(rk reflect.Kind, v uint64) []byte {
 	}
 }
 
-func convertFloat64(typedata string, v float64) []byte {
+// convert float data to bytes
+func convertFloat64ToBytes(typedata string, v float64) []byte {
+	// declaration
+	// set tmp variable as datatype
 	var rv reflect.Value
 	switch typedata {
 	case "uint8":
@@ -171,10 +173,16 @@ func convertFloat64(typedata string, v float64) []byte {
 		rv = reflect.ValueOf(&tmp)
 	}
 	rv = rv.Elem()
+
+	// convert to bytes
 	b := uintToBytes(rv.Kind(), uint64(v))
 	return b
 }
 
+// 1. set time to string as year-month-day-hour-minute-second
+// 2. split date in string by '-'
+// 3. convert to byte for each string splitted
+// 4. than return bytes
 func timeToBytes(t time.Time) []byte {
 	dateStr := t.Format("06-01-02-15-04-05")
 	datesStr := strings.Split(dateStr, "-")

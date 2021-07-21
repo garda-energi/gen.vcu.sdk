@@ -14,8 +14,11 @@ import (
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
+// this variable is for comparing struct type as time.Time
 var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 
+// read buffer reader than decode and set it to v.
+// v is struct or pointer type that will contain decoded data
 func Decode(rdr *bytes.Reader, v interface{}) error {
 	var err error
 
@@ -46,6 +49,7 @@ func Decode(rdr *bytes.Reader, v interface{}) error {
 				}
 
 			case reflect.Struct:
+				// if data type is time.Time
 				if rvField.Type() == typeOfTime {
 					b := make([]byte, tag.Len)
 					binary.Read(rdr, binary.LittleEndian, &b)
@@ -92,16 +96,11 @@ func Decode(rdr *bytes.Reader, v interface{}) error {
 				x := readUint(rdr, tag.Len)
 
 				if tag.Factor != 1 {
-					x64 = convert2Float64(tag.Tipe, x)
-					// it looks like same operation ?
-					if rk == reflect.Float32 {
-						x64 *= tag.Factor
-					} else {
-						x64 *= tag.Factor
-					}
+					x64 = convertToFloat64(tag.Tipe, x)
+					x64 *= tag.Factor
 
 				} else {
-					// set sesuai biner
+					// set as binary
 					if rk == reflect.Float32 {
 						x32 := math.Float32frombits(uint32(x))
 						x64 = float64(x32)
@@ -123,7 +122,9 @@ func Decode(rdr *bytes.Reader, v interface{}) error {
 	return err
 }
 
+// read len(length) data as uint64
 func readUint(rdr io.Reader, len int) uint64 {
+	// sometimes, data recived in length less than 8
 	b := make([]byte, len)
 	binary.Read(rdr, binary.BigEndian, &b)
 
@@ -135,8 +136,10 @@ func readUint(rdr io.Reader, len int) uint64 {
 	return binary.LittleEndian.Uint64(newb)
 }
 
-func convert2Float64(typedata string, x uint64) (result float64) {
-	// deklarasi
+// convert bytes data to float64.
+// data read as typedata from tag
+func convertToFloat64(typedata string, x uint64) (result float64) {
+	// declaration
 	var rv reflect.Value
 	switch typedata {
 	case "uint8":
@@ -199,6 +202,15 @@ func convert2Float64(typedata string, x uint64) (result float64) {
 	return result
 }
 
+// convert bytes to time
+//
+// value of bytes data is :
+//   2 byte of year
+//   2 byte of month
+//   2 byte of day
+//   2 byte of hour
+//   2 byte of minute
+//   2 byte of second
 func parseTime(b []byte) time.Time {
 	var data string
 	for _, v := range b[:6] {
@@ -209,6 +221,7 @@ func parseTime(b []byte) time.Time {
 	return datetime
 }
 
+// data recived as littleendian. so need to reverse
 func parseString(b []byte) string {
 	return string(util.Reverse(b))
 }
