@@ -6,7 +6,7 @@ import (
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
-func (c *Command) decode(cmder *Commander, packet []byte) (*ResponsePacket, error) {
+func (c *Command) decode(cmder *commander, packet []byte) (*ResponsePacket, error) {
 	reader := bytes.NewReader(packet)
 
 	r := &ResponsePacket{

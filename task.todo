@@ -7,8 +7,9 @@
 ✔ add multiple decode support for Struct and Array (_packet) @done(21-07-16 08:48)
 ✔ merge report2.go and report.go, refactor decoder.go to support both of them @done(21-07-15 12:39)
 ✔ don't subscribe to report & status for nil Listener @done(21-07-21 08:06)
-☐ handle error properly, dont discard with _
+✘ try to reverse command encoder @cancelled(21-07-21 11:22)
 ✘ get lengthOfType using reflect @cancelled(21-07-21 08:06)
+☐ handle error properly, dont discard with _
 ☐ validate report properly
 ☐ discard duplicate reports
 ☐ use units in tags
@@ -19,4 +20,4 @@
 ☐ watch-out with goroutine race-condition 
 ☐ watch-out with goroutine leakage
 ☐ write readable code, we work as team
-☐ reverse command encoder
+☐ add mutex for command to specific device

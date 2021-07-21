@@ -1,6 +1,7 @@
 package command
 
 import (
+	"errors"
 	"reflect"
 	"time"
 )
@@ -8,199 +9,166 @@ import (
 type ValidatorFunc func(b []byte) bool
 type EncoderFunc func(b []byte) []byte
 
-type Commander struct {
-	Name      string
-	Desc      string
-	Code      uint8
-	SubCode   uint8
+type commander struct {
+	name     string
+	code     uint8
+	sub_code uint8
+	timeout  time.Duration
+	// TODO: remove if not used
 	Tipe      reflect.Kind
-	Timeout   time.Duration
 	Validator ValidatorFunc
 	Encoder   EncoderFunc
 }
 
-var CMDERS = [][]Commander{
+func getCmder(name string) (*commander, error) {
+	for code, sub_codes := range commands {
+		for sub_code, cmder := range sub_codes {
+			if cmder.name == name {
+				cmder.code = uint8(code)
+				cmder.sub_code = uint8(sub_code)
+
+				if cmder.timeout == 0 {
+					cmder.timeout = DEFAULT_CMD_TIMEOUT
+				}
+
+				return &cmder, nil
+			}
+		}
+	}
+
+	return nil, errors.New("command invalid")
+}
+
+var commands = [][]commander{
 	{
-		Commander{
-			Name: "GEN_INFO",
+		commander{
+			name: "GEN_INFO",
 		},
-		Commander{
-			Name: "GEN_LED",
-			Desc: "Set system led",
-			// Code:    CMDC_GEN,
-			// SubCode: CMD_SUBCODE(CMD_GEN_LED),
-			// Tipe:    reflect.Bool,
+		commander{
+			name: "GEN_LED",
 		},
-		Commander{
-			Name: "GEN_RTC",
-			Desc: "Set datetime (d[1-7])",
-			//   Code: CMDC_GEN,
-			//   SubCode: 2,
-			//   size: 7,
-			// Tipe: time.Time,
-			//   range: ["YYMMDDHHmmss0d"],
-			//   Validator: (v) => Validator.GEN.RTC(v),
-			//   formatCmd: (v) => TimeStamp(v),
+		commander{
+			name: "GEN_RTC",
 		},
-		Commander{
-			Name: "GEN_ODO",
-			Desc: "Set odometer (km)",
-			// Code:    CMDC_GEN,
-			// SubCode: CMD_SUBCODE(CMD_GEN_ODO),
+		commander{
+			name: "GEN_ODO",
+			// desc: "Set odometer (km)",
 			// Tipe:    reflect.Uint16,
 		},
-		Commander{
-			Name: "GEN_ANTITHIEF",
-			Desc: "Toggle anti-thief motion detector",
-			// Code:    CMDC_GEN,
-			// SubCode: CMD_SUBCODE(CMD_GEN_ANTITHIEF),
+		commander{
+			name: "GEN_ANTITHIEF",
+			// desc: "Toggle anti-thief motion detector",
 		},
-		Commander{
-			Name: "GEN_RPT_FLUSH",
-			Desc: "Flush report buffer",
-			// Code:    CMDC_GEN,
-			// SubCode: CMD_SUBCODE(CMD_GEN_RPT_FLUSH),
+		commander{
+			name: "GEN_RPT_FLUSH",
+			// desc: "Flush report buffer",
 		},
-		Commander{
-			Name: "GEN_RPT_BLOCK",
-			Desc: "Block report buffer",
-			// Code:    CMDC_GEN,
-			// SubCode: CMD_SUBCODE(CMD_GEN_RPT_BLOCK),
+		commander{
+			name: "GEN_RPT_BLOCK",
+			// desc: "Block report buffer",
 			// Tipe:    reflect.Bool,
 		},
 	},
 	{
-		Commander{
-			Name: "OVD_STATE",
-			Desc: "Override bike state",
-			// Code:    CMDC_OVD,
-			// SubCode: CMD_SUBCODE(CMD_OVD_STATE),
+		commander{
+			name: "OVD_STATE",
+			// desc: "Override bike state",
 			// Tipe:    reflect.Uint8,
 			// Validator: func(b []byte) bool {
 			// 	return between(b, uint8(shared.BIKE_STATE_NORMAL), uint8(shared.BIKE_STATE_RUN))
 			// },
 		},
-		Commander{
-			Name: "OVD_RPT_INTERVAL",
-			Desc: "Override report interval",
-			// Code:    CMDC_OVD,
-			// SubCode: CMD_SUBCODE(CMD_OVD_RPT_INTERVAL),
+		commander{
+			name: "OVD_RPT_INTERVAL",
+			// desc: "Override report interval",
 			// Tipe:    reflect.Uint16,
 		},
-		Commander{
-			Name: "OVD_RPT_FRAME",
-			Desc: "Override report frame",
-			// Code:    CMDC_OVD,
-			// SubCode: CMD_SUBCODE(CMD_OVD_RPT_FRAME),
+		commander{
+			name: "OVD_RPT_FRAME",
+			// desc: "Override report frame",
 			// Tipe:    reflect.Uint8,
 			// Validator: func(b []byte) bool {
 			// 	return contains(b, uint8(shared.FRAME_ID_SIMPLE), uint8(shared.FRAME_ID_FULL))
 			// },
 		},
-		Commander{
-			Name: "OVD_RMT_SEAT",
-			Desc: "Override remote seat button",
-			// Code:    CMDC_OVD,
-			// SubCode: CMD_SUBCODE(CMD_OVD_RMT_SEAT),
+		commander{
+			name: "OVD_RMT_SEAT",
+			// desc: "Override remote seat button",
 		},
-		Commander{
-			Name: "OVD_RMT_ALARM",
-			Desc: "Override remote alarm button",
-			// Code:    CMDC_OVD,
-			// SubCode: CMD_SUBCODE(CMD_OVD_RMT_ALARM),
+		commander{
+			name: "OVD_RMT_ALARM",
+			// desc: "Override remote alarm button",
 		},
 	},
 	{
-		Commander{
-			Name: "AUDIO_BEEP",
-			Desc: "Beep the audio module",
-			// Code:    CMDC_AUDIO,
-			// SubCode: CMD_SUBCODE(CMD_AUDIO_BEEP),
+		commander{
+			name: "AUDIO_BEEP",
+			// desc: "Beep the audio module",
 		},
 	},
 	{
-		Commander{
-			Name: "FINGER_FETCH",
-			Desc: "Get all registered id",
-			// Code:    CMDC_FGR,
-			// SubCode: CMD_SUBCODE(CMD_FGR_FETCH),
-			Timeout: 15 * time.Second,
+		commander{
+			name: "FINGER_FETCH",
+			// desc: "Get all registered id",
+			timeout: 15 * time.Second,
 		},
-		Commander{
-			Name: "FINGER_ADD",
-			Desc: "Add a new fingerprint",
-			// Code:    CMDC_FGR,
-			// SubCode: CMD_SUBCODE(CMD_FGR_ADD),
-			Timeout: 20 * time.Second,
+		commander{
+			name: "FINGER_ADD",
+			// desc: "Add a new fingerprint",
+			timeout: 20 * time.Second,
 		},
-		Commander{
-			Name: "FINGER_DEL",
-			Desc: "Delete a fingerprint",
-			// Code:    CMDC_FGR,
-			// SubCode: CMD_SUBCODE(CMD_FGR_DEL),
+		commander{
+			name: "FINGER_DEL",
+			// desc: "Delete a fingerprint",
 			// Tipe:    reflect.Uint8,
-			Timeout: 15 * time.Second,
+			timeout: 15 * time.Second,
 			// Validator: func(b []byte) bool {
 			// 	return between(b, 1, shared.FINGERPRINT_MAX)
 			// },
 		},
-		Commander{
-			Name: "FINGER_RST",
-			Desc: "Reset all fingerprints",
-			// Code:    CMDC_FGR,
-			// SubCode: CMD_SUBCODE(CMD_FGR_RST),
-			Timeout: 15 * time.Second,
+		commander{
+			name: "FINGER_RST",
+			// desc: "Reset all fingerprints",
+			timeout: 15 * time.Second,
 		},
 	},
 	{
-		Commander{
-			Name: "REMOTE_PAIRING",
-			Desc: "Keyless pairing mode",
-			// Code:    CMDC_RMT,
-			// SubCode: CMD_SUBCODE(CMD_RMT_PAIRING),
-			Timeout: 15 * time.Second,
+		commander{
+			name: "REMOTE_PAIRING",
+			// desc: "Keyless pairing mode",
+			timeout: 15 * time.Second,
 		},
 	},
 	{
-		Commander{
-			Name: "FOTA_VCU",
-			Desc: "Upgrade VCU firmware",
-			// Code:    CMDC_FOTA,
-			// SubCode: CMD_SUBCODE(CMD_FOTA_VCU),
-			Timeout: 6 * 60 * time.Second,
+		commander{
+			name: "FOTA_VCU",
+			// desc: "Upgrade VCU firmware",
+			timeout: 6 * 60 * time.Second,
 		},
-		Commander{
-			Name: "FOTA_HMI",
-			Desc: "Upgrade HMI firmware",
-			// Code:    CMDC_FOTA,
-			// SubCode: CMD_SUBCODE(CMD_FOTA_HMI),
-			Timeout: 12 * 60 * time.Second,
+		commander{
+			name: "FOTA_HMI",
+			// desc: "Upgrade HMI firmware",
+			timeout: 12 * 60 * time.Second,
 		},
 	},
 	{
-		Commander{
-			Name: "NET_SEND_USSD",
-			Desc: "Send USSD (ex: *123*10*3#)",
-			//   Code: CMDC_NET,
-			//   SubCode: CMD_SUBCODE(CMD_NET_SEND_USSD),
+		commander{
+			name: "NET_SEND_USSD",
+			// desc: "Send USSD (ex: *123*10*3#)",
 			// Tipe: reflect.String,
 			//   size: 20,
 			//   Validator: (v) => Validator.NET.SEND_USSD(v),
 			//   formatCmd: (v) => AsciiToHex(v),
 		},
-		Commander{
-			Name: "NET_READ_SMS",
-			Desc: "Read last SMS",
-			// Code:    CMDC_NET,
-			// SubCode: CMD_SUBCODE(CMD_NET_READ_SMS),
+		commander{
+			name: "NET_READ_SMS",
+			// desc: "Read last SMS",
 		},
 	},
 	{
-		Commander{
-			Name: "CON_APN",
-			Desc: "Set APN connection (ex: 3gprs;3gprs;3gprs)",
-			//   Code: CMDC_CON,
-			//   SubCode: 0,
+		commander{
+			name: "CON_APN",
+			// desc: "Set APN connection (ex: 3gprs;3gprs;3gprs)",
 			//   range: [
 			//     [1, 30],
 			//     [1, 30],
@@ -211,11 +179,9 @@ var CMDERS = [][]Commander{
 			//   Validator: (v) => Validator.CON(v, 3),
 			//   formatCmd: (v) => AsciiToHex(v),
 		},
-		Commander{
-			Name: "CON_FTP",
-			Desc: "Set FTP connection",
-			//   Code: CMDC_CON,
-			//   SubCode: 1,
+		commander{
+			name: "CON_FTP",
+			// desc: "Set FTP connection",
 			//   range: [
 			//     [1, 30],
 			//     [1, 30],
@@ -226,11 +192,9 @@ var CMDERS = [][]Commander{
 			//   Validator: (v) => Validator.CON(v, 3),
 			//   formatCmd: (v) => AsciiToHex(v),
 		},
-		Commander{
-			Name: "CON_MQTT",
-			Desc: "Set MQTT connection",
-			//   Code: CMDC_CON,
-			//   SubCode: 2,
+		commander{
+			name: "CON_MQTT",
+			// desc: "Set MQTT connection",
 			//   range: [
 			//     [1, 30],
 			//     [1, 30],
@@ -244,60 +208,48 @@ var CMDERS = [][]Commander{
 		},
 	},
 	{
-		Commander{
-			Name: "HBAR_DRIVE",
-			Desc: "Set handlebar drive mode",
-			// Code:    CMDC_HBAR,
-			// SubCode: CMD_SUBCODE(CMD_HBAR_DRIVE),
+		commander{
+			name: "HBAR_DRIVE",
+			// desc: "Set handlebar drive mode",
 			// Tipe:    reflect.Uint8,
 			// Validator: func(b []byte) bool {
 			// 	return max(b, uint8(shared.MODE_DRIVE_limit)-1)
 			// },
 		},
-		Commander{
-			Name: "HBAR_TRIP",
-			Desc: "Set handlebar trip mode",
-			// Code:    CMDC_HBAR,
-			// SubCode: CMD_SUBCODE(CMD_HBAR_TRIP),
+		commander{
+			name: "HBAR_TRIP",
+			// desc: "Set handlebar trip mode",
 			// Tipe:    reflect.Uint8,
 			// Validator: func(b []byte) bool {
 			// 	return max(b, uint8(shared.MODE_TRIP_limit)-1)
 			// },
 		},
-		Commander{
-			Name: "HBAR_AVG",
-			Desc: "Set handlebar average mode",
-			// Code:    CMDC_HBAR,
-			// SubCode: CMD_SUBCODE(CMD_HBAR_AVG),
+		commander{
+			name: "HBAR_AVG",
+			// desc: "Set handlebar average mode",
 			// Tipe:    reflect.Uint8,
 			// Validator: func(b []byte) bool {
 			// 	return max(b, uint8(shared.MODE_AVG_limit)-1)
 			// },
 		},
-		Commander{
-			Name: "HBAR_REVERSE",
-			Desc: "Set handlebar reverse state",
-			// Code:    CMDC_HBAR,
-			// SubCode: CMD_SUBCODE(CMD_HBAR_REVERSE),
+		commander{
+			name: "HBAR_REVERSE",
+			// desc: "Set handlebar reverse state",
 			// Tipe:    reflect.Bool,
 		},
 	},
 	{
-		Commander{
-			Name: "MCU_SPEED_MAX",
-			Desc: "Set MCU max speed",
-			// Code:    CMDC_MCU,
-			// SubCode: CMD_SUBCODE(CMD_MCU_SPEED_MAX),
+		commander{
+			name: "MCU_SPEED_MAX",
+			// desc: "Set MCU max speed",
 			// Tipe:    reflect.Uint8,
 			// Validator: func(b []byte) bool {
 			// 	return max(b, shared.SPEED_MAX)
 			// },
 		},
-		Commander{
-			Name: "MCU_TEMPLATES",
-			Desc: "Set MCU templates (ex: 50,15;50,20;50,25)",
-			//   Code: CMDC_MCU,
-			//   SubCode: 1,
+		commander{
+			name: "MCU_TEMPLATES",
+			// desc: "Set MCU templates (ex: 50,15;50,20;50,25)",
 			//   range: [
 			//     [1, 32767],
 			//     [1, 3276],

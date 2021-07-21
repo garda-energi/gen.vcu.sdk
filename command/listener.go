@@ -8,7 +8,7 @@ import (
 func ResponseListener(client mqtt.Client, msg mqtt.Message) {
 	vin := util.TopicVin(msg.Topic())
 
-	BufResponse.Set(vin, msg.Payload())
+	responses.set(vin, msg.Payload())
 
 	util.LogMessage(msg)
 }

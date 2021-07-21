@@ -3,6 +3,7 @@ package command
 import (
 	"bytes"
 	"errors"
+	"fmt"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
@@ -33,21 +34,30 @@ func checkAck(msg []byte) error {
 	return nil
 }
 
-func checkResponse(cmder *Commander, res *ResponsePacket) error {
+func checkResponse(cmder *commander, res *ResponsePacket) error {
 	// check code
-	if res.Header.Code != cmder.Code && res.Header.SubCode != cmder.SubCode {
-		return errors.New("command & response mismatch")
+	if res.Header.Code != cmder.code && res.Header.SubCode != cmder.sub_code {
+		return errors.New("response-mismatch")
 	}
 
 	// check resCode
+	var err string
 	switch res.Header.ResCode {
 	case RES_CODE_OK:
 		return nil
 	case RES_CODE_ERROR:
-		return errors.New("response error")
+		err = "response-error"
 	case RES_CODE_INVALID:
-		return errors.New("response invalid")
+		err = "response-invalid"
 	default:
-		return errors.New("unknown response")
+		err = "response-unknown"
 	}
+
+	if len(res.Message) == 0 {
+		return errors.New(err)
+	}
+
+	// TODO: subtitutes BIKE_STATE to message
+
+	return fmt.Errorf("%s, %s", err, res.Message)
 }

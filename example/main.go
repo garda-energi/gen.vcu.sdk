@@ -22,14 +22,27 @@ func main() {
 		StatusFunc: statusListener,
 		ReportFunc: reportListener,
 	})
-	time.Sleep(5 * time.Second)
+	// time.Sleep(5 * time.Second)
 
 	dev354313 := api.NewCommand(354313)
-	msg, err := dev354313.GenInfo()
-	if err != nil {
-		log.Fatalf("%v, %s", err, msg)
+	{
+		info, err := dev354313.GenInfo()
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(info)
+
+		ids, err := dev354313.FingerFetch()
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(ids)
+
+		rtc := time.Now()
+		if err := dev354313.GenRtc(rtc); err != nil {
+			fmt.Println(err)
+		}
 	}
-	log.Println(msg)
 
 	util.WaitForCtrlC()
 }
