@@ -17,7 +17,7 @@ import (
 // this variable is for comparing struct type as time.Time
 var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 
-// read buffer reader than decode and set it to v.
+// Decode read buffer reader than decode and set it to v.
 // v is struct or pointer type that will contain decoded data
 func Decode(rdr *bytes.Reader, v interface{}) error {
 	var err error

@@ -15,6 +15,7 @@ type Command struct {
 	transport *transport.Transport
 }
 
+// New create new Command instance.
 func New(vin int, tport *transport.Transport) *Command {
 	return &Command{
 		vin:       vin,
@@ -22,7 +23,7 @@ func New(vin int, tport *transport.Transport) *Command {
 	}
 }
 
-// GenInfo gather device information
+// GenInfo gather device information.
 func (c *Command) GenInfo() (string, error) {
 	msg, err := c.exec("GEN_INFO", nil)
 	if err != nil {
@@ -31,44 +32,44 @@ func (c *Command) GenInfo() (string, error) {
 	return string(msg), nil
 }
 
-// GenLed set built-in led state on board
+// GenLed set built-in led state on board.
 func (c *Command) GenLed(on bool) error {
 	_, err := c.exec("GEN_LED", makeBool(on))
 	return err
 }
 
-// GenRtc set real time clock on board
+// GenRtc set real time clock on board.
 func (c *Command) GenRtc(time time.Time) error {
 	_, err := c.exec("GEN_RTC", shared.TimeToBytes(time))
 	return err
 }
 
-// GenOdo set odometer value (in km)
+// GenOdo set odometer value (in km).
 func (c *Command) GenOdo(km uint16) error {
 	payload := shared.UintToBytes(reflect.Uint16, uint64(km))
 	_, err := c.exec("GEN_ODO", payload)
 	return err
 }
 
-// GenAntiTheaf toggle anti-thief motion detector
+// GenAntiTheaf toggle anti-thief motion detector.
 func (c *Command) GenAntiTheaf() error {
 	_, err := c.exec("GEN_ANTI_THIEF", nil)
 	return err
 }
 
-// GenReportFlush flush report buffer
+// GenReportFlush flush report buffer.
 func (c *Command) GenReportFlush() error {
 	_, err := c.exec("GEN_RPT_FLUSH", nil)
 	return err
 }
 
-// GenReportBlock block reporting mode
+// GenReportBlock block reporting mode.
 func (c *Command) GenReportBlock(on bool) error {
 	_, err := c.exec("GEN_RPT_BLOCK", makeBool(on))
 	return err
 }
 
-// OvdState override bike state
+// OvdState override bike state.
 func (c *Command) OvdState(state shared.BIKE_STATE) error {
 	min, max := shared.BIKE_STATE_NORMAL, shared.BIKE_STATE_RUN
 	if state < min || state > max {
@@ -80,7 +81,7 @@ func (c *Command) OvdState(state shared.BIKE_STATE) error {
 	return err
 }
 
-// OvdReportInterval override reporting interval (in seconds)
+// OvdReportInterval override reporting interval (in seconds).
 func (c *Command) OvdReportInterval(dur time.Duration) error {
 	min, max := time.Duration(5), time.Duration(^uint16(0))
 	if dur < min*time.Second || dur > max*time.Second {
@@ -91,7 +92,7 @@ func (c *Command) OvdReportInterval(dur time.Duration) error {
 	return err
 }
 
-// OvdReportFrame override report frame type
+// OvdReportFrame override report frame type.
 func (c *Command) OvdReportFrame(frame shared.FRAME_ID) error {
 	min, max := shared.FRAME_ID_SIMPLE, shared.FRAME_ID_FULL
 	if frame < min || frame > max {
@@ -103,25 +104,25 @@ func (c *Command) OvdReportFrame(frame shared.FRAME_ID) error {
 	return err
 }
 
-// OvdRemoteSeat override remote seat keyless
+// OvdRemoteSeat override remote seat keyless.
 func (c *Command) OvdRemoteSeat() error {
 	_, err := c.exec("OVD_RMT_SEAT", nil)
 	return err
 }
 
-// OvdRemoteAlarm override remote alarm keyless
+// OvdRemoteAlarm override remote alarm keyless.
 func (c *Command) OvdRemoteAlarm() error {
 	_, err := c.exec("OVD_RMT_ALARM", nil)
 	return err
 }
 
-// AudioBeep beep the digital audio module
+// AudioBeep beep the digital audio module.
 func (c *Command) AudioBeep() error {
 	_, err := c.exec("AUDIO_BEEP", nil)
 	return err
 }
 
-// FingerFetch get all registered fingerprint ids
+// FingerFetch get all registered fingerprint ids.
 func (c *Command) FingerFetch() ([]int, error) {
 	msg, err := c.exec("FINGER_FETCH", nil)
 	if err != nil {
@@ -138,7 +139,7 @@ func (c *Command) FingerFetch() ([]int, error) {
 	return ids, nil
 }
 
-// FingerAdd add a new fingerprint id
+// FingerAdd add a new fingerprint id.
 func (c *Command) FingerAdd() (int, error) {
 	msg, err := c.exec("FINGER_ADD", nil)
 	if err != nil {
@@ -150,7 +151,7 @@ func (c *Command) FingerAdd() (int, error) {
 	return id, nil
 }
 
-// FingerDel delete a fingerprint id
+// FingerDel delete a fingerprint id.
 func (c *Command) FingerDel(id int) error {
 	min, max := 1, FINGERPRINT_MAX
 	if id < min || id > max {
@@ -161,19 +162,19 @@ func (c *Command) FingerDel(id int) error {
 	return err
 }
 
-// FingerRst reset all fingerprint ids
+// FingerRst reset all fingerprint ids.
 func (c *Command) FingerRst() error {
 	_, err := c.exec("FINGER_RST", nil)
 	return err
 }
 
-// RemotePairing turn on keyless pairing mode
+// RemotePairing turn on keyless pairing mode.
 func (c *Command) RemotePairing() error {
 	_, err := c.exec("REMOTE_PAIRING", nil)
 	return err
 }
 
-// FotaVcu upgrade VCU firmware over the air
+// FotaVcu upgrade VCU firmware over the air.
 func (c *Command) FotaVcu() (string, error) {
 	msg, err := c.exec("FOTA_VCU", nil)
 	if err != nil {
@@ -182,7 +183,7 @@ func (c *Command) FotaVcu() (string, error) {
 	return string(msg), nil
 }
 
-// FotaHmi upgrade HMI firmware over the air
+// FotaHmi upgrade HMI firmware over the air.
 func (c *Command) FotaHmi() (string, error) {
 	msg, err := c.exec("FOTA_HMI", nil)
 	if err != nil {

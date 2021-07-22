@@ -10,7 +10,7 @@ import (
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
-// encode combine command and payload to bytes packet
+// encode combine command and payload to bytes packet.
 func (c *Command) encode(cmder *commander, payload []byte) ([]byte, error) {
 	if len(payload) > PAYLOAD_LEN {
 		return nil, errors.New("payload overload")
@@ -33,7 +33,7 @@ func (c *Command) encode(cmder *commander, payload []byte) ([]byte, error) {
 	return bytes, nil
 }
 
-// makeBool convert bool to byte slice
+// makeBool convert bool to byte slice.
 func makeBool(d bool) []byte {
 	var sb strings.Builder
 	binary.Write(&sb, binary.LittleEndian, d)

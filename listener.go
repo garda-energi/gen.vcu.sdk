@@ -16,7 +16,7 @@ type Listener struct {
 	ReportFunc ReportListenerFunc
 }
 
-// StatusListener executed when got new packet on status topic
+// StatusListener executed when got new packet on status topic.
 func StatusListener(sFunc StatusListenerFunc, logging bool) mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
 		if logging {
@@ -32,7 +32,7 @@ func StatusListener(sFunc StatusListenerFunc, logging bool) mqtt.MessageHandler 
 	}
 }
 
-// ReportListener executed when got new packet on report topic
+// ReportListener executed when got new packet on report topic.
 func ReportListener(rFunc ReportListenerFunc, logging bool) mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
 		if logging {
@@ -52,7 +52,7 @@ func ReportListener(rFunc ReportListenerFunc, logging bool) mqtt.MessageHandler 
 	}
 }
 
-// parseOnline convert status payload to online status
+// parseOnline convert status payload to online status.
 func parseOnline(b []byte) bool {
 	return b[0] == '1'
 }
