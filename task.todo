@@ -25,3 +25,5 @@
 ☐ add mutex for multiple command to same VIN
 ☐ test sending command for same VIN at the same time
 ☐ test sending command for different VIN at the same time
+☐ borker TLS support ?
+☐ broker ACL ?

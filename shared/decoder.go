@@ -14,7 +14,7 @@ import (
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
-// this variable is for comparing struct type as time.Time
+// TypeOfTime is for comparing struct type as time.Time
 var TypeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 
 // Decode read buffer reader than decode and set it to v.

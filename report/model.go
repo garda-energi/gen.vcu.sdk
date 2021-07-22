@@ -14,7 +14,7 @@ type HeaderReport struct {
 }
 
 type ReportPacket struct {
-	// name type         number of bit
+	// name type         number of bytes
 	Header *HeaderReport // 0 - 15
 	Vcu    *Vcu          // 16 - 30
 	Eeprom *Eeprom       // 31 - 32
@@ -31,6 +31,7 @@ type ReportPacket struct {
 	Task   *Task         // 174 - 206
 }
 
+// String is stringer implementation, it convert ReportPacket to string.
 func (r *ReportPacket) String() string {
 	var out string
 

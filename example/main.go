@@ -76,7 +76,7 @@ func main() {
 			fmt.Println(res)
 		}
 
-		sms, err := dev354313.NetReasSms()
+		sms, err := dev354313.NetReadSms()
 		if err != nil {
 			fmt.Println(err)
 		} else {

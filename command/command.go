@@ -211,8 +211,8 @@ func (c *Command) NetSendUssd(ussd string) (string, error) {
 	return string(msg), nil
 }
 
-// NetReasSms read latest cellular SMS inbox.
-func (c *Command) NetReasSms() (string, error) {
+// NetReadSms read latest cellular SMS inbox.
+func (c *Command) NetReadSms() (string, error) {
 	msg, err := c.exec("NET_READ_SMS", nil)
 	if err != nil {
 		return "", err
