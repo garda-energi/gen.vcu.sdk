@@ -34,7 +34,7 @@ func (c *Command) GenInfo() (string, error) {
 
 // GenLed set built-in led state on board.
 func (c *Command) GenLed(on bool) error {
-	_, err := c.exec("GEN_LED", makeBool(on))
+	_, err := c.exec("GEN_LED", boolToBytes(on))
 	return err
 }
 
@@ -65,7 +65,7 @@ func (c *Command) GenReportFlush() error {
 
 // GenReportBlock block reporting mode.
 func (c *Command) GenReportBlock(on bool) error {
-	_, err := c.exec("GEN_RPT_BLOCK", makeBool(on))
+	_, err := c.exec("GEN_RPT_BLOCK", boolToBytes(on))
 	return err
 }
 

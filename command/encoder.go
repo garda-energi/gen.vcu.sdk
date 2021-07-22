@@ -33,8 +33,8 @@ func (c *Command) encode(cmder *commander, payload []byte) ([]byte, error) {
 	return bytes, nil
 }
 
-// makeBool convert bool to byte slice.
-func makeBool(d bool) []byte {
+// boolToBytes convert bool to byte slice.
+func boolToBytes(d bool) []byte {
 	var sb strings.Builder
 	binary.Write(&sb, binary.LittleEndian, d)
 	return []byte(sb.String())

@@ -39,7 +39,7 @@ func checkAck(msg []byte) error {
 // It also parse response code and message
 func checkResponse(cmder *commander, res *ResponsePacket) error {
 	// check code
-	if res.Header.Code != cmder.code && res.Header.SubCode != cmder.sub_code {
+	if res.Header.Code != cmder.code || res.Header.SubCode != cmder.sub_code {
 		return errors.New("response-mismatch")
 	}
 

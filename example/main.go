@@ -34,20 +34,25 @@ func main() {
 		},
 	})
 
-	dev354313 := api.NewCommand(354313)
 	{
-		// info, err := dev354313.GenInfo()
-		// if err != nil {
-		// 	fmt.Println(err)
-		// }
-		// fmt.Println(info)
+		dev354313 := api.NewCommand(354313)
+
+		info, err := dev354313.GenInfo()
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println(info)
+		}
 
 		// if err := dev354313.GenLed(true); err != nil {
 		// 	fmt.Println(err)
 		// }
 
-		if err := dev354313.GenRtc(time.Now()); err != nil {
+		rtc := time.Now()
+		if err := dev354313.GenRtc(rtc); err != nil {
 			fmt.Println(err)
+		} else {
+			fmt.Printf("RTC synced to %s\n", rtc)
 		}
 
 		// if err := dev354313.GenOdo(0); err != nil {
@@ -61,8 +66,9 @@ func main() {
 		// ids, err := dev354313.FingerFetch()
 		// if err != nil {
 		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println(ids)
 		// }
-		// fmt.Println(ids)
 	}
 
 	util.WaitForCtrlC()
