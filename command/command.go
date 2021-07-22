@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
@@ -34,7 +35,7 @@ func (c *Command) GenInfo() (string, error) {
 
 // GenLed set built-in led state on board.
 func (c *Command) GenLed(on bool) error {
-	_, err := c.exec("GEN_LED", makeBool(on))
+	_, err := c.exec("GEN_LED", shared.BoolToBytes(on))
 	return err
 }
 
@@ -65,7 +66,7 @@ func (c *Command) GenReportFlush() error {
 
 // GenReportBlock block reporting mode.
 func (c *Command) GenReportBlock(on bool) error {
-	_, err := c.exec("GEN_RPT_BLOCK", makeBool(on))
+	_, err := c.exec("GEN_RPT_BLOCK", shared.BoolToBytes(on))
 	return err
 }
 
@@ -186,6 +187,25 @@ func (c *Command) FotaVcu() (string, error) {
 // FotaHmi upgrade HMI firmware over the air.
 func (c *Command) FotaHmi() (string, error) {
 	msg, err := c.exec("FOTA_HMI", nil)
+	if err != nil {
+		return "", err
+	}
+	return string(msg), nil
+}
+
+// NetSendUssd send USSD to cellular network.
+// Input example: *123*10*3#
+func (c *Command) NetSendUssd(ussd string) (string, error) {
+	min, max := 3, 20
+	if len(ussd) < min || len(ussd) > max {
+		return "", errors.New("ussd length out of range")
+	}
+	if !strings.HasPrefix(ussd, "*") || !strings.HasSuffix(ussd, "#") {
+		return "", errors.New("ussd is invalid")
+	}
+
+	payload := shared.StrToBytes(ussd)
+	msg, err := c.exec("NET_SEND_USSD", payload)
 	if err != nil {
 		return "", err
 	}

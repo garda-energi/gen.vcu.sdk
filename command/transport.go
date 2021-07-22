@@ -1,7 +1,6 @@
 package command
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -76,31 +75,24 @@ func (c *Command) waitResponse(cmder *commander) ([]byte, error) {
 func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
 	responses.reset(c.vin)
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
+	checkResponseTicker := time.NewTicker(10 * time.Millisecond)
+	defer checkResponseTicker.Stop()
 
-	data := make(chan []byte, 1)
+	dataChan := make(chan []byte, 1)
 	go func() {
-		for {
-			if rx, ok := responses.get(c.vin); ok {
-				data <- rx
-				return
-			}
-
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				time.Sleep(10 * time.Millisecond)
+		for range checkResponseTicker.C {
+			if data, ok := responses.get(c.vin); ok {
+				dataChan <- data
+				break
 			}
 		}
 	}()
 
 	select {
-	case <-ctx.Done():
+	case data := <-dataChan:
+		return data, nil
+	case <-time.After(timeout):
 		return nil, errors.New("packet timeout")
-	case dat := <-data:
-		return dat, nil
 	}
 }
 
