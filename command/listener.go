@@ -5,6 +5,7 @@ import (
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
+// ResponseListener executed when got new packet on response topic.
 func ResponseListener(client mqtt.Client, msg mqtt.Message) {
 	vin := util.TopicVin(msg.Topic())
 
@@ -13,6 +14,7 @@ func ResponseListener(client mqtt.Client, msg mqtt.Message) {
 	util.LogMessage(msg)
 }
 
+// CommandListener executed when got new packet on command topic.
 func CommandListener(client mqtt.Client, msg mqtt.Message) {
 	// vin := util.TopicVin(msg.Topic())
 

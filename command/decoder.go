@@ -6,6 +6,7 @@ import (
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
+// decode extract response header and message from bytes packet.
 func (c *Command) decode(cmder *commander, packet []byte) (*ResponsePacket, error) {
 	reader := bytes.NewReader(packet)
 

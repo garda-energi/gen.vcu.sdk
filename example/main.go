@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"time"
 
 	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
 	"github.com/pudjamansyurin/gen_vcu_sdk/report"
@@ -22,7 +21,7 @@ func main() {
 		StatusFunc: func(vin int, online bool) error {
 			status := map[bool]string{
 				false: "OFFLINE",
-				true:  "ONFLINE",
+				true:  "ONLINE",
 			}[online]
 
 			fmt.Printf("%d => %s\n", vin, status)
@@ -34,21 +33,26 @@ func main() {
 		},
 	})
 
-	dev354313 := api.NewCommand(354313)
 	{
+		dev354313 := api.NewCommand(354313)
+
 		// info, err := dev354313.GenInfo()
 		// if err != nil {
 		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println(info)
 		// }
-		// fmt.Println(info)
 
 		// if err := dev354313.GenLed(true); err != nil {
 		// 	fmt.Println(err)
 		// }
 
-		if err := dev354313.GenRtc(time.Now()); err != nil {
-			fmt.Println(err)
-		}
+		// rtc := time.Now()
+		// if err := dev354313.GenRtc(rtc); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Printf("RTC synced to %s\n", rtc)
+		// }
 
 		// if err := dev354313.GenOdo(0); err != nil {
 		// 	fmt.Println(err)
@@ -61,8 +65,24 @@ func main() {
 		// ids, err := dev354313.FingerFetch()
 		// if err != nil {
 		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println(ids)
 		// }
-		// fmt.Println(ids)
+
+		res, err := dev354313.NetSendUssd("*123*10*3#")
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println(res)
+		}
+
+		sms, err := dev354313.NetReasSms()
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println(sms)
+		}
+
 	}
 
 	util.WaitForCtrlC()

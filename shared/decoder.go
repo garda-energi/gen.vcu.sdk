@@ -15,9 +15,9 @@ import (
 )
 
 // this variable is for comparing struct type as time.Time
-var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
+var TypeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 
-// read buffer reader than decode and set it to v.
+// Decode read buffer reader than decode and set it to v.
 // v is struct or pointer type that will contain decoded data
 func Decode(rdr *bytes.Reader, v interface{}) error {
 	var err error
@@ -50,10 +50,10 @@ func Decode(rdr *bytes.Reader, v interface{}) error {
 
 			case reflect.Struct:
 				// if data type is time.Time
-				if rvField.Type() == typeOfTime {
+				if rvField.Type() == TypeOfTime {
 					b := make([]byte, tag.Len)
 					binary.Read(rdr, binary.LittleEndian, &b)
-					rvField.Set(reflect.ValueOf(parseTime(b)))
+					rvField.Set(reflect.ValueOf(bytesToTime(b)))
 				} else {
 					if err = Decode(rdr, rvField.Addr().Interface()); err != nil {
 						return err
@@ -70,7 +70,7 @@ func Decode(rdr *bytes.Reader, v interface{}) error {
 			case reflect.String:
 				x := make([]byte, tag.Len)
 				binary.Read(rdr, binary.LittleEndian, &x)
-				rvField.SetString(parseString(x))
+				rvField.SetString(bytesToStr(x))
 
 			case reflect.Bool:
 				var x bool
@@ -122,7 +122,7 @@ func Decode(rdr *bytes.Reader, v interface{}) error {
 	return err
 }
 
-// read len(length) data as uint64
+// readUint read len(length) data as uint64
 func readUint(rdr io.Reader, len int) uint64 {
 	// sometimes, data recived in length less than 8
 	b := make([]byte, len)
@@ -136,41 +136,11 @@ func readUint(rdr io.Reader, len int) uint64 {
 	return binary.LittleEndian.Uint64(newb)
 }
 
-// convert bytes data to float64.
+// convertToFloat64 convert bytes data to float64.
 // data read as typedata from tag
 func convertToFloat64(typedata string, x uint64) (result float64) {
 	// declaration
-	var rv reflect.Value
-	switch typedata {
-	case "uint8":
-		var tmp uint8
-		rv = reflect.ValueOf(&tmp)
-	case "uint16":
-		var tmp uint16
-		rv = reflect.ValueOf(&tmp)
-	case "uint32":
-		var tmp uint32
-		rv = reflect.ValueOf(&tmp)
-	case "uint64", "uint":
-		var tmp uint64
-		rv = reflect.ValueOf(&tmp)
-	case "int8":
-		var tmp int8
-		rv = reflect.ValueOf(&tmp)
-	case "int16":
-		var tmp int16
-		rv = reflect.ValueOf(&tmp)
-	case "int32":
-		var tmp int32
-		rv = reflect.ValueOf(&tmp)
-	case "int64", "int":
-		var tmp int64
-		rv = reflect.ValueOf(&tmp)
-	default:
-		var tmp uint64
-		rv = reflect.ValueOf(&tmp)
-	}
-	rv = rv.Elem()
+	rv := setVarOfTypeData(typedata)
 
 	// set sesuai memori yang dideklarasi
 	switch rv.Kind() {
@@ -202,16 +172,16 @@ func convertToFloat64(typedata string, x uint64) (result float64) {
 	return result
 }
 
-// convert bytes to time
-//
+// bytesToTime convert bytes slice (little endian) to time
 // value of bytes data is :
-//   2 byte of year
-//   2 byte of month
-//   2 byte of day
-//   2 byte of hour
-//   2 byte of minute
-//   2 byte of second
-func parseTime(b []byte) time.Time {
+//   1 byte of year
+//   1 byte of month
+//   1 byte of day
+//   1 byte of hour
+//   1 byte of minute
+//   1 byte of second
+//   1 byte of weekday (ignored)
+func bytesToTime(b []byte) time.Time {
 	var data string
 	for _, v := range b[:6] {
 		data += fmt.Sprintf("%02d", uint8(v))
@@ -221,7 +191,7 @@ func parseTime(b []byte) time.Time {
 	return datetime
 }
 
-// data recived as littleendian. so need to reverse
-func parseString(b []byte) string {
+// bytesToStr convert byte slice (little endian) to string
+func bytesToStr(b []byte) string {
 	return string(util.Reverse(b))
 }

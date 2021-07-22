@@ -12,6 +12,7 @@ type commander struct {
 	timeout  time.Duration
 }
 
+// getCmder get related commander by name
 func getCmder(name string) (*commander, error) {
 	for code, sub_codes := range commands {
 		for sub_code, cmder := range sub_codes {
@@ -114,18 +115,13 @@ var commands = [][]commander{
 	{
 		commander{
 			name: "NET_SEND_USSD",
-			// desc: "Send USSD (ex: *123*10*3#)",
-			// Tipe: reflect.String,
-			//   size: 20,
-			//   Validator: (v) => Validator.NET.SEND_USSD(v),
-			//   formatCmd: (v) => AsciiToHex(v),
 		},
 		commander{
 			name: "NET_READ_SMS",
-			// desc: "Read last SMS",
 		},
 	},
 	{
+		// TODO: finish CON command handler on VCU device (pending)
 		commander{
 			name: "CON_APN",
 			// desc: "Set APN connection (ex: 3gprs;3gprs;3gprs)",
@@ -170,42 +166,20 @@ var commands = [][]commander{
 	{
 		commander{
 			name: "HBAR_DRIVE",
-			// desc: "Set handlebar drive mode",
-			// Tipe:    reflect.Uint8,
-			// Validator: func(b []byte) bool {
-			// 	return max(b, uint8(shared.MODE_DRIVE_limit)-1)
-			// },
 		},
 		commander{
 			name: "HBAR_TRIP",
-			// desc: "Set handlebar trip mode",
-			// Tipe:    reflect.Uint8,
-			// Validator: func(b []byte) bool {
-			// 	return max(b, uint8(shared.MODE_TRIP_limit)-1)
-			// },
 		},
 		commander{
 			name: "HBAR_AVG",
-			// desc: "Set handlebar average mode",
-			// Tipe:    reflect.Uint8,
-			// Validator: func(b []byte) bool {
-			// 	return max(b, uint8(shared.MODE_AVG_limit)-1)
-			// },
 		},
 		commander{
 			name: "HBAR_REVERSE",
-			// desc: "Set handlebar reverse state",
-			// Tipe:    reflect.Bool,
 		},
 	},
 	{
 		commander{
 			name: "MCU_SPEED_MAX",
-			// desc: "Set MCU max speed",
-			// Tipe:    reflect.Uint8,
-			// Validator: func(b []byte) bool {
-			// 	return max(b, shared.SPEED_MAX)
-			// },
 		},
 		commander{
 			name: "MCU_TEMPLATES",

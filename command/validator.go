@@ -6,37 +6,39 @@ import (
 	"fmt"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
-	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
-func contains(b []byte, value ...uint8) bool {
-	for _, v := range value {
-		if toUint8(b) == v {
-			return true
-		}
-	}
-	return false
-}
+// func contains(b []byte, value ...uint8) bool {
+// 	for _, v := range value {
+// 		if toUint8(b) == v {
+// 			return true
+// 		}
+// 	}
+// 	return false
+// }
 
-func max(b []byte, max uint8) bool {
-	return toUint8(b) <= max
-}
+// func max(b []byte, max uint8) bool {
+// 	return toUint8(b) <= max
+// }
 
-func between(b []byte, min, max uint8) bool {
-	return toUint8(b) >= min && toUint8(b) <= max
-}
+// func between(b []byte, min, max uint8) bool {
+// 	return toUint8(b) >= min && toUint8(b) <= max
+// }
 
+// checkAck validate incomming ack packet.
 func checkAck(msg []byte) error {
-	ack := util.Reverse(msg)
-	if !bytes.Equal(ack, []byte(shared.PREFIX_ACK)) {
+	ack := shared.StrToBytes(shared.PREFIX_ACK)
+	if !bytes.Equal(msg, ack) {
 		return errors.New("ack corrupt")
 	}
 	return nil
 }
 
+// checkResponse validate incomming response packet.
+// It also parse response code and message
 func checkResponse(cmder *commander, res *ResponsePacket) error {
 	// check code
-	if res.Header.Code != cmder.code && res.Header.SubCode != cmder.sub_code {
+	if res.Header.Code != cmder.code || res.Header.SubCode != cmder.sub_code {
 		return errors.New("response-mismatch")
 	}
 

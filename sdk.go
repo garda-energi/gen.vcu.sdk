@@ -11,6 +11,7 @@ type Sdk struct {
 	logging   bool
 }
 
+// New create new instance of Sdk for VCU (Vehicle Control Unit).
 func New(host string, port int, user, pass string, logging bool) Sdk {
 	tport := transport.New(transport.Config{
 		Host: host,
@@ -24,14 +25,18 @@ func New(host string, port int, user, pass string, logging bool) Sdk {
 	}
 }
 
+// Connect open connection to mqtt broker.
 func (s *Sdk) Connect() error {
 	return s.transport.Connect()
 }
 
+// Disconnect close connection to mqtt broker.
 func (s *Sdk) Disconnect() {
 	s.transport.Disconnect()
 }
 
+// Listen subscribe to Status & Report topic (if callback is specified).
+// It also auto subscribe to Command & Response topic
 func (s *Sdk) Listen(l Listener) error {
 	if l.StatusFunc != nil {
 		if err := s.transport.Sub(shared.TOPIC_STATUS, 1, StatusListener(l.StatusFunc, s.logging)); err != nil {
@@ -56,6 +61,7 @@ func (s *Sdk) Listen(l Listener) error {
 	return nil
 }
 
+// NewCommand create new instance of Command for specific VIN.
 func (s *Sdk) NewCommand(vin int) *cmd.Command {
 	return cmd.New(vin, s.transport)
 }

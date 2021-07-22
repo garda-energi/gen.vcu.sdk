@@ -2,7 +2,9 @@ package command
 
 import (
 	"errors"
+	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
@@ -14,6 +16,7 @@ type Command struct {
 	transport *transport.Transport
 }
 
+// New create new Command instance.
 func New(vin int, tport *transport.Transport) *Command {
 	return &Command{
 		vin:       vin,
@@ -21,7 +24,7 @@ func New(vin int, tport *transport.Transport) *Command {
 	}
 }
 
-// GenInfo Gather device information
+// GenInfo gather device information.
 func (c *Command) GenInfo() (string, error) {
 	msg, err := c.exec("GEN_INFO", nil)
 	if err != nil {
@@ -30,43 +33,44 @@ func (c *Command) GenInfo() (string, error) {
 	return string(msg), nil
 }
 
-// GenLed Set buil-in led on board
+// GenLed set built-in led state on board.
 func (c *Command) GenLed(on bool) error {
-	_, err := c.exec("GEN_LED", makeBool(on))
+	_, err := c.exec("GEN_LED", shared.BoolToBytes(on))
 	return err
 }
 
-// GenRtc Set real time clock on board
+// GenRtc set real time clock on board.
 func (c *Command) GenRtc(time time.Time) error {
-	_, err := c.exec("GEN_RTC", makeTime(time))
+	_, err := c.exec("GEN_RTC", shared.TimeToBytes(time))
 	return err
 }
 
-// GenOdo Set odometer value in km
+// GenOdo set odometer value (in km).
 func (c *Command) GenOdo(km uint16) error {
-	_, err := c.exec("GEN_ODO", makeU16(km))
+	payload := shared.UintToBytes(reflect.Uint16, uint64(km))
+	_, err := c.exec("GEN_ODO", payload)
 	return err
 }
 
-// GenAntiTheaf Toggle anti-thief motion detector
+// GenAntiTheaf toggle anti-thief motion detector.
 func (c *Command) GenAntiTheaf() error {
 	_, err := c.exec("GEN_ANTI_THIEF", nil)
 	return err
 }
 
-// GenReportFlush Flush report buffer
+// GenReportFlush flush report buffer.
 func (c *Command) GenReportFlush() error {
 	_, err := c.exec("GEN_RPT_FLUSH", nil)
 	return err
 }
 
-// GenReportBlock Block reporting mode
+// GenReportBlock block reporting mode.
 func (c *Command) GenReportBlock(on bool) error {
-	_, err := c.exec("GEN_RPT_BLOCK", makeBool(on))
+	_, err := c.exec("GEN_RPT_BLOCK", shared.BoolToBytes(on))
 	return err
 }
 
-// OvdState Override bike state
+// OvdState override bike state.
 func (c *Command) OvdState(state shared.BIKE_STATE) error {
 	min, max := shared.BIKE_STATE_NORMAL, shared.BIKE_STATE_RUN
 	if state < min || state > max {
@@ -78,22 +82,20 @@ func (c *Command) OvdState(state shared.BIKE_STATE) error {
 	return err
 }
 
-// OvdReportInterval Override reporting interval in seconds
+// OvdReportInterval override reporting interval (in seconds).
 func (c *Command) OvdReportInterval(dur time.Duration) error {
 	min, max := time.Duration(5), time.Duration(^uint16(0))
 	if dur < min*time.Second || dur > max*time.Second {
 		return errors.New("duration out of range")
 	}
-
-	payload := makeU16(uint16(dur.Seconds()))
+	payload := shared.UintToBytes(reflect.Uint16, uint64(dur.Seconds()))
 	_, err := c.exec("OVD_RPT_INTERVAL", payload)
 	return err
 }
 
-// OvdReportFrame Override report frame type
+// OvdReportFrame override report frame type.
 func (c *Command) OvdReportFrame(frame shared.FRAME_ID) error {
-	min, max := shared.FRAME_ID_SIMPLE, shared.FRAME_ID_FULL
-	if frame < min || frame > max {
+	if frame == shared.FRAME_ID_INVALID {
 		return errors.New("frame out of range")
 	}
 
@@ -102,25 +104,25 @@ func (c *Command) OvdReportFrame(frame shared.FRAME_ID) error {
 	return err
 }
 
-// OvdRemoteSeat Override remote seat fob
+// OvdRemoteSeat override remote seat keyless.
 func (c *Command) OvdRemoteSeat() error {
 	_, err := c.exec("OVD_RMT_SEAT", nil)
 	return err
 }
 
-// OvdRemoteAlarm Override remote alarm fob
+// OvdRemoteAlarm override remote alarm keyless.
 func (c *Command) OvdRemoteAlarm() error {
 	_, err := c.exec("OVD_RMT_ALARM", nil)
 	return err
 }
 
-// AudioBeep Beep the digital audio module
+// AudioBeep beep the digital audio module.
 func (c *Command) AudioBeep() error {
 	_, err := c.exec("AUDIO_BEEP", nil)
 	return err
 }
 
-// FingerFetch Get all registered fingerprint ids
+// FingerFetch get all registered fingerprint ids.
 func (c *Command) FingerFetch() ([]int, error) {
 	msg, err := c.exec("FINGER_FETCH", nil)
 	if err != nil {
@@ -137,7 +139,7 @@ func (c *Command) FingerFetch() ([]int, error) {
 	return ids, nil
 }
 
-// FingerAdd Add a new fingerprint id
+// FingerAdd add a new fingerprint id.
 func (c *Command) FingerAdd() (int, error) {
 	msg, err := c.exec("FINGER_ADD", nil)
 	if err != nil {
@@ -149,7 +151,7 @@ func (c *Command) FingerAdd() (int, error) {
 	return id, nil
 }
 
-// FingerDel Delete a fingerprint id
+// FingerDel delete a fingerprint id.
 func (c *Command) FingerDel(id int) error {
 	min, max := 1, FINGERPRINT_MAX
 	if id < min || id > max {
@@ -160,19 +162,19 @@ func (c *Command) FingerDel(id int) error {
 	return err
 }
 
-// FingerRst Reset all fingerprint ids
+// FingerRst reset all fingerprint ids.
 func (c *Command) FingerRst() error {
 	_, err := c.exec("FINGER_RST", nil)
 	return err
 }
 
-// RemotePairing Enter keyless pairing mode
+// RemotePairing turn on keyless pairing mode.
 func (c *Command) RemotePairing() error {
 	_, err := c.exec("REMOTE_PAIRING", nil)
 	return err
 }
 
-// FotaVcu Upgrade VCU firmware over the air
+// FotaVcu upgrade VCU firmware over the air.
 func (c *Command) FotaVcu() (string, error) {
 	msg, err := c.exec("FOTA_VCU", nil)
 	if err != nil {
@@ -181,7 +183,7 @@ func (c *Command) FotaVcu() (string, error) {
 	return string(msg), nil
 }
 
-// FotaHmi Upgrade HMI firmware over the air
+// FotaHmi upgrade HMI firmware over the air.
 func (c *Command) FotaHmi() (string, error) {
 	msg, err := c.exec("FOTA_HMI", nil)
 	if err != nil {
@@ -190,16 +192,91 @@ func (c *Command) FotaHmi() (string, error) {
 	return string(msg), nil
 }
 
-func (c *Command) exec(cmd_name string, payload []byte) ([]byte, error) {
-	cmder, err := getCmder(cmd_name)
+// NetSendUssd send USSD to cellular network.
+// Input example: *123*10*3#
+func (c *Command) NetSendUssd(ussd string) (string, error) {
+	min, max := 3, 20
+	if len(ussd) < min || len(ussd) > max {
+		return "", errors.New("ussd length out of range")
+	}
+	if !strings.HasPrefix(ussd, "*") || !strings.HasSuffix(ussd, "#") {
+		return "", errors.New("ussd is invalid")
+	}
+
+	payload := shared.StrToBytes(ussd)
+	msg, err := c.exec("NET_SEND_USSD", payload)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-
-	if err := c.sendCommand(cmder, payload); err != nil {
-		return nil, err
-	}
-
-	msg, err := c.waitResponse(cmder)
-	return msg, err
+	return string(msg), nil
 }
+
+// NetReasSms read latest cellular SMS inbox.
+func (c *Command) NetReasSms() (string, error) {
+	msg, err := c.exec("NET_READ_SMS", nil)
+	if err != nil {
+		return "", err
+	}
+	return string(msg), nil
+}
+
+// HbarDrive set drive mode.
+func (c *Command) HbarDrive(drive shared.MODE_DRIVE) error {
+	if drive == shared.MODE_DRIVE_limit {
+		return errors.New("drive mode out of range")
+	}
+
+	payload := []byte{byte(drive)}
+	_, err := c.exec("HBAR_DRIVE", payload)
+	return err
+}
+
+// HbarTrip set trip mode.
+func (c *Command) HbarTrip(trip shared.MODE_TRIP) error {
+	if trip == shared.MODE_TRIP_limit {
+		return errors.New("trip mode out of range")
+	}
+
+	payload := []byte{byte(trip)}
+	_, err := c.exec("HBAR_TRIP", payload)
+	return err
+}
+
+// HbarAvg set avg mode.
+func (c *Command) HbarAvg(avg shared.MODE_AVG) error {
+	if avg == shared.MODE_AVG_limit {
+		return errors.New("avg mode out of range")
+	}
+
+	payload := []byte{byte(avg)}
+	_, err := c.exec("HBAR_AVG", payload)
+	return err
+}
+
+// HbarReverse set MCU reverse state.
+func (c *Command) HbarReverse(on bool) error {
+	_, err := c.exec("HBAR_REVERSE", shared.BoolToBytes(on))
+	return err
+}
+
+// McuSpeedMax set maximum MCU speed (in kph).
+func (c *Command) McuSpeedMax(kph uint8) error {
+	payload := shared.UintToBytes(reflect.Uint8, uint64(kph))
+	_, err := c.exec("MCU_SPEED_MAX", payload)
+	return err
+}
+
+// type McuTemplate struct {
+// 	DischargeCurrent uint16
+// 	Torque           uint16
+// }
+
+// // McuTemplates set all MCU driving mode templates.
+// func (c *Command) McuTemplates(ts [shared.MODE_DRIVE_limit]McuTemplate) error {
+// 	for _, t := range ts {
+
+// 	}
+
+// 	_, err := c.exec("MCU_TEMPLATES", payload)
+// 	return err
+// }

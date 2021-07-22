@@ -17,10 +17,10 @@ type HeaderResponse struct {
 	ResCode RES_CODE `type:"uint8"`
 }
 
-type CommandPacket struct {
-	Header  *HeaderCommand
-	Payload []byte
-}
+// type CommandPacket struct {
+// 	Header  *HeaderCommand
+// 	Payload []byte
+// }
 
 type ResponsePacket struct {
 	Header  *HeaderResponse

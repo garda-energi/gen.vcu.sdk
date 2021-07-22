@@ -7,7 +7,6 @@ import (
 	"log"
 	"math"
 	"reflect"
-	"strconv"
 	"strings"
 	"time"
 
@@ -51,9 +50,9 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 			}
 
 		case reflect.Struct:
-			if rvField.Type() == typeOfTime {
+			if rvField.Type() == TypeOfTime {
 				t := rvField.Interface().(time.Time)
-				b := timeToBytes(t)
+				b := TimeToBytes(t)
 				buf.Write(b)
 			} else {
 				b, err := Encode(rvField.Addr().Interface())
@@ -74,25 +73,22 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 
 		case reflect.String:
 			s := rvField.String()
-			b := util.Reverse([]byte(s))
+			b := StrToBytes(s)
 			buf.Write(b)
 
 		case reflect.Bool:
 			x := rvField.Bool()
-			var b uint8 = 0
-			if x {
-				b = 1
-			}
-			buf.Write([]byte{b})
+			b := BoolToBytes(x)
+			buf.Write(b)
 
 		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
 			n := rvField.Uint()
-			b := uintToBytes(rk, n)[:tag.Len]
+			b := UintToBytes(rk, n)[:tag.Len]
 			buf.Write(b)
 
 		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 			n := rvField.Int()
-			b := uintToBytes(rk, uint64(n))[:tag.Len]
+			b := UintToBytes(rk, uint64(n))[:tag.Len]
 			buf.Write(b)
 
 		case reflect.Float32, reflect.Float64:
@@ -107,10 +103,10 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 				// set sesuai biner
 				if rk == reflect.Float32 {
 					x32 := math.Float32bits(float32(n))
-					b = uintToBytes(rk, uint64(x32))[:tag.Len]
+					b = UintToBytes(rk, uint64(x32))[:tag.Len]
 				} else {
 					x64 := math.Float64bits(n)
-					b = uintToBytes(rk, x64)[:tag.Len]
+					b = UintToBytes(rk, x64)[:tag.Len]
 				}
 			}
 			buf.Write(b)
@@ -123,24 +119,8 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 	return buf.Bytes(), nil
 }
 
-func uintToBytes(rk reflect.Kind, v uint64) []byte {
-	b := make([]byte, 8)
-	binary.LittleEndian.PutUint64(b, v)
-	switch rk {
-	case reflect.Uint8, reflect.Int8:
-		return b[:1]
-	case reflect.Uint16, reflect.Int16:
-		return b[:2]
-	case reflect.Uint32, reflect.Int32, reflect.Float32:
-		return b[:4]
-	default:
-		return b[:8]
-	}
-}
-
-// convert float data to bytes
-func convertFloat64ToBytes(typedata string, v float64) []byte {
-	// declaration
+// setVarOfTypeData create variable as typedata
+func setVarOfTypeData(typedata string) reflect.Value {
 	// set tmp variable as datatype
 	var rv reflect.Value
 	switch typedata {
@@ -174,26 +154,63 @@ func convertFloat64ToBytes(typedata string, v float64) []byte {
 	}
 	rv = rv.Elem()
 
+	return rv
+}
+
+// convertFloat64ToBytes convert float data to bytes
+func convertFloat64ToBytes(typedata string, v float64) []byte {
+	// declaration
+	rv := setVarOfTypeData(typedata)
+
 	// convert to bytes
-	b := uintToBytes(rv.Kind(), uint64(v))
+	b := UintToBytes(rv.Kind(), uint64(v))
 	return b
 }
 
-// 1. set time to string as year-month-day-hour-minute-second
-// 2. split date in string by '-'
-// 3. convert to byte for each string splitted
-// 4. than return bytes
-func timeToBytes(t time.Time) []byte {
-	dateStr := t.Format("06-01-02-15-04-05")
-	datesStr := strings.Split(dateStr, "-")
-	b := make([]byte, 7)
-	for i, v := range datesStr {
-		tmp, err := strconv.ParseUint(v, 10, 8)
-		if err == nil {
-			b[i] = uint8(tmp)
-		}
+// UintToBytes convert uint category type to byte slice (little endian)
+func UintToBytes(rk reflect.Kind, v uint64) []byte {
+	b := make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, v)
+	switch rk {
+	case reflect.Uint8, reflect.Int8:
+		return b[:1]
+	case reflect.Uint16, reflect.Int16:
+		return b[:2]
+	case reflect.Uint32, reflect.Int32, reflect.Float32:
+		return b[:4]
+	default:
+		return b[:8]
 	}
-	b[6] = byte(t.Weekday())
+}
 
-	return b
+// TimeToBytes convert time to slice byte (little endian)
+func TimeToBytes(t time.Time) []byte {
+	var sb strings.Builder
+
+	sb.WriteByte(byte(t.Year() - 2000))
+	sb.WriteByte(byte(t.Month()))
+	sb.WriteByte(byte(t.Day()))
+	sb.WriteByte(byte(t.Hour()))
+	sb.WriteByte(byte(t.Minute()))
+	sb.WriteByte(byte(t.Second()))
+	sb.WriteByte(byte(t.Weekday()))
+
+	return StrToBytes(sb.String())
+}
+
+// BoolToBytes convert bool to byte slice.
+func BoolToBytes(d bool) []byte {
+	// var sb strings.Builder
+	// binary.Write(&sb, binary.LittleEndian, d)
+	// return []byte(sb.String())
+	var b uint8 = 0
+	if d {
+		b = 1
+	}
+	return []byte{b}
+}
+
+// StrToBytes convert string to byte slice (little endian)
+func StrToBytes(d string) []byte {
+	return util.Reverse([]byte(d))
 }
