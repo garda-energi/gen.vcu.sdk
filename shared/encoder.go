@@ -200,7 +200,7 @@ func convertFloat64ToBytes(typedata string, v float64) []byte {
 // 	return b
 // }
 
-// TimeToBytes convert time to slice byte (little endian)
+// TimeToBytes convert time to slice byte (little endian).
 func TimeToBytes(t time.Time) []byte {
 	var sb strings.Builder
 
