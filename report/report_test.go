@@ -71,7 +71,7 @@ func Test_report(t *testing.T) {
 
 				score := (numMatch * 100) / len(hexRes)
 
-				if score < 70 {
+				if score < 60 {
 					errString := fmt.Sprintf("not match in #%d. match (%d of %d) Score %d", notMatchIdx, numMatch, len(hexRes), score)
 					t.Errorf(errString)
 					// fmt.Println("============", notMatchIdx/2)
