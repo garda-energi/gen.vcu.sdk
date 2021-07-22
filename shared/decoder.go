@@ -140,38 +140,7 @@ func readUint(rdr io.Reader, len int) uint64 {
 // data read as typedata from tag
 func convertToFloat64(typedata string, x uint64) (result float64) {
 	// declaration
-	// is it redundant with convertFloat64ToBytes() [144-174] ?
-	var rv reflect.Value
-	switch typedata {
-	case "uint8":
-		var tmp uint8
-		rv = reflect.ValueOf(&tmp)
-	case "uint16":
-		var tmp uint16
-		rv = reflect.ValueOf(&tmp)
-	case "uint32":
-		var tmp uint32
-		rv = reflect.ValueOf(&tmp)
-	case "uint64", "uint":
-		var tmp uint64
-		rv = reflect.ValueOf(&tmp)
-	case "int8":
-		var tmp int8
-		rv = reflect.ValueOf(&tmp)
-	case "int16":
-		var tmp int16
-		rv = reflect.ValueOf(&tmp)
-	case "int32":
-		var tmp int32
-		rv = reflect.ValueOf(&tmp)
-	case "int64", "int":
-		var tmp int64
-		rv = reflect.ValueOf(&tmp)
-	default:
-		var tmp uint64
-		rv = reflect.ValueOf(&tmp)
-	}
-	rv = rv.Elem()
+	rv := setVarOfTypeData(typedata)
 
 	// set sesuai memori yang dideklarasi
 	switch rv.Kind() {

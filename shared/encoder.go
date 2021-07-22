@@ -138,9 +138,8 @@ func UintToBytes(rk reflect.Kind, v uint64) []byte {
 	}
 }
 
-// convertFloat64ToBytes convert float data to bytes
-func convertFloat64ToBytes(typedata string, v float64) []byte {
-	// declaration
+// setVarOfTypeData create variable as typedata
+func setVarOfTypeData(typedata string) reflect.Value {
 	// set tmp variable as datatype
 	var rv reflect.Value
 	switch typedata {
@@ -174,31 +173,18 @@ func convertFloat64ToBytes(typedata string, v float64) []byte {
 	}
 	rv = rv.Elem()
 
+	return rv
+}
+
+// convertFloat64ToBytes convert float data to bytes
+func convertFloat64ToBytes(typedata string, v float64) []byte {
+	// declaration
+	rv := setVarOfTypeData(typedata)
+
 	// convert to bytes
 	b := UintToBytes(rv.Kind(), uint64(v))
 	return b
 }
-
-// is it the same job with command/encoder.go -> makeTime()
-// i think makeTime() is more readable, isn't it ?
-// 1. set time to string as year-month-day-hour-minute-second
-// 2. split date in string by '-'
-// 3. convert to byte for each string splitted
-// 4. than return bytes
-// func TimeToBytes(t time.Time) []byte {
-// 	dateStr := t.Format("06-01-02-15-04-05")
-// 	datesStr := strings.Split(dateStr, "-")
-// 	b := make([]byte, 7)
-// 	for i, v := range datesStr {
-// 		tmp, err := strconv.ParseUint(v, 10, 8)
-// 		if err == nil {
-// 			b[i] = uint8(tmp)
-// 		}
-// 	}
-// 	b[6] = byte(t.Weekday())
-//
-// 	return b
-// }
 
 // TimeToBytes convert time to slice byte (little endian)
 func TimeToBytes(t time.Time) []byte {
