@@ -39,10 +39,16 @@ func Test_report(t *testing.T) {
 		tests[i].want = d
 	}
 
-	for _, tt := range tests {
+	for i, tt := range tests {
 		if tt.name == "" {
 			continue
 		}
+
+		// limit test
+		if i > 10 {
+			break
+		}
+
 		t.Run(tt.name, func(t *testing.T) {
 			// fmt.Printf("=== [%s] ===\n", tt.name)
 			rr := New(tt.args.b)
@@ -119,7 +125,7 @@ func compareVar(v1 interface{}, v2 interface{}) (score int) {
 		}
 		rv1 = rv1.Elem()
 		rv2 = rv2.Elem()
-		score = compareVar(rv1.Interface(), rv1.Interface())
+		score = compareVar(rv1.Interface(), rv2.Interface())
 
 	case reflect.Struct:
 		if rv1.Type() != rv2.Type() {
@@ -127,7 +133,7 @@ func compareVar(v1 interface{}, v2 interface{}) (score int) {
 		}
 		if rv1.Type() == shared.TypeOfTime {
 			t1 := rv1.Interface().(time.Time)
-			t2 := rv1.Interface().(time.Time)
+			t2 := rv2.Interface().(time.Time)
 			if t1.Unix() == t2.Unix() {
 				score = 100
 			}
@@ -141,8 +147,10 @@ func compareVar(v1 interface{}, v2 interface{}) (score int) {
 
 				tmpScore := compareVar(rvField1.Interface(), rvField2.Interface())
 				totalScore += tmpScore
+				// fmt.Printf("%d(%s) ", tmpScore, rvField1.Type())
 			}
 			score = (totalScore) / numFiled
+			// fmt.Printf(" = %d | avg = %d\n", totalScore, score)
 		}
 
 	case reflect.Array:

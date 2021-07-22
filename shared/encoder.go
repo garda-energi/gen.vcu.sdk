@@ -52,7 +52,7 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 		case reflect.Struct:
 			if rvField.Type() == TypeOfTime {
 				t := rvField.Interface().(time.Time)
-				b := TimeToBytes(t)
+				b := util.Reverse(TimeToBytes(t))
 				buf.Write(b)
 			} else {
 				b, err := Encode(rvField.Addr().Interface())
@@ -97,6 +97,11 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 
 			if tag.Factor != 1 {
 				n /= tag.Factor
+
+				// i don't know but it's work
+				if rk == reflect.Float32 {
+					n = float64(float32(n))
+				}
 				b = convertFloat64ToBytes(tag.Tipe, n)
 
 			} else {
