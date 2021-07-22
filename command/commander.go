@@ -115,11 +115,6 @@ var commands = [][]commander{
 	{
 		commander{
 			name: "NET_SEND_USSD",
-			// desc: "Send USSD (ex: *123*10*3#)",
-			// Tipe: reflect.String,
-			//   size: 20,
-			//   Validator: (v) => Validator.NET.SEND_USSD(v),
-			//   formatCmd: (v) => AsciiToHex(v),
 		},
 		commander{
 			name: "NET_READ_SMS",

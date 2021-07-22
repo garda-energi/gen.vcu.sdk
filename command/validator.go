@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
-	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 // func contains(b []byte, value ...uint8) bool {
@@ -28,8 +27,8 @@ import (
 
 // checkAck validate incomming ack packet.
 func checkAck(msg []byte) error {
-	ack := util.Reverse(msg)
-	if !bytes.Equal(ack, []byte(shared.PREFIX_ACK)) {
+	ack := shared.StrToBytes(shared.PREFIX_ACK)
+	if !bytes.Equal(msg, ack) {
 		return errors.New("ack corrupt")
 	}
 	return nil

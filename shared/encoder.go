@@ -73,16 +73,13 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 
 		case reflect.String:
 			s := rvField.String()
-			b := util.Reverse([]byte(s))
+			b := StrToBytes(s)
 			buf.Write(b)
 
 		case reflect.Bool:
 			x := rvField.Bool()
-			var b uint8 = 0
-			if x {
-				b = 1
-			}
-			buf.Write([]byte{b})
+			b := BoolToBytes(x)
+			buf.Write(b)
 
 		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
 			n := rvField.Uint()
@@ -120,22 +117,6 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 	}
 
 	return buf.Bytes(), nil
-}
-
-// UintToBytes convert uint category type to byte slice (little endian)
-func UintToBytes(rk reflect.Kind, v uint64) []byte {
-	b := make([]byte, 8)
-	binary.LittleEndian.PutUint64(b, v)
-	switch rk {
-	case reflect.Uint8, reflect.Int8:
-		return b[:1]
-	case reflect.Uint16, reflect.Int16:
-		return b[:2]
-	case reflect.Uint32, reflect.Int32, reflect.Float32:
-		return b[:4]
-	default:
-		return b[:8]
-	}
 }
 
 // setVarOfTypeData create variable as typedata
@@ -186,6 +167,22 @@ func convertFloat64ToBytes(typedata string, v float64) []byte {
 	return b
 }
 
+// UintToBytes convert uint category type to byte slice (little endian)
+func UintToBytes(rk reflect.Kind, v uint64) []byte {
+	b := make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, v)
+	switch rk {
+	case reflect.Uint8, reflect.Int8:
+		return b[:1]
+	case reflect.Uint16, reflect.Int16:
+		return b[:2]
+	case reflect.Uint32, reflect.Int32, reflect.Float32:
+		return b[:4]
+	default:
+		return b[:8]
+	}
+}
+
 // TimeToBytes convert time to slice byte (little endian)
 func TimeToBytes(t time.Time) []byte {
 	var sb strings.Builder
@@ -198,5 +195,22 @@ func TimeToBytes(t time.Time) []byte {
 	sb.WriteByte(byte(t.Second()))
 	sb.WriteByte(byte(t.Weekday()))
 
-	return util.Reverse([]byte(sb.String()))
+	return StrToBytes(sb.String())
+}
+
+// BoolToBytes convert bool to byte slice.
+func BoolToBytes(d bool) []byte {
+	// var sb strings.Builder
+	// binary.Write(&sb, binary.LittleEndian, d)
+	// return []byte(sb.String())
+	var b uint8 = 0
+	if d {
+		b = 1
+	}
+	return []byte{b}
+}
+
+// StrToBytes convert string to byte slice (little endian)
+func StrToBytes(d string) []byte {
+	return util.Reverse([]byte(d))
 }

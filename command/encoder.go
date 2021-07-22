@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
-	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 // encode combine command and payload to bytes packet.
@@ -29,13 +28,6 @@ func (c *Command) encode(cmder *commander, payload []byte) ([]byte, error) {
 	sb.WriteByte(byte(sb.Len()))
 	sb.WriteString(shared.PREFIX_COMMAND)
 
-	bytes := util.Reverse([]byte(sb.String()))
+	bytes := shared.StrToBytes(sb.String())
 	return bytes, nil
-}
-
-// boolToBytes convert bool to byte slice.
-func boolToBytes(d bool) []byte {
-	var sb strings.Builder
-	binary.Write(&sb, binary.LittleEndian, d)
-	return []byte(sb.String())
 }

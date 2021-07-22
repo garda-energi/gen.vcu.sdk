@@ -53,7 +53,7 @@ func Decode(rdr *bytes.Reader, v interface{}) error {
 				if rvField.Type() == typeOfTime {
 					b := make([]byte, tag.Len)
 					binary.Read(rdr, binary.LittleEndian, &b)
-					rvField.Set(reflect.ValueOf(parseTime(b)))
+					rvField.Set(reflect.ValueOf(bytesToTime(b)))
 				} else {
 					if err = Decode(rdr, rvField.Addr().Interface()); err != nil {
 						return err
@@ -70,7 +70,7 @@ func Decode(rdr *bytes.Reader, v interface{}) error {
 			case reflect.String:
 				x := make([]byte, tag.Len)
 				binary.Read(rdr, binary.LittleEndian, &x)
-				rvField.SetString(parseString(x))
+				rvField.SetString(bytesToStr(x))
 
 			case reflect.Bool:
 				var x bool
@@ -172,7 +172,7 @@ func convertToFloat64(typedata string, x uint64) (result float64) {
 	return result
 }
 
-// parseTime convert bytes slice (little endian) to time
+// bytesToTime convert bytes slice (little endian) to time
 // value of bytes data is :
 //   1 byte of year
 //   1 byte of month
@@ -181,7 +181,7 @@ func convertToFloat64(typedata string, x uint64) (result float64) {
 //   1 byte of minute
 //   1 byte of second
 //   1 byte of weekday (ignored)
-func parseTime(b []byte) time.Time {
+func bytesToTime(b []byte) time.Time {
 	var data string
 	for _, v := range b[:6] {
 		data += fmt.Sprintf("%02d", uint8(v))
@@ -191,7 +191,7 @@ func parseTime(b []byte) time.Time {
 	return datetime
 }
 
-// parseString convert byte slice (little endian) to string
-func parseString(b []byte) string {
+// bytesToStr convert byte slice (little endian) to string
+func bytesToStr(b []byte) string {
 	return string(util.Reverse(b))
 }
