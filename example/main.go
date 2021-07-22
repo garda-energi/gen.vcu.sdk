@@ -31,7 +31,6 @@ func main() {
 		},
 		ReportFunc: func(vin int, report *report.ReportPacket) error {
 			// fmt.Println(report)
-			fmt.Println(report.Header.SendDatetime)
 			return nil
 		},
 	})
@@ -46,8 +45,7 @@ func main() {
 			fmt.Println(info)
 		}
 
-		// ledOn := false
-		// if err := dev354313.GenLed(ledOn); err != nil {
+		// if err := dev354313.GenLed(false); err != nil {
 		// 	fmt.Println(err)
 		// } else {
 		// 	fmt.Printf("On-board led was turned-off")
@@ -60,7 +58,7 @@ func main() {
 		// 	fmt.Printf("RTC synced to %s\n", rtc)
 		// }
 
-		// var km uint16 = 5
+		// km := uint16(5)
 		// if err := dev354313.GenOdo(km); err != nil {
 		// 	fmt.Println(err)
 		// } else {
@@ -79,8 +77,7 @@ func main() {
 		// 	fmt.Printf("Report buffer was flushed")
 		// }
 
-		// blockReport := false
-		// if err := dev354313.GenReportBlock(blockReport); err != nil {
+		// if err := dev354313.GenReportBlock(false); err != nil {
 		// 	fmt.Println(err)
 		// } else {
 		// 	fmt.Printf("Report is unblocked")
@@ -104,7 +101,7 @@ func main() {
 		// if err := dev354313.OvdReportFrame(frame); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("Report frame type is now %s", frame)
+		// 	fmt.Printf("Report frame changed to %s", frame)
 		// }
 
 		// if err := dev354313.OvdRemoteSeat(); err != nil {
@@ -129,14 +126,14 @@ func main() {
 		// if err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Println(ids)
+		// 	fmt.Printf("Registered driverID are : %v", ids)
 		// }
 
 		// id, err := dev354313.FingerAdd()
 		// if err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("New driver registered as id = %d", id)
+		// 	fmt.Printf("New driverID registered = %d", id)
 		// }
 
 		// driverId := 1
@@ -149,7 +146,7 @@ func main() {
 		// if err := dev354313.FingerRst(); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Println("All driverID is deleted")
+		// 	fmt.Println("All driverID are deleted")
 		// }
 
 		// if err := dev354313.RemotePairing(); err != nil {
@@ -186,6 +183,39 @@ func main() {
 		// 	fmt.Println(sms)
 		// }
 
+		// driveMode := shared.MODE_DRIVE_STANDARD
+		// if err := dev354313.HbarDrive(driveMode); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Printf("Drive mode changed to %s", driveMode)
+		// }
+
+		// tripMode := shared.MODE_TRIP_ODO
+		// if err := dev354313.HbarTrip(tripMode); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Printf("Trip mode changed to %s", tripMode)
+		// }
+
+		// avgMode := shared.MODE_AVG_EFFICIENCY
+		// if err := dev354313.HbarAvg(avgMode); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Printf("Average mode changed to %s", avgMode)
+		// }
+
+		// if err := dev354313.HbarReverse(true); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("Motor now in reverse direction")
+		// }
+
+		// kph := uint8(100)
+		// if err := dev354313.McuSpeedMax(kph); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Printf("Motor speed is limited to %d kph", kph)
+		// }
 	}
 
 	util.WaitForCtrlC()
