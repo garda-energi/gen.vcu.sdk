@@ -14,20 +14,21 @@ type HeaderReport struct {
 }
 
 type ReportPacket struct {
-	Header *HeaderReport
-	Vcu    *Vcu
-	Eeprom *Eeprom
-	Gps    *Gps
-	Hbar   *Hbar
-	Net    *Net
-	Mems   *Mems
-	Remote *Remote
-	Finger *Finger
-	Audio  *Audio
-	Hmi    *Hmi
-	Bms    *Bms
-	Mcu    *Mcu
-	Task   *Task
+	// name type         number of bit
+	Header *HeaderReport // 0 - 15
+	Vcu    *Vcu          // 16 - 30
+	Eeprom *Eeprom       // 31 - 32
+	Gps    *Gps          // 33 - 48
+	Hbar   *Hbar         // 49 - 60
+	Net    *Net          // 61 - 64
+	Mems   *Mems         // 64 - 90
+	Remote *Remote       // 91 - 92
+	Finger *Finger       // 93 - 94
+	Audio  *Audio        // 95 - 98
+	Hmi    *Hmi          // 99
+	Bms    *Bms          // 100 - 130
+	Mcu    *Mcu          // 131 - 173
+	Task   *Task         // 174 - 206
 }
 
 func (r *ReportPacket) String() string {

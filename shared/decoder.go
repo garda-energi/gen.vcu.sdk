@@ -15,7 +15,7 @@ import (
 )
 
 // this variable is for comparing struct type as time.Time
-var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
+var TypeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 
 // Decode read buffer reader than decode and set it to v.
 // v is struct or pointer type that will contain decoded data
@@ -50,7 +50,7 @@ func Decode(rdr *bytes.Reader, v interface{}) error {
 
 			case reflect.Struct:
 				// if data type is time.Time
-				if rvField.Type() == typeOfTime {
+				if rvField.Type() == TypeOfTime {
 					b := make([]byte, tag.Len)
 					binary.Read(rdr, binary.LittleEndian, &b)
 					rvField.Set(reflect.ValueOf(bytesToTime(b)))
