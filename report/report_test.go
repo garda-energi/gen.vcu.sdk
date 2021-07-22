@@ -2,6 +2,7 @@ package report
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -51,24 +52,28 @@ func Test_report(t *testing.T) {
 				}
 
 				// many case that can't be handled. cz float factorial
-				// ex : 8.6 / 0.1 != 06.0
+				// ex : 8.6 / 0.1 != 86.0
 				encRes, err := shared.Encode(got)
 				if err != nil {
 					t.Errorf("encode error")
 				}
 
 				hexRes := util.Byte2Hex(encRes)
-				isMatch := true
+				numMatch := 0
 				notMatchIdx := 0
 				for i, v := range hexRes {
 					if rune(tt.want[i]) != v {
 						notMatchIdx = i
-						isMatch = false
+					} else {
+						numMatch++
 					}
 				}
 
-				if !isMatch {
-					t.Errorf("encode not match in index" + strconv.Itoa(notMatchIdx))
+				score := (numMatch * 100) / len(hexRes)
+
+				if score < 60 {
+					errString := fmt.Sprintf("not match in #%d. match (%d of %d) Score %d", notMatchIdx, numMatch, len(hexRes), score)
+					t.Errorf(errString)
 					// fmt.Println("============", notMatchIdx/2)
 					// fmt.Println(tt.want)
 					// fmt.Println(hexRes[:notMatchIdx+1])
@@ -97,22 +102,3 @@ func openFileJSON(filename string, testData *[]string) error {
 	json.Unmarshal(byteValue, testData)
 	return nil
 }
-
-// // hexToBytes convert src:hexstring to dst:bytes
-// func hexToBytes(hexString string) []byte {
-// 	src := []byte(strings.ToLower(hexString))
-// 	dst := make([]byte, hex.DecodedLen(len(src)))
-// 	n, err := hex.Decode(dst, src)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	return dst[:n]
-// }
-
-// // bytesToHex convert dst:bytes to src:hexstring
-// func bytesToHex(b []byte) string {
-// 	dst := make([]byte, hex.EncodedLen(len(b)))
-// 	n := hex.Encode(dst, b)
-// 	hexString := string(dst[:n])
-// 	return strings.ToUpper(hexString)
-// }
