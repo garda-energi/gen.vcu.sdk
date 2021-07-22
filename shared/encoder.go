@@ -50,7 +50,7 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 			}
 
 		case reflect.Struct:
-			if rvField.Type() == typeOfTime {
+			if rvField.Type() == TypeOfTime {
 				t := rvField.Interface().(time.Time)
 				b := TimeToBytes(t)
 				buf.Write(b)
