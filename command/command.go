@@ -95,8 +95,7 @@ func (c *Command) OvdReportInterval(dur time.Duration) error {
 
 // OvdReportFrame override report frame type.
 func (c *Command) OvdReportFrame(frame shared.FRAME_ID) error {
-	min, max := shared.FRAME_ID_SIMPLE, shared.FRAME_ID_FULL
-	if frame < min || frame > max {
+	if frame == shared.FRAME_ID_INVALID {
 		return errors.New("frame out of range")
 	}
 
@@ -211,3 +210,73 @@ func (c *Command) NetSendUssd(ussd string) (string, error) {
 	}
 	return string(msg), nil
 }
+
+// NetReasSms read latest cellular SMS inbox.
+func (c *Command) NetReasSms() (string, error) {
+	msg, err := c.exec("NET_READ_SMS", nil)
+	if err != nil {
+		return "", err
+	}
+	return string(msg), nil
+}
+
+// HbarDrive set drive mode.
+func (c *Command) HbarDrive(drive shared.MODE_DRIVE) error {
+	if drive == shared.MODE_DRIVE_limit {
+		return errors.New("drive mode out of range")
+	}
+
+	payload := []byte{byte(drive)}
+	_, err := c.exec("HBAR_DRIVE", payload)
+	return err
+}
+
+// HbarTrip set trip mode.
+func (c *Command) HbarTrip(trip shared.MODE_TRIP) error {
+	if trip == shared.MODE_TRIP_limit {
+		return errors.New("trip mode out of range")
+	}
+
+	payload := []byte{byte(trip)}
+	_, err := c.exec("HBAR_TRIP", payload)
+	return err
+}
+
+// HbarAvg set avg mode.
+func (c *Command) HbarAvg(avg shared.MODE_AVG) error {
+	if avg == shared.MODE_AVG_limit {
+		return errors.New("avg mode out of range")
+	}
+
+	payload := []byte{byte(avg)}
+	_, err := c.exec("HBAR_AVG", payload)
+	return err
+}
+
+// HbarReverse set MCU reverse state.
+func (c *Command) HbarReverse(on bool) error {
+	_, err := c.exec("HBAR_REVERSE", shared.BoolToBytes(on))
+	return err
+}
+
+// McuSpeedMax set maximum MCU speed (in kph).
+func (c *Command) McuSpeedMax(kph uint8) error {
+	payload := shared.UintToBytes(reflect.Uint8, uint64(kph))
+	_, err := c.exec("MCU_SPEED_MAX", payload)
+	return err
+}
+
+// type McuTemplate struct {
+// 	DischargeCurrent uint16
+// 	Torque           uint16
+// }
+
+// // McuTemplates set all MCU driving mode templates.
+// func (c *Command) McuTemplates(ts [shared.MODE_DRIVE_limit]McuTemplate) error {
+// 	for _, t := range ts {
+
+// 	}
+
+// 	_, err := c.exec("MCU_TEMPLATES", payload)
+// 	return err
+// }

@@ -75,6 +75,14 @@ func main() {
 		} else {
 			fmt.Println(res)
 		}
+
+		sms, err := dev354313.NetReasSms()
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println(sms)
+		}
+
 	}
 
 	util.WaitForCtrlC()
