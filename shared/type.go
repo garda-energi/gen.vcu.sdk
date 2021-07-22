@@ -59,6 +59,18 @@ const (
 	BIKE_STATE_limit
 )
 
+func (m BIKE_STATE) String() string {
+	return [...]string{
+		"UNKNOWN",
+		"LOST",
+		"BACKUP",
+		"NORMAL",
+		"STANDBY",
+		"READY",
+		"RUN",
+	}[m+3]
+}
+
 type MODE uint8
 
 const (
