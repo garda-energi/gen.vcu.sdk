@@ -122,7 +122,7 @@ func Decode(rdr *bytes.Reader, v interface{}) error {
 	return err
 }
 
-// read len(length) data as uint64
+// readUint read len(length) data as uint64
 func readUint(rdr io.Reader, len int) uint64 {
 	// sometimes, data recived in length less than 8
 	b := make([]byte, len)
@@ -136,10 +136,11 @@ func readUint(rdr io.Reader, len int) uint64 {
 	return binary.LittleEndian.Uint64(newb)
 }
 
-// convert bytes data to float64.
+// convertToFloat64 convert bytes data to float64.
 // data read as typedata from tag
 func convertToFloat64(typedata string, x uint64) (result float64) {
 	// declaration
+	// is it redundant with convertFloat64ToBytes() [144-174] ?
 	var rv reflect.Value
 	switch typedata {
 	case "uint8":
@@ -202,15 +203,15 @@ func convertToFloat64(typedata string, x uint64) (result float64) {
 	return result
 }
 
-// convert bytes to time
-//
+// parseTime convert bytes slice (little endian) to time
 // value of bytes data is :
-//   2 byte of year
-//   2 byte of month
-//   2 byte of day
-//   2 byte of hour
-//   2 byte of minute
-//   2 byte of second
+//   1 byte of year
+//   1 byte of month
+//   1 byte of day
+//   1 byte of hour
+//   1 byte of minute
+//   1 byte of second
+//   1 byte of weekday (ignored)
 func parseTime(b []byte) time.Time {
 	var data string
 	for _, v := range b[:6] {
@@ -221,7 +222,7 @@ func parseTime(b []byte) time.Time {
 	return datetime
 }
 
-// data recived as littleendian. so need to reverse
+// parseString convert byte slice (little endian) to string
 func parseString(b []byte) string {
 	return string(util.Reverse(b))
 }

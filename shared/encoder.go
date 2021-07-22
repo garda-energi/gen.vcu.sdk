@@ -7,7 +7,6 @@ import (
 	"log"
 	"math"
 	"reflect"
-	"strconv"
 	"strings"
 	"time"
 
@@ -53,7 +52,7 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 		case reflect.Struct:
 			if rvField.Type() == typeOfTime {
 				t := rvField.Interface().(time.Time)
-				b := timeToBytes(t)
+				b := TimeToBytes(t)
 				buf.Write(b)
 			} else {
 				b, err := Encode(rvField.Addr().Interface())
@@ -87,12 +86,12 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 
 		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
 			n := rvField.Uint()
-			b := uintToBytes(rk, n)[:tag.Len]
+			b := UintToBytes(rk, n)[:tag.Len]
 			buf.Write(b)
 
 		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 			n := rvField.Int()
-			b := uintToBytes(rk, uint64(n))[:tag.Len]
+			b := UintToBytes(rk, uint64(n))[:tag.Len]
 			buf.Write(b)
 
 		case reflect.Float32, reflect.Float64:
@@ -107,10 +106,10 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 				// set sesuai biner
 				if rk == reflect.Float32 {
 					x32 := math.Float32bits(float32(n))
-					b = uintToBytes(rk, uint64(x32))[:tag.Len]
+					b = UintToBytes(rk, uint64(x32))[:tag.Len]
 				} else {
 					x64 := math.Float64bits(n)
-					b = uintToBytes(rk, x64)[:tag.Len]
+					b = UintToBytes(rk, x64)[:tag.Len]
 				}
 			}
 			buf.Write(b)
@@ -123,7 +122,8 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 	return buf.Bytes(), nil
 }
 
-func uintToBytes(rk reflect.Kind, v uint64) []byte {
+// UintToBytes convert uint category type to byte slice (little endian)
+func UintToBytes(rk reflect.Kind, v uint64) []byte {
 	b := make([]byte, 8)
 	binary.LittleEndian.PutUint64(b, v)
 	switch rk {
@@ -138,7 +138,7 @@ func uintToBytes(rk reflect.Kind, v uint64) []byte {
 	}
 }
 
-// convert float data to bytes
+// convertFloat64ToBytes convert float data to bytes
 func convertFloat64ToBytes(typedata string, v float64) []byte {
 	// declaration
 	// set tmp variable as datatype
@@ -175,25 +175,42 @@ func convertFloat64ToBytes(typedata string, v float64) []byte {
 	rv = rv.Elem()
 
 	// convert to bytes
-	b := uintToBytes(rv.Kind(), uint64(v))
+	b := UintToBytes(rv.Kind(), uint64(v))
 	return b
 }
 
+// is it the same job with command/encoder.go -> makeTime()
+// i think makeTime() is more readable, isn't it ?
 // 1. set time to string as year-month-day-hour-minute-second
 // 2. split date in string by '-'
 // 3. convert to byte for each string splitted
 // 4. than return bytes
-func timeToBytes(t time.Time) []byte {
-	dateStr := t.Format("06-01-02-15-04-05")
-	datesStr := strings.Split(dateStr, "-")
-	b := make([]byte, 7)
-	for i, v := range datesStr {
-		tmp, err := strconv.ParseUint(v, 10, 8)
-		if err == nil {
-			b[i] = uint8(tmp)
-		}
-	}
-	b[6] = byte(t.Weekday())
+// func TimeToBytes(t time.Time) []byte {
+// 	dateStr := t.Format("06-01-02-15-04-05")
+// 	datesStr := strings.Split(dateStr, "-")
+// 	b := make([]byte, 7)
+// 	for i, v := range datesStr {
+// 		tmp, err := strconv.ParseUint(v, 10, 8)
+// 		if err == nil {
+// 			b[i] = uint8(tmp)
+// 		}
+// 	}
+// 	b[6] = byte(t.Weekday())
+//
+// 	return b
+// }
 
-	return b
+// TimeToBytes convert time to slice byte (little endian)
+func TimeToBytes(t time.Time) []byte {
+	var sb strings.Builder
+
+	sb.WriteByte(byte(t.Year() - 2000))
+	sb.WriteByte(byte(t.Month()))
+	sb.WriteByte(byte(t.Day()))
+	sb.WriteByte(byte(t.Hour()))
+	sb.WriteByte(byte(t.Minute()))
+	sb.WriteByte(byte(t.Second()))
+	sb.WriteByte(byte(t.Weekday()))
+
+	return util.Reverse([]byte(sb.String()))
 }

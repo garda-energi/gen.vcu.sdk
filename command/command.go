@@ -2,6 +2,7 @@ package command
 
 import (
 	"errors"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -38,13 +39,14 @@ func (c *Command) GenLed(on bool) error {
 
 // GenRtc Set real time clock on board
 func (c *Command) GenRtc(time time.Time) error {
-	_, err := c.exec("GEN_RTC", makeTime(time))
+	_, err := c.exec("GEN_RTC", shared.TimeToBytes(time))
 	return err
 }
 
 // GenOdo Set odometer value in km
 func (c *Command) GenOdo(km uint16) error {
-	_, err := c.exec("GEN_ODO", makeU16(km))
+	payload := shared.UintToBytes(reflect.Uint16, uint64(km))
+	_, err := c.exec("GEN_ODO", payload)
 	return err
 }
 
@@ -84,8 +86,7 @@ func (c *Command) OvdReportInterval(dur time.Duration) error {
 	if dur < min*time.Second || dur > max*time.Second {
 		return errors.New("duration out of range")
 	}
-
-	payload := makeU16(uint16(dur.Seconds()))
+	payload := shared.UintToBytes(reflect.Uint16, uint64(dur.Seconds()))
 	_, err := c.exec("OVD_RPT_INTERVAL", payload)
 	return err
 }

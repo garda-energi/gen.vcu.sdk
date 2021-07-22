@@ -9,22 +9,22 @@ import (
 	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
-func contains(b []byte, value ...uint8) bool {
-	for _, v := range value {
-		if toUint8(b) == v {
-			return true
-		}
-	}
-	return false
-}
+// func contains(b []byte, value ...uint8) bool {
+// 	for _, v := range value {
+// 		if toUint8(b) == v {
+// 			return true
+// 		}
+// 	}
+// 	return false
+// }
 
-func max(b []byte, max uint8) bool {
-	return toUint8(b) <= max
-}
+// func max(b []byte, max uint8) bool {
+// 	return toUint8(b) <= max
+// }
 
-func between(b []byte, min, max uint8) bool {
-	return toUint8(b) >= min && toUint8(b) <= max
-}
+// func between(b []byte, min, max uint8) bool {
+// 	return toUint8(b) >= min && toUint8(b) <= max
+// }
 
 func checkAck(msg []byte) error {
 	ack := util.Reverse(msg)
