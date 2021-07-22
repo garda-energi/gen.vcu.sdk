@@ -26,6 +26,7 @@ import (
 // 	return toUint8(b) >= min && toUint8(b) <= max
 // }
 
+// checkAck validate incomming ack packet
 func checkAck(msg []byte) error {
 	ack := util.Reverse(msg)
 	if !bytes.Equal(ack, []byte(shared.PREFIX_ACK)) {
@@ -34,6 +35,8 @@ func checkAck(msg []byte) error {
 	return nil
 }
 
+// checkResponse validate incomming response packet,
+// it also parse response code and message
 func checkResponse(cmder *commander, res *ResponsePacket) error {
 	// check code
 	if res.Header.Code != cmder.code && res.Header.SubCode != cmder.sub_code {

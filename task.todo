@@ -14,10 +14,12 @@
 ☐ discard duplicate reports
 ☐ use units in tags
 ☐ add unit test
-☐ add context.TODO, pass as function arguments
-☐ add documentation for each func
-☐ don't export local only components
+✘ add context.TODO, pass as function arguments @cancelled(21-07-22 08:49)
+✔ add documentation for each func @done(21-07-22 08:49)
+✔ don't export local only components @done(21-07-22 08:49)
 ☐ watch-out with goroutine race-condition 
 ☐ watch-out with goroutine leakage
 ☐ write readable code, we work as team
-☐ add mutex for multiple command to same device
+☐ add mutex for multiple command to same VIN
+☐ test sending command for same VIN at the same time
+☐ test sending command for different VIN at the same time
