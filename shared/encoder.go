@@ -187,15 +187,15 @@ func UintToBytes(rk reflect.Kind, v uint64) []byte {
 func TimeToBytes(t time.Time) []byte {
 	var sb strings.Builder
 
-	sb.WriteByte(byte(t.Year() - 2000))
-	sb.WriteByte(byte(t.Month()))
-	sb.WriteByte(byte(t.Day()))
-	sb.WriteByte(byte(t.Hour()))
-	sb.WriteByte(byte(t.Minute()))
-	sb.WriteByte(byte(t.Second()))
 	sb.WriteByte(byte(t.Weekday()))
+	sb.WriteByte(byte(t.Second()))
+	sb.WriteByte(byte(t.Minute()))
+	sb.WriteByte(byte(t.Hour()))
+	sb.WriteByte(byte(t.Day()))
+	sb.WriteByte(byte(t.Month()))
+	sb.WriteByte(byte(t.Year() - 2000))
 
-	return StrToBytes(sb.String())
+	return []byte(sb.String())
 }
 
 // BoolToBytes convert bool to byte slice.
