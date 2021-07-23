@@ -1,7 +1,10 @@
 package command
 
 import (
+	"bytes"
+	"encoding/binary"
 	"errors"
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -33,13 +36,13 @@ func (c *Command) GenInfo() (string, error) {
 	return string(msg), nil
 }
 
-// GenLed set built-in led state on board.
+// GenLed set built-in led state on device.
 func (c *Command) GenLed(on bool) error {
 	_, err := c.exec("GEN_LED", shared.BoolToBytes(on))
 	return err
 }
 
-// GenRtc set real time clock on board.
+// GenRtc set real time clock on device.
 func (c *Command) GenRtc(time time.Time) error {
 	_, err := c.exec("GEN_RTC", shared.TimeToBytes(time))
 	return err
@@ -174,7 +177,7 @@ func (c *Command) RemotePairing() error {
 	return err
 }
 
-// FotaVcu upgrade VCU firmware over the air.
+// FotaVcu upgrade VCU (Vehicle Control Unit) firmware over the air.
 func (c *Command) FotaVcu() (string, error) {
 	msg, err := c.exec("FOTA_VCU", nil)
 	if err != nil {
@@ -183,7 +186,7 @@ func (c *Command) FotaVcu() (string, error) {
 	return string(msg), nil
 }
 
-// FotaHmi upgrade HMI firmware over the air.
+// FotaHmi upgrade Dashdevice/HMI (Human Machine Interface) firmware over the air.
 func (c *Command) FotaHmi() (string, error) {
 	msg, err := c.exec("FOTA_HMI", nil)
 	if err != nil {
@@ -220,7 +223,7 @@ func (c *Command) NetReadSms() (string, error) {
 	return string(msg), nil
 }
 
-// HbarDrive set drive mode.
+// HbarDrive set handlebar drive mode.
 func (c *Command) HbarDrive(drive shared.MODE_DRIVE) error {
 	if drive == shared.MODE_DRIVE_limit {
 		return errors.New("drive mode out of range")
@@ -231,7 +234,7 @@ func (c *Command) HbarDrive(drive shared.MODE_DRIVE) error {
 	return err
 }
 
-// HbarTrip set trip mode.
+// HbarTrip set handlebar trip mode.
 func (c *Command) HbarTrip(trip shared.MODE_TRIP) error {
 	if trip == shared.MODE_TRIP_limit {
 		return errors.New("trip mode out of range")
@@ -242,10 +245,10 @@ func (c *Command) HbarTrip(trip shared.MODE_TRIP) error {
 	return err
 }
 
-// HbarAvg set avg mode.
+// HbarAvg set handlebar average mode.
 func (c *Command) HbarAvg(avg shared.MODE_AVG) error {
 	if avg == shared.MODE_AVG_limit {
-		return errors.New("avg mode out of range")
+		return errors.New("average mode out of range")
 	}
 
 	payload := []byte{byte(avg)}
@@ -253,30 +256,45 @@ func (c *Command) HbarAvg(avg shared.MODE_AVG) error {
 	return err
 }
 
-// HbarReverse set MCU reverse state.
+// HbarReverse set MCU (Motor Control Unit) reverse state.
 func (c *Command) HbarReverse(on bool) error {
 	_, err := c.exec("HBAR_REVERSE", shared.BoolToBytes(on))
 	return err
 }
 
-// McuSpeedMax set maximum MCU speed (in kph).
+// McuSpeedMax set maximum MCU (Motor Control Unit) speed (in kph).
 func (c *Command) McuSpeedMax(kph uint8) error {
 	payload := shared.UintToBytes(reflect.Uint8, uint64(kph))
 	_, err := c.exec("MCU_SPEED_MAX", payload)
 	return err
 }
 
-// type McuTemplate struct {
-// 	DischargeCurrent uint16
-// 	Torque           uint16
-// }
+type McuTemplate struct {
+	DischargeCurrent uint16
+	Torque           uint16
+}
 
-// // McuTemplates set all MCU driving mode templates.
-// func (c *Command) McuTemplates(ts [shared.MODE_DRIVE_limit]McuTemplate) error {
-// 	for _, t := range ts {
+// McuTemplates set all MCU (Motor Control Unit)  driving mode templates.
+func (c *Command) McuTemplates(ts ...McuTemplate) error {
+	if len(ts) != int(shared.MODE_DRIVE_limit) {
+		return errors.New("templates should be set for all driving mode at once")
+	}
 
-// 	}
+	var buf bytes.Buffer
+	var min, maxDisCur, maxTorque uint16 = 1, 32767, 3276
+	for i, t := range ts {
+		driveMode := shared.MODE_DRIVE(i)
+		if t.DischargeCurrent < min || t.DischargeCurrent > maxDisCur {
+			return fmt.Errorf("dischare current for %s out of range", driveMode)
+		}
+		if t.Torque < min || t.Torque > maxTorque {
+			return fmt.Errorf("torque for %s out of range", driveMode)
+		}
 
-// 	_, err := c.exec("MCU_TEMPLATES", payload)
-// 	return err
-// }
+		binary.Write(&buf, binary.LittleEndian, t.DischargeCurrent)
+		binary.Write(&buf, binary.LittleEndian, t.Torque)
+	}
+
+	_, err := c.exec("MCU_TEMPLATES", buf.Bytes())
+	return err
+}

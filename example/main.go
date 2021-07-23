@@ -8,6 +8,7 @@ import (
 
 	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
 	"github.com/pudjamansyurin/gen_vcu_sdk/report"
+	// "github.com/pudjamansyurin/gen_vcu_sdk/command"
 	// "github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
@@ -51,14 +52,14 @@ func main() {
 		// 	fmt.Printf("On-board led was turned-off")
 		// }
 
-		// rtc := time.Now()
+		// rtc := time.Now() //.Add(-1 * time.Hour)
 		// if err := dev354313.GenRtc(rtc); err != nil {
 		// 	fmt.Println(err)
 		// } else {
 		// 	fmt.Printf("RTC synced to %s\n", rtc)
 		// }
 
-		// km := uint16(5)
+		// km := uint16(61234)
 		// if err := dev354313.GenOdo(km); err != nil {
 		// 	fmt.Println(err)
 		// } else {
@@ -215,6 +216,19 @@ func main() {
 		// 	fmt.Println(err)
 		// } else {
 		// 	fmt.Printf("Motor speed is limited to %d kph", kph)
+		// }
+
+		// templates := []command.McuTemplate{
+		// 	{DischargeCurrent: 50, Torque: 10}, // economy
+		// 	{DischargeCurrent: 50, Torque: 20}, // standard
+		// 	{DischargeCurrent: 50, Torque: 25}, // sport
+		// }
+		// if err := dev354313.McuTemplates(templates...); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	for i, t := range templates {
+		// 		fmt.Printf("Motor template for %s changed to %+v\n", shared.MODE_DRIVE(i), t)
+		// 	}
 		// }
 	}
 
