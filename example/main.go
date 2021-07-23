@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
 	"github.com/pudjamansyurin/gen_vcu_sdk/report"
@@ -47,12 +48,11 @@ func main() {
 	}
 
 	// listen to commands
-	cmdVins := []int{354313}
-	if err := api.AddCmdListener(cmdVins); err != nil {
+	dev354313, err := api.NewCommand(354313)
+	if err != nil {
 		fmt.Println(err)
 	} else {
-		defer api.RemoveCmdListener(cmdVins)
-		dev354313 := api.NewCommand(354313)
+		defer dev354313.Destroy()
 
 		info, err := dev354313.GenInfo()
 		if err != nil {
@@ -61,18 +61,18 @@ func main() {
 			fmt.Println(info)
 		}
 
-		// if err := dev354313.GenLed(false); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Println("On-board led was turned-off")
-		// }
+		if err := dev354313.GenLed(false); err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println("On-board led was turned-off")
+		}
 
-		// rtc := time.Now() //.Add(-1 * time.Hour)
-		// if err := dev354313.GenRtc(rtc); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Printf("RTC synced to %s\n", rtc)
-		// }
+		rtc := time.Now()
+		if err := dev354313.GenRtc(rtc); err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Printf("RTC synced to %s\n", rtc)
+		}
 
 		// km := uint16(61234)
 		// if err := dev354313.GenOdo(km); err != nil {

@@ -71,23 +71,28 @@ func (c *Command) waitResponse(cmder *commander) ([]byte, error) {
 // waitPacket wait incomming packet to related VIN.
 // It throws error on timeout.
 func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
-	responses.reset(c.vin)
+	// responses.reset(c.vin)
 
-	checkResponseTicker := time.NewTicker(10 * time.Millisecond)
-	defer checkResponseTicker.Stop()
+	// checkResponseTicker := time.NewTicker(10 * time.Millisecond)
+	// defer checkResponseTicker.Stop()
 
-	dataChan := make(chan []byte, 1)
-	go func() {
-		for range checkResponseTicker.C {
-			if data, ok := responses.get(c.vin); ok {
-				dataChan <- data
-				break
-			}
-		}
-	}()
+	// resChan := make(chan []byte, 1)
+	// go func() {
+	// 	for range checkResponseTicker.C {
+	// 		if data, ok := responses.get(c.vin); ok {
+	// 			resChan <- data
+	// 			break
+	// 		}
+	// 	}
+	// }()
+
+	// flush channel
+	for len(c.resChan) > 0 {
+		<-c.resChan
+	}
 
 	select {
-	case data := <-dataChan:
+	case data := <-c.resChan:
 		return data, nil
 	case <-time.After(timeout):
 		return nil, errors.New("packet timeout")

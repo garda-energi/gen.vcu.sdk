@@ -16,15 +16,22 @@ import (
 
 type Command struct {
 	vin       int
+	resChan   chan []byte
 	transport *transport.Transport
 }
 
 // New create new Command instance.
-func New(vin int, tport *transport.Transport) *Command {
-	return &Command{
+func New(vin int, tport *transport.Transport) (*Command, error) {
+	cmd := &Command{
 		vin:       vin,
+		resChan:   make(chan []byte, 1),
 		transport: tport,
 	}
+
+	if err := cmd.listen(); err != nil {
+		return nil, err
+	}
+	return cmd, nil
 }
 
 // GenInfo gather device information.

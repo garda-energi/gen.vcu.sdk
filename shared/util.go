@@ -47,7 +47,6 @@ func Reverse(b []byte) []byte {
 func GetTopicVin(topic string) int {
 	s := strings.Split(topic, "/")
 	vin, _ := strconv.Atoi(s[1])
-
 	return vin
 }
 
