@@ -11,12 +11,13 @@ import (
 type StatusListenerFunc func(vin int, online bool) error
 type ReportListenerFunc func(vin int, report *report.ReportPacket) error
 
+// Listener store status & report callback function
 type Listener struct {
 	StatusFunc StatusListenerFunc
 	ReportFunc ReportListenerFunc
 }
 
-// StatusListener executed when got new packet on status topic.
+// StatusListener is executed when got new packet on status topic.
 func StatusListener(sFunc StatusListenerFunc, logging bool) mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
 		if logging {
@@ -32,7 +33,7 @@ func StatusListener(sFunc StatusListenerFunc, logging bool) mqtt.MessageHandler 
 	}
 }
 
-// ReportListener executed when got new packet on report topic.
+// ReportListener is executed when got new packet on report topic.
 func ReportListener(rFunc ReportListenerFunc, logging bool) mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
 		if logging {

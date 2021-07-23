@@ -28,7 +28,7 @@ func (c *Commander) encode(cmd *command, payload []byte) ([]byte, error) {
 	return bytes, nil
 }
 
-// decode extract response header and message from bytes packet.
+// decode extract header and message response from bytes packet.
 func (c *Commander) decode(cmd *command, packet []byte) (*ResponsePacket, error) {
 	reader := bytes.NewReader(packet)
 

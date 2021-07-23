@@ -158,6 +158,20 @@ const (
 	NET_STATE_MQTT_ON
 )
 
+func (m NET_STATE) String() string {
+	return [...]string{
+		"DOWN",
+		"READY",
+		"CONFIGURED",
+		"NETWORK_ON",
+		"GPRS_ON",
+		"PDP_ON",
+		"INTERNET_ON",
+		"SERVER_ON",
+		"MQTT_ON",
+	}[m+1]
+}
+
 type NET_IP_STATE int8
 
 const (
@@ -174,6 +188,22 @@ const (
 	NET_IP_STATE_PDP_DEACT
 )
 
+func (m NET_IP_STATE) String() string {
+	return [...]string{
+		"UNKNOWN",
+		"INITIAL",
+		"START",
+		"CONFIG",
+		"GPRSACT",
+		"STATUS",
+		"CONNECTING",
+		"CONNECT_OK",
+		"CLOSING",
+		"CLOSED",
+		"PDP_DEACT",
+	}[m+1]
+}
+
 type MCU_INV_DISCHARGE uint8
 
 const (
@@ -183,3 +213,13 @@ const (
 	MCU_INV_DISCHARGE_OCCURING
 	MCU_INV_DISCHARGE_COMPLETED
 )
+
+func (m MCU_INV_DISCHARGE) String() string {
+	return [...]string{
+		"DISABLED",
+		"ENABLED",
+		"CHECK",
+		"OCCURING",
+		"COMPLETED",
+	}[m]
+}

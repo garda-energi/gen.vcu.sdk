@@ -69,18 +69,20 @@ func (s *Sdk) AddListener(vins []int, l *Listener) error {
 	return nil
 }
 
-// RemoveListener unsubscribe status topic and report for spesific vin in range.
+// RemoveListener unsubscribe status and report topic for spesific vin in range.
 func (s *Sdk) RemoveListener(vins []int) error {
-	// topics is status topic + report topic
-	topics := append(setTopicToVins(shared.TOPIC_STATUS, vins), setTopicToVins(shared.TOPIC_REPORT, vins)...)
+	topics := append(
+		setTopicToVins(shared.TOPIC_STATUS, vins),
+		setTopicToVins(shared.TOPIC_REPORT, vins)...,
+	)
 	return s.broker.UnsubMulti(topics)
 }
 
-// VinRange will generate array of integer from min to max.
+// VinRange generate array of integer from min to max.
 //
-// If min greater than max, it will be switched
+// If min greater than max, it will be swapped.
 func VinRange(min int, max int) []int {
-	// switch them if min greater than max
+	// swap them if min greater than max
 	if max < min {
 		tmpMin := min
 		min = max
