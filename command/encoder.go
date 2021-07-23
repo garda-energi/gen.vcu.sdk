@@ -23,6 +23,7 @@ func (c *Command) encode(cmder *commander, payload []byte) ([]byte, error) {
 
 	vin32 := make([]byte, 4)
 	binary.BigEndian.PutUint32(vin32, uint32(c.vin))
+	// vin32 := shared.UintToBytes(reflect.Uint32, uint64(c.vin))
 	sb.Write(vin32)
 
 	sb.WriteByte(byte(sb.Len()))

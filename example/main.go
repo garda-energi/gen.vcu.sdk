@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
 
 	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
 	"github.com/pudjamansyurin/gen_vcu_sdk/report"
-
 	// "github.com/pudjamansyurin/gen_vcu_sdk/shared"
-	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 func main() {
@@ -218,5 +218,7 @@ func main() {
 		// }
 	}
 
-	util.WaitForCtrlC()
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt)
+	<-stop
 }
