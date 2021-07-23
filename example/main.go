@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	api := sdk.New("test.mosquitto.org", 1883, "", "", false)
+	api := sdk.New("test.mosquitto.org", 1883, "", "", true)
 
 	// connect to broker
 	if err := api.Connect(); err != nil {
@@ -52,14 +52,14 @@ func main() {
 		fmt.Println(err)
 	} else {
 		defer api.RemoveCmdListener(cmdVins)
-		// dev354313 := api.NewCommand(354313)
+		dev354313 := api.NewCommand(354313)
 
-		// info, err := dev354313.GenInfo()
-		// if err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Println(info)
-		// }
+		info, err := dev354313.GenInfo()
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println(info)
+		}
 
 		// if err := dev354313.GenLed(false); err != nil {
 		// 	fmt.Println(err)

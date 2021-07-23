@@ -64,9 +64,9 @@ func (t *Transport) SubMulti(topics []string, qos byte, handler mqtt.MessageHand
 		return token.Error()
 	}
 
-	// for _, v := range topics {
-	// 	log.Printf("[MQTT] Subscribed to: %s\n", v)
-	// }
+	for _, v := range topics {
+		log.Printf("[MQTT] Subscribed to: %s\n", v)
+	}
 	return nil
 }
 
