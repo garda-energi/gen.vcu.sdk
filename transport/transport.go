@@ -52,6 +52,31 @@ func (t *Transport) Sub(topic string, qos byte, handler mqtt.MessageHandler) err
 	return nil
 }
 
+// SubMulti subscribe to mqtt muliple topic.
+func (t *Transport) SubMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
+	topicFilters := map[string]byte{}
+	for _, v := range topics {
+		topicFilters[v] = qos
+		log.Printf("[MQTT] Subscribed to: %s\n", v)
+	}
+	token := t.client.SubscribeMultiple(topicFilters, handler)
+	if token.Wait() && token.Error() != nil {
+		return token.Error()
+	}
+
+	return nil
+}
+
+// UnsubMulti unsubscribe mqtt muliple topic.
+func (t *Transport) UnsubMulti(topics []string) error {
+	token := t.client.Unsubscribe(topics...)
+	if token.Wait() && token.Error() != nil {
+		return token.Error()
+	}
+
+	return nil
+}
+
 // Pub publish to mqtt topic.
 func (t *Transport) Pub(topic string, qos byte, retained bool, payload []byte) {
 	token := t.client.Publish(topic, qos, retained, payload)
