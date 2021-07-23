@@ -14,7 +14,7 @@ type HeaderReport struct {
 }
 
 type ReportPacket struct {
-	// name type         number of bytes
+	// name type         byte index
 	Header *HeaderReport // 0 - 15
 	Vcu    *Vcu          // 16 - 30
 	Eeprom *Eeprom       // 31 - 32

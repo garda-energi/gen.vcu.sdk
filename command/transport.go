@@ -2,8 +2,6 @@ package command
 
 import (
 	"errors"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
@@ -11,7 +9,7 @@ import (
 
 // exec execute command and return the response.
 func (c *Command) exec(cmd_name string, payload []byte) ([]byte, error) {
-	cmder, err := getCmder(cmd_name)
+	cmder, err := getCommander(cmd_name)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +31,7 @@ func (c *Command) sendCommand(cmder *commander, payload []byte) error {
 
 	// TODO: monitor outgoing command in-memory buffer
 	// OnCommand[vin] = true
-	c.transport.Pub(c.topic(shared.TOPIC_COMMAND), 1, true, packet)
+	c.broker.Pub(shared.SetTopicToVin(shared.TOPIC_COMMAND, c.vin), 1, true, packet)
 	return nil
 }
 
@@ -73,23 +71,28 @@ func (c *Command) waitResponse(cmder *commander) ([]byte, error) {
 // waitPacket wait incomming packet to related VIN.
 // It throws error on timeout.
 func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
-	responses.reset(c.vin)
+	// responses.reset(c.vin)
 
-	checkResponseTicker := time.NewTicker(10 * time.Millisecond)
-	defer checkResponseTicker.Stop()
+	// checkResponseTicker := time.NewTicker(10 * time.Millisecond)
+	// defer checkResponseTicker.Stop()
 
-	dataChan := make(chan []byte, 1)
-	go func() {
-		for range checkResponseTicker.C {
-			if data, ok := responses.get(c.vin); ok {
-				dataChan <- data
-				break
-			}
-		}
-	}()
+	// resChan := make(chan []byte, 1)
+	// go func() {
+	// 	for range checkResponseTicker.C {
+	// 		if data, ok := responses.get(c.vin); ok {
+	// 			resChan <- data
+	// 			break
+	// 		}
+	// 	}
+	// }()
+
+	// flush channel
+	for len(c.resChan) > 0 {
+		<-c.resChan
+	}
 
 	select {
-	case data := <-dataChan:
+	case data := <-c.resChan:
 		return data, nil
 	case <-time.After(timeout):
 		return nil, errors.New("packet timeout")
@@ -99,11 +102,6 @@ func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
 // flush clear command & response topic on broker.
 // It indicates that command is done or cancelled.
 func (c *Command) flush() {
-	c.transport.Pub(c.topic(shared.TOPIC_COMMAND), 1, true, nil)
-	c.transport.Pub(c.topic(shared.TOPIC_RESPONSE), 1, true, nil)
-}
-
-// topic subtitutes VIN into topic.
-func (c *Command) topic(topic_pattern string) string {
-	return strings.Replace(topic_pattern, "+", fmt.Sprint(c.vin), 1)
+	c.broker.Pub(shared.SetTopicToVin(shared.TOPIC_COMMAND, c.vin), 1, true, nil)
+	c.broker.Pub(shared.SetTopicToVin(shared.TOPIC_RESPONSE, c.vin), 1, true, nil)
 }

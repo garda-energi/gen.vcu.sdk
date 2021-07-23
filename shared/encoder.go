@@ -7,10 +7,7 @@ import (
 	"log"
 	"math"
 	"reflect"
-	"strings"
 	"time"
-
-	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 // next problem in implementation.
@@ -97,6 +94,11 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 
 			if tag.Factor != 1 {
 				n /= tag.Factor
+
+				// i don't know but it's work
+				if rk == reflect.Float32 {
+					n = float64(float32(n))
+				}
 				b = convertFloat64ToBytes(tag.Tipe, n)
 
 			} else {
@@ -183,26 +185,24 @@ func UintToBytes(rk reflect.Kind, v uint64) []byte {
 	}
 }
 
-// TimeToBytes convert time to slice byte (little endian)
+// TimeToBytes convert time to slice byte (big endian)
 func TimeToBytes(t time.Time) []byte {
-	var sb strings.Builder
+	var buf bytes.Buffer
+	ed := binary.LittleEndian
+	binary.Write(&buf, ed, byte(t.Year()-2000))
+	binary.Write(&buf, ed, byte(t.Month()))
+	binary.Write(&buf, ed, byte(t.Day()))
+	binary.Write(&buf, ed, byte(t.Hour()))
+	binary.Write(&buf, ed, byte(t.Minute()))
+	binary.Write(&buf, ed, byte(t.Second()))
+	binary.Write(&buf, ed, byte(t.Weekday()))
+	bytes := buf.Bytes()
 
-	sb.WriteByte(byte(t.Weekday()))
-	sb.WriteByte(byte(t.Second()))
-	sb.WriteByte(byte(t.Minute()))
-	sb.WriteByte(byte(t.Hour()))
-	sb.WriteByte(byte(t.Day()))
-	sb.WriteByte(byte(t.Month()))
-	sb.WriteByte(byte(t.Year() - 2000))
-
-	return []byte(sb.String())
+	return bytes
 }
 
 // BoolToBytes convert bool to byte slice.
 func BoolToBytes(d bool) []byte {
-	// var sb strings.Builder
-	// binary.Write(&sb, binary.LittleEndian, d)
-	// return []byte(sb.String())
 	var b uint8 = 0
 	if d {
 		b = 1
@@ -212,5 +212,5 @@ func BoolToBytes(d bool) []byte {
 
 // StrToBytes convert string to byte slice (little endian)
 func StrToBytes(d string) []byte {
-	return util.Reverse([]byte(d))
+	return Reverse([]byte(d))
 }

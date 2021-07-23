@@ -12,8 +12,8 @@ type commander struct {
 	timeout  time.Duration
 }
 
-// getCmder get related commander by name
-func getCmder(name string) (*commander, error) {
+// getCommander get related commander by name
+func getCommander(name string) (*commander, error) {
 	for code, sub_codes := range commands {
 		for sub_code, cmder := range sub_codes {
 			if cmder.name == name {
@@ -183,15 +183,6 @@ var commands = [][]commander{
 		},
 		commander{
 			name: "MCU_TEMPLATES",
-			// desc: "Set MCU templates (ex: 50,15;50,20;50,25)",
-			//   range: [
-			//     [1, 32767],
-			//     [1, 3276],
-			//   ],
-			//   size: 4 * config.mode.drive.length,
-			//   Tipe: "[uint16_t discur, torque][3]",
-			//   Validator: (v) => Validator.MCU.TEMPLATES(v),
-			//   formatCmd: (v) => formatter.MCU.TEMPLATES(v),
 		},
 	},
 }
