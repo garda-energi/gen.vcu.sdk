@@ -187,16 +187,6 @@ func UintToBytes(rk reflect.Kind, v uint64) []byte {
 
 // TimeToBytes convert time to slice byte (big endian)
 func TimeToBytes(t time.Time) []byte {
-	// var sb strings.Builder
-	// sb.WriteByte(t.Weekday())
-	// sb.WriteByte(byte(t.Second()))
-	// sb.WriteByte(byte(t.Minute()))
-	// sb.WriteByte(byte(t.Hour()))
-	// sb.WriteByte(byte(t.Day()))
-	// sb.WriteByte(byte(t.Month()))
-	// sb.WriteByte(byte(t.Year() - 2000))
-	// bytes := []byte(sb.String())
-
 	var buf bytes.Buffer
 	ed := binary.LittleEndian
 	binary.Write(&buf, ed, byte(t.Year()-2000))
@@ -213,9 +203,6 @@ func TimeToBytes(t time.Time) []byte {
 
 // BoolToBytes convert bool to byte slice.
 func BoolToBytes(d bool) []byte {
-	// var sb strings.Builder
-	// binary.Write(&sb, ed, d)
-	// return []byte(sb.String())
 	var b uint8 = 0
 	if d {
 		b = 1
