@@ -22,7 +22,7 @@
 ☐ watch-out with goroutine race-condition 
 ☐ watch-out with goroutine leakage
 ☐ write readable code, we work as team
-☐ add mutex for multiple command to same VIN
+✔ add mutex for multiple command to same VIN @done(21-07-23 16:19)
 ☐ test sending command for same VIN at the same time
 ☐ test sending command for different VIN at the same time
 ☐ borker TLS support ?

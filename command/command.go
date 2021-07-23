@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/broker"
@@ -18,14 +19,16 @@ type Command struct {
 	vin     int
 	resChan chan []byte
 	broker  *broker.Broker
+	mutex   *sync.Mutex
 }
 
-// New create new Command instance.
+// New create new Command instance and listen to command & response topic.
 func New(vin int, broker *broker.Broker) (*Command, error) {
 	cmd := &Command{
 		vin:     vin,
 		resChan: make(chan []byte, 1),
 		broker:  broker,
+		mutex:   &sync.Mutex{},
 	}
 
 	if err := cmd.listen(); err != nil {
