@@ -35,8 +35,8 @@ func (s *Sdk) Disconnect() {
 	s.broker.Disconnect()
 }
 
-// NewCommand create new instance of Command for specific VIN.cmdVins
-func (s *Sdk) NewCommand(vin int) (*cmd.Command, error) {
+// NewCommander create new instance of Commander for specific VIN.
+func (s *Sdk) NewCommander(vin int) (*cmd.Commander, error) {
 	return cmd.New(vin, s.broker)
 }
 

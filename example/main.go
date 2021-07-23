@@ -31,7 +31,7 @@ func main() {
 			return nil
 		},
 		ReportFunc: func(vin int, report *report.ReportPacket) error {
-			// fmt.Println(report)
+			fmt.Println(report)
 			return nil
 		},
 	}
@@ -46,13 +46,12 @@ func main() {
 	}
 
 	// listen to commands & response
-	if dev354313, err := api.NewCommand(354313); err != nil {
+	if dev354313, err := api.NewCommander(354313); err != nil {
 		fmt.Println(err)
 	} else {
 		defer dev354313.Destroy()
 
-		info, err := dev354313.GenInfo()
-		if err != nil {
+		if info, err := dev354313.GenInfo(); err != nil {
 			fmt.Println(err)
 		} else {
 			fmt.Println(info)
@@ -71,7 +70,7 @@ func main() {
 		// 	fmt.Printf("RTC synced to %s\n", rtc)
 		// }
 
-		// km := uint16(61234)
+		// km := uint16(54321)
 		// if err := dev354313.GenOdo(km); err != nil {
 		// 	fmt.Println(err)
 		// } else {
@@ -135,18 +134,16 @@ func main() {
 		// 	fmt.Println("Beep sound has been generated")
 		// }
 
-		ids, err := dev354313.FingerFetch()
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Printf("Registered driverID are : %v\n", ids)
-		}
-
-		// id, err := dev354313.FingerAdd()
-		// if err != nil {
+		// if ids, err := dev354313.FingerFetch(); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("New driverID registered = %d\n", id)
+		// 	fmt.Printf("Registered driverID are : %v\n", ids)
+		// }
+
+		// if id, err := dev354313.FingerAdd(); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Printf("New driverID registered as %d\n", id)
 		// }
 
 		// driverId := 1
@@ -168,32 +165,28 @@ func main() {
 		// 	fmt.Println("Success pairing with new keyless/fob")
 		// }
 
-		// vcuRes, err := dev354313.FotaVcu()
-		// if err != nil {
+		// if res, err := dev354313.FotaVcu(); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("VCU fw is updgraded, %s\n", vcuRes)
+		// 	fmt.Printf("VCU firmware is updgraded, %s\n", res)
 		// }
 
-		// hmiRes, err := dev354313.FotaHmi()
-		// if err != nil {
+		// if res, err := dev354313.FotaHmi(); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("HMI fw is updgraded, %s\n", hmiRes)
+		// 	fmt.Printf("HMI firmware is updgraded, %s\n", res)
 		// }
 
-		// res, err := dev354313.NetSendUssd("*123*10*3#")
-		// if err != nil {
+		// if res, err := dev354313.NetSendUssd("*123*10*3#"); err != nil {
 		// 	fmt.Println(err)
 		// } else {
 		// 	fmt.Println(res)
 		// }
 
-		// sms, err := dev354313.NetReadSms()
-		// if err != nil {
+		// if res, err := dev354313.NetReadSms(); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Println(sms)
+		// 	fmt.Println(res)
 		// }
 
 		// driveMode := shared.MODE_DRIVE_STANDARD
@@ -231,9 +224,9 @@ func main() {
 		// }
 
 		// templates := []command.McuTemplate{
-		// 	{DischargeCurrent: 50, Torque: 10}, // economy
-		// 	{DischargeCurrent: 50, Torque: 20}, // standard
-		// 	{DischargeCurrent: 50, Torque: 25}, // sport
+		// 	{DisCur: 50, Torque: 10}, // economy
+		// 	{DisCur: 50, Torque: 20}, // standard
+		// 	{DisCur: 50, Torque: 25}, // sport
 		// }
 		// if err := dev354313.McuTemplates(templates); err != nil {
 		// 	fmt.Println(err)

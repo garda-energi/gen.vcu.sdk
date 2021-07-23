@@ -10,7 +10,7 @@ import (
 )
 
 // encode combine command and payload to bytes packet.
-func (c *Command) encode(cmder *commander, payload []byte) ([]byte, error) {
+func (c *Commander) encode(cmd *command, payload []byte) ([]byte, error) {
 	if len(payload) > PAYLOAD_LEN {
 		return nil, errors.New("payload overload")
 	}
@@ -18,8 +18,8 @@ func (c *Command) encode(cmder *commander, payload []byte) ([]byte, error) {
 	var buf bytes.Buffer
 	ed := binary.LittleEndian
 	binary.Write(&buf, ed, shared.Reverse(payload))
-	binary.Write(&buf, ed, cmder.sub_code)
-	binary.Write(&buf, ed, cmder.code)
+	binary.Write(&buf, ed, cmd.sub_code)
+	binary.Write(&buf, ed, cmd.code)
 	binary.Write(&buf, ed, shared.Reverse(shared.TimeToBytes(time.Now())))
 	binary.Write(&buf, binary.BigEndian, uint32(c.vin))
 	binary.Write(&buf, ed, byte(buf.Len()))
@@ -29,7 +29,7 @@ func (c *Command) encode(cmder *commander, payload []byte) ([]byte, error) {
 }
 
 // decode extract response header and message from bytes packet.
-func (c *Command) decode(cmder *commander, packet []byte) (*ResponsePacket, error) {
+func (c *Commander) decode(cmd *command, packet []byte) (*ResponsePacket, error) {
 	reader := bytes.NewReader(packet)
 
 	r := &ResponsePacket{

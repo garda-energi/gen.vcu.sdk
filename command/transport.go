@@ -11,26 +11,26 @@ import (
 )
 
 // exec execute command and return the response.
-func (c *Command) exec(cmd_name string, payload []byte) ([]byte, error) {
+func (c *Commander) exec(cmd_name string, payload []byte) ([]byte, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	cmder, err := getCommander(cmd_name)
+	cmd, err := getCommand(cmd_name)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := c.sendCommand(cmder, payload); err != nil {
+	if err := c.sendCommand(cmd, payload); err != nil {
 		return nil, err
 	}
 
-	msg, err := c.waitResponse(cmder)
+	msg, err := c.waitResponse(cmd)
 	return msg, err
 }
 
 // sendCommand encode and send outgoing command.
-func (c *Command) sendCommand(cmder *commander, payload []byte) error {
-	packet, err := c.encode(cmder, payload)
+func (c *Commander) sendCommand(cmd *command, payload []byte) error {
+	packet, err := c.encode(cmd, payload)
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func (c *Command) sendCommand(cmder *commander, payload []byte) error {
 }
 
 // waitResponse wait, decode and check of ACK and RESPONSE packet.
-func (c *Command) waitResponse(cmder *commander) ([]byte, error) {
+func (c *Commander) waitResponse(cmd *command) ([]byte, error) {
 	defer func() {
 		c.flush()
 		time.Sleep(1 * time.Second)
@@ -55,17 +55,17 @@ func (c *Command) waitResponse(cmder *commander) ([]byte, error) {
 		return nil, err
 	}
 
-	packet, err = c.waitPacket(cmder.timeout)
+	packet, err = c.waitPacket(cmd.timeout)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := c.decode(cmder, packet)
+	res, err := c.decode(cmd, packet)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := checkResponse(cmder, res); err != nil {
+	if err := checkResponse(cmd, res); err != nil {
 		return nil, err
 	}
 
@@ -74,7 +74,7 @@ func (c *Command) waitResponse(cmder *commander) ([]byte, error) {
 
 // waitPacket wait incomming packet to related VIN.
 // It throws error on timeout.
-func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
+func (c *Commander) waitPacket(timeout time.Duration) ([]byte, error) {
 	// flush channel
 	for len(c.resChan) > 0 {
 		<-c.resChan
@@ -90,7 +90,7 @@ func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
 
 // flush clear command & response topic on broker.
 // It indicates that command is done or cancelled.
-func (c *Command) flush() {
+func (c *Commander) flush() {
 	c.broker.Pub(shared.SetTopicToVin(shared.TOPIC_COMMAND, c.vin), 1, true, nil)
 	c.broker.Pub(shared.SetTopicToVin(shared.TOPIC_RESPONSE, c.vin), 1, true, nil)
 }
@@ -106,9 +106,9 @@ func checkAck(msg []byte) error {
 
 // checkResponse validate incomming response packet.
 // It also parse response code and message
-func checkResponse(cmder *commander, res *ResponsePacket) error {
+func checkResponse(cmd *command, res *ResponsePacket) error {
 	// check code
-	if res.Header.Code != cmder.code || res.Header.SubCode != cmder.sub_code {
+	if res.Header.Code != cmd.code || res.Header.SubCode != cmd.sub_code {
 		return errors.New("response-mismatch")
 	}
 

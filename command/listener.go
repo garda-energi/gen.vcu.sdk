@@ -6,7 +6,7 @@ import (
 )
 
 // listen subscribe to command & response topic for current VIN.
-func (c *Command) listen() error {
+func (c *Commander) listen() error {
 	cFunc := func(client mqtt.Client, msg mqtt.Message) {
 		shared.LogMessage(msg)
 		// vin := util.TopicVin(msg.Topic())
@@ -28,7 +28,7 @@ func (c *Command) listen() error {
 }
 
 // Destroy unsubscribe from command & response topic for current VIN.
-func (c *Command) Destroy() error {
+func (c *Commander) Destroy() error {
 	topics := []string{
 		shared.SetTopicToVin(shared.TOPIC_COMMAND, c.vin),
 		shared.SetTopicToVin(shared.TOPIC_RESPONSE, c.vin),
