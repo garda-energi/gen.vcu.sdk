@@ -45,9 +45,8 @@ func main() {
 		defer api.RemoveListener(reportVins)
 	}
 
-	// listen to commands
-	dev354313, err := api.NewCommand(354313)
-	if err != nil {
+	// listen to commands & response
+	if dev354313, err := api.NewCommand(354313); err != nil {
 		fmt.Println(err)
 	} else {
 		defer dev354313.Destroy()

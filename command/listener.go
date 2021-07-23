@@ -18,8 +18,6 @@ func (c *Command) listen() error {
 
 	rFunc := func(client mqtt.Client, msg mqtt.Message) {
 		shared.LogMessage(msg)
-		// vin := shared.GetTopicVin(msg.Topic())
-		// responses.set(vin, msg.Payload())
 		c.resChan <- msg.Payload()
 	}
 	topic = shared.SetTopicToVin(shared.TOPIC_RESPONSE, c.vin)

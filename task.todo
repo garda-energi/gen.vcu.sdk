@@ -15,7 +15,7 @@
 ✔ don't export local only components @done(21-07-22 08:49)
 ☐ handle error properly, dont discard with _
 ☐ validate report properly
-☐ validate response properly
+✔ validate response properly @done(21-07-23 15:44)
 ☐ discard duplicate reports
 ☐ find a way to use units in tagger
 ☐ add unit test
