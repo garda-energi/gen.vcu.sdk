@@ -15,14 +15,14 @@
 ✔ don't export local only components @done(21-07-22 08:49)
 ☐ handle error properly, dont discard with _
 ☐ validate report properly
-☐ validate response properly
+✔ validate response properly @done(21-07-23 15:44)
 ☐ discard duplicate reports
 ☐ find a way to use units in tagger
 ☐ add unit test
 ☐ watch-out with goroutine race-condition 
 ☐ watch-out with goroutine leakage
 ☐ write readable code, we work as team
-☐ add mutex for multiple command to same VIN
+✔ add mutex for multiple command to same VIN @done(21-07-23 16:19)
 ☐ test sending command for same VIN at the same time
 ☐ test sending command for different VIN at the same time
 ☐ borker TLS support ?

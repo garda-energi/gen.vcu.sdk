@@ -5,7 +5,7 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/pudjamansyurin/gen_vcu_sdk/report"
-	"github.com/pudjamansyurin/gen_vcu_sdk/util"
+	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
 type StatusListenerFunc func(vin int, online bool) error
@@ -20,10 +20,10 @@ type Listener struct {
 func StatusListener(sFunc StatusListenerFunc, logging bool) mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
 		if logging {
-			util.LogMessage(msg)
+			shared.LogMessage(msg)
 		}
 
-		vin := util.TopicVin(msg.Topic())
+		vin := shared.GetTopicVin(msg.Topic())
 		online := parseOnline(msg.Payload())
 
 		if err := sFunc(vin, online); err != nil {
@@ -36,10 +36,10 @@ func StatusListener(sFunc StatusListenerFunc, logging bool) mqtt.MessageHandler 
 func ReportListener(rFunc ReportListenerFunc, logging bool) mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
 		if logging {
-			util.LogMessage(msg)
+			shared.LogMessage(msg)
 		}
 
-		vin := util.TopicVin(msg.Topic())
+		vin := shared.GetTopicVin(msg.Topic())
 
 		result, err := report.New(msg.Payload()).Decode()
 		if err != nil {

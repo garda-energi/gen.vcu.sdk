@@ -2,21 +2,36 @@ package command
 
 import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/pudjamansyurin/gen_vcu_sdk/util"
+	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
-// ResponseListener executed when got new packet on response topic.
-func ResponseListener(client mqtt.Client, msg mqtt.Message) {
-	vin := util.TopicVin(msg.Topic())
+// listen subscribe to command & response topic for current VIN.
+func (c *Commander) listen() error {
+	cFunc := func(client mqtt.Client, msg mqtt.Message) {
+		shared.LogMessage(msg)
+		// vin := util.TopicVin(msg.Topic())
+	}
+	topic := shared.SetTopicToVin(shared.TOPIC_COMMAND, c.vin)
+	if err := c.broker.Sub(topic, 1, cFunc); err != nil {
+		return err
+	}
 
-	responses.set(vin, msg.Payload())
-
-	util.LogMessage(msg)
+	rFunc := func(client mqtt.Client, msg mqtt.Message) {
+		shared.LogMessage(msg)
+		c.resChan <- msg.Payload()
+	}
+	topic = shared.SetTopicToVin(shared.TOPIC_RESPONSE, c.vin)
+	if err := c.broker.Sub(topic, 1, rFunc); err != nil {
+		return err
+	}
+	return nil
 }
 
-// CommandListener executed when got new packet on command topic.
-func CommandListener(client mqtt.Client, msg mqtt.Message) {
-	// vin := util.TopicVin(msg.Topic())
-
-	util.LogMessage(msg)
+// Destroy unsubscribe from command & response topic for current VIN.
+func (c *Commander) Destroy() error {
+	topics := []string{
+		shared.SetTopicToVin(shared.TOPIC_COMMAND, c.vin),
+		shared.SetTopicToVin(shared.TOPIC_RESPONSE, c.vin),
+	}
+	return c.broker.UnsubMulti(topics)
 }

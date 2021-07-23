@@ -1,6 +1,7 @@
 package command
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"strings"
@@ -10,35 +11,36 @@ import (
 )
 
 // exec execute command and return the response.
-func (c *Command) exec(cmd_name string, payload []byte) ([]byte, error) {
-	cmder, err := getCmder(cmd_name)
+func (c *Commander) exec(cmd_name string, payload []byte) ([]byte, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	cmd, err := getCommand(cmd_name)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := c.sendCommand(cmder, payload); err != nil {
+	if err := c.sendCommand(cmd, payload); err != nil {
 		return nil, err
 	}
 
-	msg, err := c.waitResponse(cmder)
+	msg, err := c.waitResponse(cmd)
 	return msg, err
 }
 
 // sendCommand encode and send outgoing command.
-func (c *Command) sendCommand(cmder *commander, payload []byte) error {
-	packet, err := c.encode(cmder, payload)
+func (c *Commander) sendCommand(cmd *command, payload []byte) error {
+	packet, err := c.encode(cmd, payload)
 	if err != nil {
 		return err
 	}
 
-	// TODO: monitor outgoing command in-memory buffer
-	// OnCommand[vin] = true
-	c.transport.Pub(c.topic(shared.TOPIC_COMMAND), 1, true, packet)
+	c.broker.Pub(shared.SetTopicToVin(shared.TOPIC_COMMAND, c.vin), 1, true, packet)
 	return nil
 }
 
-// waitResponse wait, decode and check of ACK and RESPONSE.
-func (c *Command) waitResponse(cmder *commander) ([]byte, error) {
+// waitResponse wait, decode and check of ACK and RESPONSE packet.
+func (c *Commander) waitResponse(cmd *command) ([]byte, error) {
 	defer func() {
 		c.flush()
 		time.Sleep(1 * time.Second)
@@ -53,17 +55,17 @@ func (c *Command) waitResponse(cmder *commander) ([]byte, error) {
 		return nil, err
 	}
 
-	packet, err = c.waitPacket(cmder.timeout)
+	packet, err = c.waitPacket(cmd.timeout)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := c.decode(cmder, packet)
+	res, err := c.decode(cmd, packet)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := checkResponse(cmder, res); err != nil {
+	if err := checkResponse(cmd, res); err != nil {
 		return nil, err
 	}
 
@@ -72,24 +74,14 @@ func (c *Command) waitResponse(cmder *commander) ([]byte, error) {
 
 // waitPacket wait incomming packet to related VIN.
 // It throws error on timeout.
-func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
-	responses.reset(c.vin)
-
-	checkResponseTicker := time.NewTicker(10 * time.Millisecond)
-	defer checkResponseTicker.Stop()
-
-	dataChan := make(chan []byte, 1)
-	go func() {
-		for range checkResponseTicker.C {
-			if data, ok := responses.get(c.vin); ok {
-				dataChan <- data
-				break
-			}
-		}
-	}()
+func (c *Commander) waitPacket(timeout time.Duration) ([]byte, error) {
+	// flush channel
+	for len(c.resChan) > 0 {
+		<-c.resChan
+	}
 
 	select {
-	case data := <-dataChan:
+	case data := <-c.resChan:
 		return data, nil
 	case <-time.After(timeout):
 		return nil, errors.New("packet timeout")
@@ -98,12 +90,47 @@ func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
 
 // flush clear command & response topic on broker.
 // It indicates that command is done or cancelled.
-func (c *Command) flush() {
-	c.transport.Pub(c.topic(shared.TOPIC_COMMAND), 1, true, nil)
-	c.transport.Pub(c.topic(shared.TOPIC_RESPONSE), 1, true, nil)
+func (c *Commander) flush() {
+	c.broker.Pub(shared.SetTopicToVin(shared.TOPIC_COMMAND, c.vin), 1, true, nil)
+	c.broker.Pub(shared.SetTopicToVin(shared.TOPIC_RESPONSE, c.vin), 1, true, nil)
 }
 
-// topic subtitutes VIN into topic.
-func (c *Command) topic(topic_pattern string) string {
-	return strings.Replace(topic_pattern, "+", fmt.Sprint(c.vin), 1)
+// checkAck validate incomming ack packet.
+func checkAck(msg []byte) error {
+	ack := shared.StrToBytes(shared.PREFIX_ACK)
+	if !bytes.Equal(msg, ack) {
+		return errors.New("ack corrupt")
+	}
+	return nil
+}
+
+// checkResponse validate incomming response packet.
+// It also parse response code and message
+func checkResponse(cmd *command, res *ResponsePacket) error {
+	// check code
+	if res.Header.Code != cmd.code || res.Header.SubCode != cmd.sub_code {
+		return errors.New("response-mismatch")
+	}
+
+	// check resCode
+	resCode := &res.Header.ResCode
+	if *resCode == RES_CODE_OK {
+		return nil
+	}
+
+	// check if message is empty
+	if len(res.Message) == 0 {
+		return fmt.Errorf("%s", *resCode)
+	}
+
+	// subtitutes BIKE_STATE to message
+	str := string(res.Message)
+	for i := shared.BIKE_STATE_UNKNOWN; i < shared.BIKE_STATE_limit; i++ {
+		old := fmt.Sprintf("{%d}", i)
+		new := shared.BIKE_STATE(i).String()
+		str = strings.ReplaceAll(str, old, new)
+	}
+	res.Message = []byte(str)
+
+	return fmt.Errorf("%s, %s", *resCode, res.Message)
 }
