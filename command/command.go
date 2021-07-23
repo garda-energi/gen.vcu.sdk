@@ -20,7 +20,7 @@ type Command struct {
 	broker  *broker.Broker
 }
 
-// New create new Command instance.
+// New create new Command instance and listen to command & response topic.
 func New(vin int, broker *broker.Broker) (*Command, error) {
 	cmd := &Command{
 		vin:     vin,

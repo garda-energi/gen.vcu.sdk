@@ -135,12 +135,12 @@ func main() {
 		// 	fmt.Println("Beep sound has been generated")
 		// }
 
-		// ids, err := dev354313.FingerFetch()
-		// if err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Printf("Registered driverID are : %v\n", ids)
-		// }
+		ids, err := dev354313.FingerFetch()
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Printf("Registered driverID are : %v\n", ids)
+		}
 
 		// id, err := dev354313.FingerAdd()
 		// if err != nil {

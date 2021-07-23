@@ -5,7 +5,7 @@ import (
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
-// Listen subscribe to Command & Response topic for multiple vins.
+// listen subscribe to command & response topic for current VIN.
 func (c *Command) listen() error {
 	cFunc := func(client mqtt.Client, msg mqtt.Message) {
 		shared.LogMessage(msg)
@@ -27,7 +27,7 @@ func (c *Command) listen() error {
 	return nil
 }
 
-// Destroy unsubscribe status topic and report for spesific vin in range.
+// Destroy unsubscribe from command & response topic for current VIN.
 func (c *Command) Destroy() error {
 	topics := []string{
 		shared.SetTopicToVin(shared.TOPIC_COMMAND, c.vin),

@@ -27,3 +27,26 @@ func (c *Command) encode(cmder *commander, payload []byte) ([]byte, error) {
 	bytes := shared.Reverse(buf.Bytes())
 	return bytes, nil
 }
+
+// decode extract response header and message from bytes packet.
+func (c *Command) decode(cmder *commander, packet []byte) (*ResponsePacket, error) {
+	reader := bytes.NewReader(packet)
+
+	r := &ResponsePacket{
+		Header: &HeaderResponse{},
+	}
+
+	// header
+	if err := shared.Decode(reader, r.Header); err != nil {
+		return nil, err
+	}
+
+	// message
+	if len := reader.Len(); len > 0 {
+		msg := make([]byte, len)
+		reader.Read(msg)
+		r.Message = msg
+	}
+
+	return r, nil
+}
