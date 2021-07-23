@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"time"
 
 	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
 	"github.com/pudjamansyurin/gen_vcu_sdk/report"
@@ -19,7 +20,32 @@ func main() {
 	}
 	defer api.Disconnect()
 
-	api.Listen(sdk.Listener{
+	// api.Listen(sdk.Listener{
+	// 	StatusFunc: func(vin int, online bool) error {
+	// 		status := map[bool]string{
+	// 			false: "OFFLINE",
+	// 			true:  "ONLINE",
+	// 		}[online]
+
+	// 		fmt.Printf("%d => %s\n", vin, status)
+	// 		return nil
+	// 	},
+	// 	ReportFunc: func(vin int, report *report.ReportPacket) error {
+	// 		// fmt.Println(report)
+	// 		return nil
+	// 	},
+	// })
+
+	//
+	// listen by list
+	// api.AddListener([1, 2 ,3], .....)
+	//
+	// listen one spesific vin
+	// api.AddListener([2341], .....)
+	//
+	// listen by range
+	// api.AddListener(sdk.VinRange(min, max), .....)
+	api.AddListener(sdk.VinRange(354309, 354323), sdk.Listener{
 		StatusFunc: func(vin int, online bool) error {
 			status := map[bool]string{
 				false: "OFFLINE",
@@ -34,6 +60,14 @@ func main() {
 			return nil
 		},
 	})
+	fmt.Println("Listening")
+
+	// Try to remove listener by range
+	go func() {
+		time.Sleep(20 * time.Second)
+		api.RemoveListener(sdk.VinRange(354309, 354323))
+		fmt.Println("Listener was removed")
+	}()
 
 	{
 		dev354313 := api.NewCommand(354313)
