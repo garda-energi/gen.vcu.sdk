@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"math"
 	"reflect"
 	"time"
@@ -17,9 +16,11 @@ import (
 // TypeOfTime is for comparing struct type as time.Time
 var TypeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 
+// fix bug. in "decode func" before, It'll be error for case such as v isn't array of struct
+
 // Decode read buffer reader than decode and set it to v.
 // v is struct or pointer type that will contain decoded data
-func Decode(rdr *bytes.Reader, v interface{}) error {
+func Decode(rdr *bytes.Reader, v interface{}, tags ...Tagger) error {
 	var err error
 
 	rv := reflect.ValueOf(v)
@@ -28,95 +29,103 @@ func Decode(rdr *bytes.Reader, v interface{}) error {
 		rv = rv.Elem()
 	}
 
-	if rv.Kind() != reflect.Struct {
-		log.Fatal(rv.Kind())
-		return errors.New("type not match")
+	if !rv.IsValid() || !rv.CanSet() {
+		return nil
 	}
 
-	for i := 0; i < rv.NumField() && rdr.Len() > 0; i++ {
-		rvField := rv.Field(i)
-		rtField := rv.Type().Field(i)
+	// default tag
+	tag := Tagger{
+		Len:    1,
+		Factor: 1.0,
+		Tipe:   "uint64",
+	}
+	// if tag is pass in argument
+	if len(tags) > 0 {
+		tag = tags[0]
+	}
 
-		if rvField.IsValid() && rvField.CanSet() {
-			tag := DeTag(rtField.Tag, rvField.Kind())
+	switch rk := rv.Kind(); rk {
 
-			switch rk := rvField.Kind(); rk {
+	case reflect.Ptr:
+		rv.Set(reflect.New(rv.Type().Elem()))
+		if err = Decode(rdr, rv.Interface()); err != nil {
+			return err
+		}
 
-			case reflect.Ptr:
-				rvField.Set(reflect.New(rvField.Type().Elem()))
-				if err = Decode(rdr, rvField.Interface()); err != nil {
+	case reflect.Struct:
+		// if data type is time.Time
+		if rv.Type() == TypeOfTime {
+			b := make([]byte, tag.Len)
+			binary.Read(rdr, binary.LittleEndian, &b)
+			rv.Set(reflect.ValueOf(bytesToTime(b)))
+
+		} else {
+			for i := 0; i < rv.NumField() && rdr.Len() > 0; i++ {
+				rvField := rv.Field(i)
+				rtField := rv.Type().Field(i)
+
+				tagField := DeTag(rtField.Tag, rvField.Kind())
+				if err = Decode(rdr, rvField.Addr().Interface(), tagField); err != nil {
 					return err
 				}
-
-			case reflect.Struct:
-				// if data type is time.Time
-				if rvField.Type() == TypeOfTime {
-					b := make([]byte, tag.Len)
-					binary.Read(rdr, binary.LittleEndian, &b)
-					rvField.Set(reflect.ValueOf(bytesToTime(b)))
-				} else {
-					if err = Decode(rdr, rvField.Addr().Interface()); err != nil {
-						return err
-					}
-				}
-
-			case reflect.Array:
-				for j := 0; j < rvField.Len(); j++ {
-					if err = Decode(rdr, rvField.Index(j).Addr().Interface()); err != nil {
-						return err
-					}
-				}
-
-			case reflect.String:
-				x := make([]byte, tag.Len)
-				binary.Read(rdr, binary.LittleEndian, &x)
-				rvField.SetString(bytesToStr(x))
-
-			case reflect.Bool:
-				var x bool
-				binary.Read(rdr, binary.LittleEndian, &x)
-				rvField.SetBool(x)
-
-			case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
-				x := readUint(rdr, tag.Len)
-				if !rvField.OverflowUint(x) {
-					rvField.SetUint(x)
-				}
-
-			case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-				x := readUint(rdr, tag.Len)
-				x_int := int64(x)
-				if !rvField.OverflowInt(x_int) {
-					rvField.SetInt(x_int)
-				}
-
-			case reflect.Float32, reflect.Float64:
-				var x64 float64
-
-				x := readUint(rdr, tag.Len)
-
-				if tag.Factor != 1 {
-					x64 = convertToFloat64(tag.Tipe, x)
-					x64 *= tag.Factor
-
-				} else {
-					// set as binary
-					if rk == reflect.Float32 {
-						x32 := math.Float32frombits(uint32(x))
-						x64 = float64(x32)
-					} else {
-						x64 = math.Float64frombits(x)
-					}
-				}
-
-				if !rvField.OverflowFloat(x64) {
-					rvField.SetFloat(x64)
-				}
-
-			default:
-				return errors.New("unsupported kind: " + rv.Kind().String())
 			}
 		}
+
+	case reflect.Array:
+		for j := 0; j < rv.Len(); j++ {
+			if err = Decode(rdr, rv.Index(j).Addr().Interface()); err != nil {
+				return err
+			}
+		}
+
+	case reflect.String:
+		x := make([]byte, tag.Len)
+		binary.Read(rdr, binary.LittleEndian, &x)
+		rv.SetString(bytesToStr(x))
+
+	case reflect.Bool:
+		var x bool
+		binary.Read(rdr, binary.LittleEndian, &x)
+		rv.SetBool(x)
+
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
+		x := readUint(rdr, tag.Len)
+		if !rv.OverflowUint(x) {
+			rv.SetUint(x)
+		}
+
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+		x := readUint(rdr, tag.Len)
+		x_int := int64(x)
+		if !rv.OverflowInt(x_int) {
+			rv.SetInt(x_int)
+		}
+
+	case reflect.Float32, reflect.Float64:
+		var x64 float64
+
+		x := readUint(rdr, tag.Len)
+
+		if tag.Factor != 1 {
+			x64 = convertToFloat64(tag.Tipe, x)
+			x64 *= tag.Factor
+
+		} else {
+			// set as binary
+			if rk == reflect.Float32 {
+				x32 := math.Float32frombits(uint32(x))
+				x64 = float64(x32)
+			} else {
+				x64 = math.Float64frombits(x)
+			}
+		}
+
+		if !rv.OverflowFloat(x64) {
+			rv.SetFloat(x64)
+		}
+
+	default:
+		return errors.New("unsupported kind: " + rv.Kind().String())
 	}
 
 	return err
