@@ -72,7 +72,7 @@ func (c *Commander) waitResponse(cmd *command) ([]byte, error) {
 	return res.Message, nil
 }
 
-// waitPacket wait incomming packet to related VIN.
+// waitPacket wait incomming packet for current VIN.
 // It throws error on timeout.
 func (c *Commander) waitPacket(timeout time.Duration) ([]byte, error) {
 	// flush channel

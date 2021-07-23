@@ -22,7 +22,7 @@ type Commander struct {
 	resChan chan []byte
 }
 
-// New create new Commander instance and listen to command & response topic.
+// New create new *Commander instance and listen to command & response topic.
 func New(vin int, broker *broker.Broker) (*Commander, error) {
 	cmder := &Commander{
 		vin:     vin,
@@ -71,7 +71,7 @@ func (c *Commander) GenAntiTheaf() error {
 	return err
 }
 
-// GenReportFlush flush report buffer.
+// GenReportFlush flush pending report in device buffer.
 func (c *Commander) GenReportFlush() error {
 	_, err := c.exec("GEN_RPT_FLUSH", nil)
 	return err
@@ -95,7 +95,7 @@ func (c *Commander) OvdState(state shared.BIKE_STATE) error {
 	return err
 }
 
-// OvdReportInterval override reporting interval (in seconds).
+// OvdReportInterval override reporting interval.
 func (c *Commander) OvdReportInterval(dur time.Duration) error {
 	min, max := time.Duration(5), time.Duration(^uint16(0))
 	if dur < min*time.Second || dur > max*time.Second {
@@ -117,13 +117,13 @@ func (c *Commander) OvdReportFrame(frame shared.FRAME_ID) error {
 	return err
 }
 
-// OvdRemoteSeat override remote seat keyless.
+// OvdRemoteSeat override seat button on remote/keyless.
 func (c *Commander) OvdRemoteSeat() error {
 	_, err := c.exec("OVD_RMT_SEAT", nil)
 	return err
 }
 
-// OvdRemoteAlarm override remote alarm keyless.
+// OvdRemoteAlarm override alarm button on remote/keyless.
 func (c *Commander) OvdRemoteAlarm() error {
 	_, err := c.exec("OVD_RMT_ALARM", nil)
 	return err
@@ -196,7 +196,7 @@ func (c *Commander) FotaVcu() (string, error) {
 	return string(msg), nil
 }
 
-// FotaHmi upgrade Dashdevice/HMI (Human Machine Interface) firmware over the air.
+// FotaHmi upgrade Dashboard/HMI (Human Machine Interface) firmware over the air.
 func (c *Commander) FotaHmi() (string, error) {
 	msg, err := c.exec("FOTA_HMI", nil)
 	if err != nil {
@@ -283,7 +283,7 @@ type McuTemplate struct {
 	Torque uint16
 }
 
-// McuTemplates set all MCU (Motor Control Unit)  driving mode templates.
+// McuTemplates set all MCU (Motor Control Unit) driving mode templates.
 func (c *Commander) McuTemplates(ts []McuTemplate) error {
 	if len(ts) != int(shared.MODE_DRIVE_limit) {
 		return errors.New("templates should be set for all driving mode at once")
