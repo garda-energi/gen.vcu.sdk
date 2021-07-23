@@ -9,8 +9,6 @@ import (
 	"math"
 	"reflect"
 	"time"
-
-	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 // TypeOfTime is for comparing struct type as time.Time
@@ -202,5 +200,5 @@ func bytesToTime(b []byte) time.Time {
 
 // bytesToStr convert byte slice (little endian) to string
 func bytesToStr(b []byte) string {
-	return string(util.Reverse(b))
+	return string(Reverse(b))
 }

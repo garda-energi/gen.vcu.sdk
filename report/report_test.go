@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
-	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 func Test_report(t *testing.T) {
@@ -35,7 +34,7 @@ func Test_report(t *testing.T) {
 	tests := make([]tester, len(testData))
 	for i, d := range testData {
 		tests[i].name = "data #" + strconv.Itoa(i)
-		tests[i].args.b = util.Hex2Byte(d)
+		tests[i].args.b = shared.Hex2Byte(d)
 		tests[i].want = d
 	}
 

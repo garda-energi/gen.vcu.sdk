@@ -1,4 +1,4 @@
-package util
+package shared
 
 import (
 	"encoding/hex"
@@ -44,9 +44,14 @@ func Reverse(b []byte) []byte {
 	return nb
 }
 
-func TopicVin(topic string) int {
+func GetTopicVin(topic string) int {
 	s := strings.Split(topic, "/")
 	vin, _ := strconv.Atoi(s[1])
 
 	return vin
+}
+
+// SetTopicToVin change willcard topic to spesific topic
+func SetTopicToVin(topic string, vin int) string {
+	return strings.Replace(topic, "+", strconv.Itoa(vin), 1)
 }

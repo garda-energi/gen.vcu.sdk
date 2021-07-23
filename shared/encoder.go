@@ -8,8 +8,6 @@ import (
 	"math"
 	"reflect"
 	"time"
-
-	"github.com/pudjamansyurin/gen_vcu_sdk/util"
 )
 
 // next problem in implementation.
@@ -227,5 +225,5 @@ func BoolToBytes(d bool) []byte {
 
 // StrToBytes convert string to byte slice (little endian)
 func StrToBytes(d string) []byte {
-	return util.Reverse([]byte(d))
+	return Reverse([]byte(d))
 }

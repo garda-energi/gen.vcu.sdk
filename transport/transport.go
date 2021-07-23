@@ -2,8 +2,11 @@ package transport
 
 import (
 	"log"
+	"strconv"
+	"strings"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
 type Config struct {
@@ -52,18 +55,21 @@ func (t *Transport) Sub(topic string, qos byte, handler mqtt.MessageHandler) err
 	return nil
 }
 
-// SubMulti subscribe to mqtt muliple topic.
+// SubMulti subscribe to muliple mqtt topics.
 func (t *Transport) SubMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
 	topicFilters := map[string]byte{}
-	for _, v := range topics {
+	vins := make([]string, len(topics))
+	for i, v := range topics {
 		topicFilters[v] = qos
-		log.Printf("[MQTT] Subscribed to: %s\n", v)
+		vins[i] = strconv.Itoa(shared.GetTopicVin(v))
 	}
+
 	token := t.client.SubscribeMultiple(topicFilters, handler)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 
+	log.Printf("[MQTT] Subscribed to: %v\n", strings.Join(vins, ", "))
 	return nil
 }
 
