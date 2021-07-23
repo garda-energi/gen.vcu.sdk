@@ -9,7 +9,7 @@ import (
 
 // exec execute command and return the response.
 func (c *Command) exec(cmd_name string, payload []byte) ([]byte, error) {
-	cmder, err := getCmder(cmd_name)
+	cmder, err := getCommander(cmd_name)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (c *Command) sendCommand(cmder *commander, payload []byte) error {
 
 	// TODO: monitor outgoing command in-memory buffer
 	// OnCommand[vin] = true
-	c.transport.Pub(shared.SetTopicToVin(shared.TOPIC_COMMAND, c.vin), 1, true, packet)
+	c.broker.Pub(shared.SetTopicToVin(shared.TOPIC_COMMAND, c.vin), 1, true, packet)
 	return nil
 }
 
@@ -102,6 +102,6 @@ func (c *Command) waitPacket(timeout time.Duration) ([]byte, error) {
 // flush clear command & response topic on broker.
 // It indicates that command is done or cancelled.
 func (c *Command) flush() {
-	c.transport.Pub(shared.SetTopicToVin(shared.TOPIC_COMMAND, c.vin), 1, true, nil)
-	c.transport.Pub(shared.SetTopicToVin(shared.TOPIC_RESPONSE, c.vin), 1, true, nil)
+	c.broker.Pub(shared.SetTopicToVin(shared.TOPIC_COMMAND, c.vin), 1, true, nil)
+	c.broker.Pub(shared.SetTopicToVin(shared.TOPIC_RESPONSE, c.vin), 1, true, nil)
 }

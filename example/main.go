@@ -3,13 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
-	"time"
 
 	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
 	"github.com/pudjamansyurin/gen_vcu_sdk/report"
-
-	// "github.com/pudjamansyurin/gen_vcu_sdk/command"
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
+	// "github.com/pudjamansyurin/gen_vcu_sdk/command"
 )
 
 func main() {
@@ -61,18 +59,18 @@ func main() {
 			fmt.Println(info)
 		}
 
-		if err := dev354313.GenLed(false); err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Println("On-board led was turned-off")
-		}
+		// if err := dev354313.GenLed(false); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("On-board led was turned-off")
+		// }
 
-		rtc := time.Now()
-		if err := dev354313.GenRtc(rtc); err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Printf("RTC synced to %s\n", rtc)
-		}
+		// rtc := time.Now()
+		// if err := dev354313.GenRtc(rtc); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Printf("RTC synced to %s\n", rtc)
+		// }
 
 		// km := uint16(61234)
 		// if err := dev354313.GenOdo(km); err != nil {

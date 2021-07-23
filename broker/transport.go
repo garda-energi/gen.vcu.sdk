@@ -1,4 +1,4 @@
-package transport
+package broker
 
 import (
 	"log"
@@ -13,22 +13,22 @@ type Config struct {
 	Pass string
 }
 
-type Transport struct {
+type Broker struct {
 	config Config
 	client mqtt.Client
 }
 
-// New create instance of Transport.
-func New(config Config) *Transport {
-	return &Transport{config: config}
+// New create instance of Broker.
+func New(config Config) *Broker {
+	return &Broker{config: config}
 }
 
 // Connect open connection to mqtt broker.
-func (t *Transport) Connect() error {
-	opts := createClientOptions(t.config)
-	t.client = mqtt.NewClient(opts)
+func (b *Broker) Connect() error {
+	opts := createClientOptions(b.config)
+	b.client = mqtt.NewClient(opts)
 
-	token := t.client.Connect()
+	token := b.client.Connect()
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
@@ -37,13 +37,13 @@ func (t *Transport) Connect() error {
 }
 
 // Disconnect close connection to mqtt broker.
-func (t *Transport) Disconnect() {
-	t.client.Disconnect(100)
+func (b *Broker) Disconnect() {
+	b.client.Disconnect(100)
 }
 
 // Sub subscribe to mqtt topic.
-func (t *Transport) Sub(topic string, qos byte, handler mqtt.MessageHandler) error {
-	token := t.client.Subscribe(topic, qos, handler)
+func (b *Broker) Sub(topic string, qos byte, handler mqtt.MessageHandler) error {
+	token := b.client.Subscribe(topic, qos, handler)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
@@ -53,13 +53,13 @@ func (t *Transport) Sub(topic string, qos byte, handler mqtt.MessageHandler) err
 }
 
 // SubMulti subscribe to muliple mqtt topics.
-func (t *Transport) SubMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
+func (b *Broker) SubMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
 	topicFilters := map[string]byte{}
 	for _, v := range topics {
 		topicFilters[v] = qos
 	}
 
-	token := t.client.SubscribeMultiple(topicFilters, handler)
+	token := b.client.SubscribeMultiple(topicFilters, handler)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
@@ -71,8 +71,8 @@ func (t *Transport) SubMulti(topics []string, qos byte, handler mqtt.MessageHand
 }
 
 // UnsubMulti unsubscribe mqtt muliple topic.
-func (t *Transport) UnsubMulti(topics []string) error {
-	token := t.client.Unsubscribe(topics...)
+func (b *Broker) UnsubMulti(topics []string) error {
+	token := b.client.Unsubscribe(topics...)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
@@ -81,8 +81,8 @@ func (t *Transport) UnsubMulti(topics []string) error {
 }
 
 // Pub publish to mqtt topic.
-func (t *Transport) Pub(topic string, qos byte, retained bool, payload []byte) {
-	token := t.client.Publish(topic, qos, retained, payload)
+func (b *Broker) Pub(topic string, qos byte, retained bool, payload []byte) {
+	token := b.client.Publish(topic, qos, retained, payload)
 	token.Wait()
 
 	log.Printf("[MQTT] Published to: %s\n", topic)

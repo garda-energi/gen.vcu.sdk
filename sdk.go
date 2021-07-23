@@ -1,43 +1,43 @@
 package gen_vcu_sdk
 
 import (
+	"github.com/pudjamansyurin/gen_vcu_sdk/broker"
 	cmd "github.com/pudjamansyurin/gen_vcu_sdk/command"
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
-	"github.com/pudjamansyurin/gen_vcu_sdk/transport"
 )
 
 type Sdk struct {
-	transport *transport.Transport
-	logging   bool
+	broker  *broker.Broker
+	logging bool
 }
 
 // New create new instance of Sdk for VCU (Vehicle Control Unit).
 func New(host string, port int, user, pass string, logging bool) Sdk {
-	tport := transport.New(transport.Config{
+	broker := broker.New(broker.Config{
 		Host: host,
 		Port: port,
 		User: user,
 		Pass: pass,
 	})
 	return Sdk{
-		transport: tport,
-		logging:   logging,
+		broker:  broker,
+		logging: logging,
 	}
 }
 
 // Connect open connection to mqtt broker.
 func (s *Sdk) Connect() error {
-	return s.transport.Connect()
+	return s.broker.Connect()
 }
 
 // Disconnect close connection to mqtt broker.
 func (s *Sdk) Disconnect() {
-	s.transport.Disconnect()
+	s.broker.Disconnect()
 }
 
 // NewCommand create new instance of Command for specific VIN.cmdVins
 func (s *Sdk) NewCommand(vin int) (*cmd.Command, error) {
-	return cmd.New(vin, s.transport)
+	return cmd.New(vin, s.broker)
 }
 
 // AddListener subscribe to Status & Report topic (if callback is specified) for spesific vin in range.
@@ -55,14 +55,14 @@ func (s *Sdk) NewCommand(vin int) (*cmd.Command, error) {
 func (s *Sdk) AddListener(vins []int, l *Listener) error {
 	if l.StatusFunc != nil {
 		topic := setTopicToVins(shared.TOPIC_STATUS, vins)
-		if err := s.transport.SubMulti(topic, 1, StatusListener(l.StatusFunc, s.logging)); err != nil {
+		if err := s.broker.SubMulti(topic, 1, StatusListener(l.StatusFunc, s.logging)); err != nil {
 			return err
 		}
 	}
 
 	if l.ReportFunc != nil {
 		topic := setTopicToVins(shared.TOPIC_REPORT, vins)
-		if err := s.transport.SubMulti(topic, 1, ReportListener(l.ReportFunc, s.logging)); err != nil {
+		if err := s.broker.SubMulti(topic, 1, ReportListener(l.ReportFunc, s.logging)); err != nil {
 			return err
 		}
 	}
@@ -73,7 +73,7 @@ func (s *Sdk) AddListener(vins []int, l *Listener) error {
 func (s *Sdk) RemoveListener(vins []int) error {
 	// topics is status topic + report topic
 	topics := append(setTopicToVins(shared.TOPIC_STATUS, vins), setTopicToVins(shared.TOPIC_REPORT, vins)...)
-	return s.transport.UnsubMulti(topics)
+	return s.broker.UnsubMulti(topics)
 }
 
 // VinRange will generate array of integer from min to max.

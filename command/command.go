@@ -10,22 +10,22 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pudjamansyurin/gen_vcu_sdk/broker"
 	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
-	"github.com/pudjamansyurin/gen_vcu_sdk/transport"
 )
 
 type Command struct {
-	vin       int
-	resChan   chan []byte
-	transport *transport.Transport
+	vin     int
+	resChan chan []byte
+	broker  *broker.Broker
 }
 
 // New create new Command instance.
-func New(vin int, tport *transport.Transport) (*Command, error) {
+func New(vin int, broker *broker.Broker) (*Command, error) {
 	cmd := &Command{
-		vin:       vin,
-		resChan:   make(chan []byte, 1),
-		transport: tport,
+		vin:     vin,
+		resChan: make(chan []byte, 1),
+		broker:  broker,
 	}
 
 	if err := cmd.listen(); err != nil {

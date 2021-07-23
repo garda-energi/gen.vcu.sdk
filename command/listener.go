@@ -12,7 +12,7 @@ func (c *Command) listen() error {
 		// vin := util.TopicVin(msg.Topic())
 	}
 	topic := shared.SetTopicToVin(shared.TOPIC_COMMAND, c.vin)
-	if err := c.transport.Sub(topic, 1, cFunc); err != nil {
+	if err := c.broker.Sub(topic, 1, cFunc); err != nil {
 		return err
 	}
 
@@ -23,7 +23,7 @@ func (c *Command) listen() error {
 		c.resChan <- msg.Payload()
 	}
 	topic = shared.SetTopicToVin(shared.TOPIC_RESPONSE, c.vin)
-	if err := c.transport.Sub(topic, 1, rFunc); err != nil {
+	if err := c.broker.Sub(topic, 1, rFunc); err != nil {
 		return err
 	}
 	return nil
@@ -35,5 +35,5 @@ func (c *Command) Destroy() error {
 		shared.SetTopicToVin(shared.TOPIC_COMMAND, c.vin),
 		shared.SetTopicToVin(shared.TOPIC_RESPONSE, c.vin),
 	}
-	return c.transport.UnsubMulti(topics)
+	return c.broker.UnsubMulti(topics)
 }
