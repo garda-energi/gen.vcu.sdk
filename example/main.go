@@ -5,6 +5,7 @@ import (
 	"log"
 
 	sdk "github.com/pudjamansyurin/gen_vcu_sdk"
+	"github.com/pudjamansyurin/gen_vcu_sdk/command"
 	"github.com/pudjamansyurin/gen_vcu_sdk/report"
 
 	// "github.com/pudjamansyurin/gen_vcu_sdk/command"
@@ -12,7 +13,7 @@ import (
 )
 
 func main() {
-	api := sdk.New("test.mosquitto.org", 1883, "", "", true)
+	api := sdk.New("test.mosquitto.org", 1883, "", "", false)
 
 	if err := api.Connect(); err != nil {
 		log.Fatal(err)
@@ -20,7 +21,7 @@ func main() {
 	defer api.Disconnect()
 
 	// see api.Addlistener doc for usage
-	err := api.AddListener(sdk.VinRange(354309, 354323), sdk.Listener{
+	if err := api.AddListener(sdk.VinRange(354309, 354323), sdk.Listener{
 		StatusFunc: func(vin int, online bool) error {
 			status := map[bool]string{
 				false: "OFFLINE",
@@ -34,16 +35,17 @@ func main() {
 			// fmt.Println(report)
 			return nil
 		},
-	})
-	if err != nil {
+	}); err != nil {
 		fmt.Println(err)
 	} else {
 		defer api.RemoveListener(sdk.VinRange(354309, 354323))
 	}
 
-	if err := api.AddCommandListener(354313); err != nil {
+	cmdVins := []int{354313}
+	if err := api.AddCommandListener(cmdVins); err != nil {
 		fmt.Println(err)
 	} else {
+		defer api.RemoveCommandListener(cmdVins)
 		dev354313 := api.NewCommand(354313)
 
 		info, err := dev354313.GenInfo()
@@ -225,18 +227,18 @@ func main() {
 		// 	fmt.Printf("Motor speed is limited to %d kph", kph)
 		// }
 
-		// templates := []command.McuTemplate{
-		// 	{DischargeCurrent: 50, Torque: 10}, // economy
-		// 	{DischargeCurrent: 50, Torque: 20}, // standard
-		// 	{DischargeCurrent: 50, Torque: 25}, // sport
-		// }
-		// if err := dev354313.McuTemplates(templates...); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	for i, t := range templates {
-		// 		fmt.Printf("Motor template for %s changed to %+v\n", shared.MODE_DRIVE(i), t)
-		// 	}
-		// }
+		templates := []command.McuTemplate{
+			{DischargeCurrent: 50, Torque: 10}, // economy
+			{DischargeCurrent: 50, Torque: 20}, // standard
+			{DischargeCurrent: 50, Torque: 25}, // sport
+		}
+		if err := dev354313.McuTemplates(templates); err != nil {
+			fmt.Println(err)
+		} else {
+			for i, t := range templates {
+				fmt.Printf("Motor template for %s changed to %+v\n", shared.MODE_DRIVE(i), t)
+			}
+		}
 	}
 
 	shared.WaitForCtrlC()

@@ -36,7 +36,7 @@ func (s *Sdk) Disconnect() {
 }
 
 // AddCommandListener subscribe to Command & Response topic for multiple vins.
-func (s *Sdk) AddCommandListener(vins ...int) error {
+func (s *Sdk) AddCommandListener(vins []int) error {
 	if err := s.transport.SubMulti(setTopicToVins(shared.TOPIC_COMMAND, vins), 1, cmd.CommandListener); err != nil {
 		return err
 	}
@@ -45,6 +45,13 @@ func (s *Sdk) AddCommandListener(vins ...int) error {
 		return err
 	}
 	return nil
+}
+
+// RemoveListener unsubscribe status topic and report for spesific vin in range.
+func (s *Sdk) RemoveCommandListener(vins []int) error {
+	// topics is status topic + report topic
+	topics := append(setTopicToVins(shared.TOPIC_COMMAND, vins), setTopicToVins(shared.TOPIC_RESPONSE, vins)...)
+	return s.transport.UnsubMulti(topics)
 }
 
 // AddListener subscribe to Status & Report topic (if callback is specified) for spesific vin in range.
@@ -59,7 +66,6 @@ func (s *Sdk) AddCommandListener(vins ...int) error {
 //
 // listen by range :
 // s.AddListener(sdk.VinRange(min, max), listerner)
-// how if use destructuring array, -> func (s *Sdk) AddListener(vins ...int, l Listener)
 func (s *Sdk) AddListener(vins []int, l Listener) error {
 	if l.StatusFunc != nil {
 		if err := s.transport.SubMulti(setTopicToVins(shared.TOPIC_STATUS, vins), 1, StatusListener(l.StatusFunc, s.logging)); err != nil {

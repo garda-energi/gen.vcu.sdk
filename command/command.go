@@ -275,7 +275,7 @@ type McuTemplate struct {
 }
 
 // McuTemplates set all MCU (Motor Control Unit)  driving mode templates.
-func (c *Command) McuTemplates(ts ...McuTemplate) error {
+func (c *Command) McuTemplates(ts []McuTemplate) error {
 	if len(ts) != int(shared.MODE_DRIVE_limit) {
 		return errors.New("templates should be set for all driving mode at once")
 	}
