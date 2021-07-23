@@ -12,6 +12,9 @@ import (
 
 // exec execute command and return the response.
 func (c *Command) exec(cmd_name string, payload []byte) ([]byte, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	cmder, err := getCommander(cmd_name)
 	if err != nil {
 		return nil, err
