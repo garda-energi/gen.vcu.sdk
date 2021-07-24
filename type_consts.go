@@ -1,17 +1,20 @@
 package sdk
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
 
-// var (
-// 	errPacketTimeout = errors.New("packet timeout")
-// 	errNotFound        = errors.New("no result found")
-// 	errPacketCorrupt   = errors.New("packet corrupt")
-// 	errInputInvalid    = errors.New("input invalid")
-// 	errInputOutOfRange = errors.New("input ouf of range")
-// )
+var (
+	errPacketAckCorrupt   = errors.New("packet ack corrupt")
+	errInvalidPrefix      = errors.New("prefix invalid")
+	errInvalidSize        = errors.New("size invalid")
+	errInvalidVin         = errors.New("vin invalid")
+	errInvalidCode        = errors.New("code invalid")
+	errInvalidResCode     = errors.New("resCode invalid")
+	errResMessageOverflow = errors.New("message overflow")
+)
 
 type errPacketTimeout string
 
@@ -19,22 +22,10 @@ func (e errPacketTimeout) Error() string {
 	return fmt.Sprintf("packet %s timeout", string(e))
 }
 
-type errInputInvalid string
-
-func (e errInputInvalid) Error() string {
-	return fmt.Sprintf("input %s out of range", string(e))
-}
-
 type errInputOutOfRange string
 
 func (e errInputOutOfRange) Error() string {
 	return fmt.Sprintf("input %s out of range", string(e))
-}
-
-type errPacketCorrupt string
-
-func (e errPacketCorrupt) Error() string {
-	return fmt.Sprintf("packet %s corrupt", string(e))
 }
 
 const (
