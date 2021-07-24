@@ -27,9 +27,17 @@ Todo Report:
   ✔ add unit test @done(21-07-24 06:07)
   ✘ discard duplicate reports @cancelled(21-07-24 06:07)
   ✔ add report encoder @done(21-07-24 06:12)
-  ☐ validate report properly
+  ☐ validate report (header) properly with test
   ☐ find a way to use units in tagger
   ☐ add usefull method to ReportPacket
+    ☐ IsValidGPS
+    ☐ EepromCapacityCritical
+    ☐ Events Renderer
+    ☐ BatteryPackLow
+    ☐ StackOverflow
+    ☐ FingerValidId
+    ☐ UnitGetter
+    ☐ BMS & MCU Error Renderer
   
 Todo Command:
   ✘ try to reverse command encoder @cancelled(21-07-21 11:22)
@@ -41,6 +49,7 @@ Todo Command:
   ✔ pass logging flag to command @done(21-07-24 15:32)
   ☐ test sending command for different VIN at the same time
   ☐ refactor unit test, implement DRY pattern
+  ☐ ignore (or speed-up) time out for test
     
 Todo Broker:  
   ☐ broker TLS support ?
