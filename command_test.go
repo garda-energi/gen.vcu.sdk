@@ -76,10 +76,11 @@ func TestCommandWithValidResponse(t *testing.T) {
 
 func newFakeCommander(responses [][]byte) *commander {
 	vin := 1234
-	logging := false
+	logging := !false
 	broker := &fakeBroker{
-		responses:    responses,
-		startPubChan: make(chan struct{}, 1),
+		responses: responses,
+		cmdChan:   make(chan []byte),
+		resChan:   make(chan struct{}),
 	}
 
 	cmder, _ := newCommander(vin, broker, logging)
