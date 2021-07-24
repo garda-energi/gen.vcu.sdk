@@ -17,8 +17,7 @@ type fakeBroker struct {
 func (b *fakeBroker) connect() error {
 	return nil
 }
-func (b *fakeBroker) disconnect() {
-}
+func (b *fakeBroker) disconnect() {}
 func (b *fakeBroker) pub(topic string, qos byte, retained bool, payload []byte) error {
 	flush := payload == nil && qos == QOS_CMD_FLUSH
 	if !flush {
@@ -85,39 +84,3 @@ func (m *fakeMessage) Payload() []byte {
 	return m.payload
 }
 func (m *fakeMessage) Ack() {}
-
-// type fakeClient struct {
-// 	connected bool
-// }
-
-// func (c *fakeClient) IsConnected() bool {
-// 	return c.connected
-// }
-// func (c *fakeClient) IsConnectionOpen() bool {
-// 	return c.connected
-// }
-// func (c *fakeClient) Connect() mqtt.Token {
-// 	c.connected = true
-// 	return &mqtt.DummyToken{}
-// }
-// func (c *fakeClient) Disconnect(quiesce uint) {
-// 	c.connected = false
-// }
-// func (c *fakeClient) Publish(topic string, qos byte, retained bool, payload interface{}) mqtt.Token {
-// 	return &mqtt.DummyToken{}
-// }
-// func (c *fakeClient) Subscribe(topic string, qos byte, callback mqtt.MessageHandler) mqtt.Token {
-// 	return &mqtt.DummyToken{}
-// }
-// func (c *fakeClient) SubscribeMultiple(filters map[string]byte, callback mqtt.MessageHandler) mqtt.Token {
-// 	return &mqtt.DummyToken{}
-// }
-// func (c *fakeClient) Unsubscribe(topics ...string) mqtt.Token {
-// 	return &mqtt.DummyToken{}
-// }
-// func (c *fakeClient) AddRoute(topic string, callback mqtt.MessageHandler) {
-
-// }
-// func (c *fakeClient) OptionsReader() mqtt.ClientOptionsReader {
-// 	return mqtt.ClientOptionsReader{}
-// }
