@@ -6,17 +6,17 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-type StatusListenerFunc func(vin int, online bool)
-type ReportListenerFunc func(vin int, report *ReportPacket)
+type statusListenerFunc func(vin int, online bool)
+type reportListenerFunc func(vin int, report *ReportPacket)
 
 // Listener store status & report callback function
 type Listener struct {
-	StatusFunc StatusListenerFunc
-	ReportFunc ReportListenerFunc
+	StatusFunc statusListenerFunc
+	ReportFunc reportListenerFunc
 }
 
 // statusListener is executed when got new packet on status topic.
-func statusListener(sFunc StatusListenerFunc, logging bool) mqtt.MessageHandler {
+func statusListener(sFunc statusListenerFunc, logging bool) mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
 		if logging {
 			logPacket(msg)
@@ -30,7 +30,7 @@ func statusListener(sFunc StatusListenerFunc, logging bool) mqtt.MessageHandler 
 }
 
 // reportListener is executed when got new packet on report topic.
-func reportListener(rFunc ReportListenerFunc, logging bool) mqtt.MessageHandler {
+func reportListener(rFunc reportListenerFunc, logging bool) mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
 		if logging {
 			logPacket(msg)

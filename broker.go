@@ -7,13 +7,6 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-type brokerConfig struct {
-	Host string
-	Port int
-	User string
-	Pass string
-}
-
 type Broker interface {
 	// connect open connection to mqtt broker.
 	connect() error
@@ -29,13 +22,19 @@ type Broker interface {
 	unsubMulti(topics []string) error
 }
 
+type BrokerConfig struct {
+	Host string
+	Port int
+	User string
+	Pass string
+}
 type broker struct {
-	config brokerConfig
+	config BrokerConfig
 	client mqtt.Client
 }
 
 // newBroker create instance of Broker.
-func newBroker(config brokerConfig) Broker {
+func newBroker(config BrokerConfig) Broker {
 	return &broker{config: config}
 }
 
@@ -110,7 +109,7 @@ func (b *broker) unsubMulti(topics []string) error {
 }
 
 // newClientOptions make client options for mqtt.
-func newClientOptions(config brokerConfig) *mqtt.ClientOptions {
+func newClientOptions(config BrokerConfig) *mqtt.ClientOptions {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", config.Host, config.Port))
 	opts.SetUsername(config.User)

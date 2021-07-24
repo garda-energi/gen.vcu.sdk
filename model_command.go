@@ -11,34 +11,44 @@ type HeaderCommand struct {
 	SubCode uint8 `type:"uint8"`
 }
 
-type CommandPacket struct {
-	Header  *HeaderCommand
-	Payload []byte
-}
+// type CommandPacket struct {
+// 	Header  *HeaderCommand
+// 	Payload payload
+// }
 
-type HeaderResponse struct {
+type headerResponse struct {
 	HeaderCommand
 	ResCode resCode `type:"uint8"`
 }
 
-type ResponsePacket struct {
-	Header  *HeaderResponse
-	Message []byte `type:"char"`
+type responsePacket struct {
+	Header  *headerResponse
+	Message payload `type:"slice"`
 }
 
-func (r *ResponsePacket) ValidPrefix() bool {
+type payload []byte
+
+func (p payload) overflow() bool {
+	return len(p) > PAYLOAD_LEN_MAX
+}
+
+func (r *responsePacket) validPrefix() bool {
 	return r.Header.Prefix == PREFIX_RESPONSE
 }
 
-func (r *ResponsePacket) Size() int {
+func (r *responsePacket) size() int {
 	return 4 + 7 + 1 + 1 + 1 + len(r.Message)
 }
 
-func (r *ResponsePacket) AnswerFor(cmd *command) bool {
-	return r.Header.Code == cmd.code && r.Header.SubCode == cmd.sub_code
+func (r *responsePacket) validSize() bool {
+	return int(r.Header.Size) == r.size()
 }
 
-func (r *ResponsePacket) ValidResCode() bool {
+func (r *responsePacket) matchWith(cmd *command) bool {
+	return r.Header.Code == cmd.code && r.Header.SubCode == cmd.subCode
+}
+
+func (r *responsePacket) validResCode() bool {
 	for i := resCodeError; i < resCodeLimit; i++ {
 		if r.Header.ResCode == i {
 			return true
@@ -47,15 +57,15 @@ func (r *ResponsePacket) ValidResCode() bool {
 	return false
 }
 
-func (r *ResponsePacket) HasMessage() bool {
+func (r *responsePacket) hasMessage() bool {
 	return len(r.Message) > 0
 }
 
-func (r *ResponsePacket) MessageOverflow() bool {
+func (r *responsePacket) messageOverflow() bool {
 	return len(r.Message) > PAYLOAD_LEN_MAX
 }
 
-func (r *ResponsePacket) RenderMessage() {
+func (r *responsePacket) renderMessage() {
 	str := string(r.Message)
 	for i := BikeStateUnknown; i < BikeStateLimit; i++ {
 		old := fmt.Sprintf("{%d}", i)

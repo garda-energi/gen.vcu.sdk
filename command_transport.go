@@ -97,23 +97,23 @@ func validateAck(msg []byte) error {
 
 // validateResponse validate incomming response packet.
 // It also parse response code and message
-func validateResponse(vin int, cmd *command, res *ResponsePacket) error {
-	if !res.ValidPrefix() {
+func validateResponse(vin int, cmd *command, res *responsePacket) error {
+	if !res.validPrefix() {
 		return errInvalidPrefix
 	}
-	if int(res.Header.Size) != res.Size() {
+	if !res.validSize() {
 		return errInvalidSize
 	}
 	if int(res.Header.Vin) != vin {
 		return errInvalidVin
 	}
-	if !res.AnswerFor(cmd) {
+	if !res.matchWith(cmd) {
 		return errInvalidCode
 	}
-	if !res.ValidResCode() {
+	if !res.validResCode() {
 		return errInvalidResCode
 	}
-	if res.MessageOverflow() {
+	if res.messageOverflow() {
 		return errResMessageOverflow
 	}
 
@@ -124,8 +124,8 @@ func validateResponse(vin int, cmd *command, res *ResponsePacket) error {
 
 	out := fmt.Sprint(res.Header.ResCode)
 	// check if message is not empty
-	if res.HasMessage() {
-		res.RenderMessage()
+	if res.hasMessage() {
+		res.renderMessage()
 		out += fmt.Sprintf(", %s", res.Message)
 	}
 	return errors.New(out)
