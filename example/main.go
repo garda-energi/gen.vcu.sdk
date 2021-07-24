@@ -24,18 +24,16 @@ func main() {
 
 	// prepare the status & report listener
 	listener := &sdk.Listener{
-		StatusFunc: func(vin int, online bool) error {
+		StatusFunc: func(vin int, online bool) {
 			status := map[bool]string{
 				false: "OFFLINE",
 				true:  "ONLINE",
 			}[online]
 
 			fmt.Printf("%d => %s\n", vin, status)
-			return nil
 		},
-		ReportFunc: func(vin int, report *sdk.ReportPacket) error {
+		ReportFunc: func(vin int, report *sdk.ReportPacket) {
 			fmt.Println(report)
-			return nil
 		},
 	}
 
