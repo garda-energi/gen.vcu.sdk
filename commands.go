@@ -6,19 +6,19 @@ import (
 )
 
 type command struct {
-	name     string
-	code     uint8
-	sub_code uint8
-	timeout  time.Duration
+	name    string
+	code    uint8
+	subCode uint8
+	timeout time.Duration
 }
 
 // getCommand get related command (code & subCode) by name
 func getCommand(name string) (*command, error) {
-	for code, sub_codes := range commands {
-		for sub_code, cmd := range sub_codes {
+	for code, subCodes := range commands {
+		for subCode, cmd := range subCodes {
 			if cmd.name == name {
 				cmd.code = uint8(code)
-				cmd.sub_code = uint8(sub_code)
+				cmd.subCode = uint8(subCode)
 
 				if cmd.timeout == 0 {
 					cmd.timeout = DEFAULT_CMD_TIMEOUT

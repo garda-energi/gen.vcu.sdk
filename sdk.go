@@ -1,19 +1,14 @@
 package sdk
 
 type Sdk struct {
-	broker  Broker
 	logging bool
+	broker  Broker
 }
 
 // New create new instance of Sdk for VCU (Vehicle Control Unit).
-func New(host string, port int, user, pass string, logging bool) Sdk {
+func New(brokerConfig BrokerConfig, logging bool) Sdk {
 	return Sdk{
-		broker: newBroker(brokerConfig{
-			Host: host,
-			Port: port,
-			User: user,
-			Pass: pass,
-		}),
+		broker:  newBroker(brokerConfig),
 		logging: logging,
 	}
 }

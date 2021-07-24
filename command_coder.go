@@ -6,16 +6,16 @@ import (
 	"time"
 )
 
-// encode combine command and payload to bytes packet.
-func encodeCommand(vin int, cmd *command, payload []byte) ([]byte, error) {
-	if len(payload) > PAYLOAD_LEN_MAX {
+// encode combine command and value to bytes packet.
+func encodeCommand(vin int, cmd *command, val payload) ([]byte, error) {
+	if val.overflow() {
 		return nil, errInputOutOfRange("payload")
 	}
 
 	var buf bytes.Buffer
 	ed := binary.LittleEndian
-	binary.Write(&buf, ed, reverseBytes(payload))
-	binary.Write(&buf, ed, cmd.sub_code)
+	binary.Write(&buf, ed, reverseBytes(val))
+	binary.Write(&buf, ed, cmd.subCode)
 	binary.Write(&buf, ed, cmd.code)
 	binary.Write(&buf, ed, reverseBytes(timeToBytes(time.Now())))
 	binary.Write(&buf, binary.BigEndian, uint32(vin))
@@ -26,11 +26,11 @@ func encodeCommand(vin int, cmd *command, payload []byte) ([]byte, error) {
 }
 
 // decode extract header and message response from bytes packet.
-func decodeResponse(packet []byte) (*ResponsePacket, error) {
+func decodeResponse(packet []byte) (*responsePacket, error) {
 	reader := bytes.NewReader(packet)
 
-	r := &ResponsePacket{
-		Header: &HeaderResponse{},
+	r := &responsePacket{
+		Header: &headerResponse{},
 	}
 
 	// header
@@ -39,10 +39,9 @@ func decodeResponse(packet []byte) (*ResponsePacket, error) {
 	}
 
 	// message
-	if len := reader.Len(); len > 0 {
-		msg := make([]byte, len)
-		reader.Read(msg)
-		r.Message = msg
+	if reader.Len() > 0 {
+		r.Message = make(payload, reader.Len())
+		reader.Read(r.Message)
 	}
 
 	return r, nil

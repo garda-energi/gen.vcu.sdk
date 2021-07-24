@@ -10,7 +10,12 @@ import (
 func main() {
 	stopChan := sdk.SetupGracefulShutdown() // optional code
 
-	api := sdk.New("test.mosquitto.org", 1883, "", "", true)
+	api := sdk.New(sdk.BrokerConfig{
+		Host: "test.mosquitto.org",
+		Port: 1883,
+		User: "",
+		Pass: "",
+	}, true)
 
 	// connect to broker
 	if err := api.Connect(); err != nil {
