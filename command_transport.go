@@ -28,12 +28,12 @@ func (c *commander) exec(cmd_name string, payload []byte) ([]byte, error) {
 
 // sendCommand encode and send outgoing command.
 func (c *commander) sendCommand(cmd *command, payload []byte) error {
-	packet, err := c.encode(cmd, payload)
+	packet, err := encodeCommand(c.vin, cmd, payload)
 	if err != nil {
 		return err
 	}
 
-	c.broker.Pub(setTopicToVin(TOPIC_COMMAND, c.vin), 1, true, packet)
+	c.broker.pub(setTopicToVin(TOPIC_COMMAND, c.vin), 1, true, packet)
 	return nil
 }
 
@@ -44,7 +44,7 @@ func (c *commander) waitResponse(cmd *command) ([]byte, error) {
 		time.Sleep(1 * time.Second)
 	}()
 
-	packet, err := c.waitPacket(DEFAULT_ACK_TIMEOUT)
+	packet, err := c.waitPacket("ack", DEFAULT_ACK_TIMEOUT)
 	if err != nil {
 		return nil, err
 	}
@@ -53,12 +53,12 @@ func (c *commander) waitResponse(cmd *command) ([]byte, error) {
 		return nil, err
 	}
 
-	packet, err = c.waitPacket(cmd.timeout)
+	packet, err = c.waitPacket("response", cmd.timeout)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := c.decode(cmd, packet)
+	res, err := decodeResponse(packet)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (c *commander) waitResponse(cmd *command) ([]byte, error) {
 
 // waitPacket wait incomming packet for current VIN.
 // It throws error on timeout.
-func (c *commander) waitPacket(timeout time.Duration) ([]byte, error) {
+func (c *commander) waitPacket(name string, timeout time.Duration) ([]byte, error) {
 	// flush channel
 	for len(c.resChan) > 0 {
 		<-c.resChan
@@ -82,22 +82,16 @@ func (c *commander) waitPacket(timeout time.Duration) ([]byte, error) {
 	case data := <-c.resChan:
 		return data, nil
 	case <-time.After(timeout):
-		return nil, errors.New("packet timeout")
+		return nil, errPacketTimeout(name)
 	}
-}
 
-// flush clear command & response topic on broker.
-// It indicates that command is done or cancelled.
-func (c *commander) flush() {
-	c.broker.Pub(setTopicToVin(TOPIC_COMMAND, c.vin), 1, true, nil)
-	c.broker.Pub(setTopicToVin(TOPIC_RESPONSE, c.vin), 1, true, nil)
 }
 
 // validateAck validate incomming ack packet.
 func validateAck(msg []byte) error {
 	ack := strToBytes(PREFIX_ACK)
 	if !bytes.Equal(msg, ack) {
-		return errors.New("ack corrupt")
+		return errPacketCorrupt("ack")
 	}
 	return nil
 }
@@ -105,14 +99,9 @@ func validateAck(msg []byte) error {
 // validateResponse validate incomming response packet.
 // It also parse response code and message
 func validateResponse(cmd *command, res *ResponsePacket) error {
-	var sb strings.Builder
-	sb.WriteString(fmt.Sprint(cmd.name))
-	sb.WriteString(": ")
-
 	// check code
 	if res.Header.Code != cmd.code || res.Header.SubCode != cmd.sub_code {
-		sb.WriteString("response-mismatch")
-		return errors.New(sb.String())
+		return errPacketCorrupt("response")
 	}
 
 	// check resCode
@@ -121,6 +110,7 @@ func validateResponse(cmd *command, res *ResponsePacket) error {
 		return nil
 	}
 
+	var sb strings.Builder
 	sb.WriteString(fmt.Sprint(*resCode))
 
 	// check if message is empty

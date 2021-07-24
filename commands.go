@@ -29,7 +29,7 @@ func getCommand(name string) (*command, error) {
 		}
 	}
 
-	return nil, errors.New("command invalid")
+	return nil, errors.New("no result found")
 }
 
 var commands = [][]command{
