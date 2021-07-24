@@ -4,11 +4,13 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"os/signal"
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -25,6 +27,11 @@ func SetupGracefulShutdown() <-chan os.Signal {
 	}()
 
 	return stopChan
+}
+
+func randomSleep(min, max int, unit time.Duration) {
+	rng := rand.Intn(max-min) + min
+	time.Sleep(time.Duration(rng) * unit)
 }
 
 // // dd print detailed variable information
@@ -64,10 +71,11 @@ func getTopicVin(topic string) int {
 	return vin
 }
 
-func isSubTopic(parent, child string) bool {
-	s := strings.Split(child, "/")
+// toGlobalTopic replace VIN from topic with '+' character
+func toGlobalTopic(topic string) string {
+	s := strings.Split(topic, "/")
 	s[1] = "+"
-	return strings.Join(s, "/") == parent
+	return strings.Join(s, "/")
 }
 
 // setTopicToVin insert VIN into topic pattern

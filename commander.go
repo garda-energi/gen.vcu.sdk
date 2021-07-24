@@ -212,7 +212,7 @@ func (c *commander) NetSendUssd(ussd string) (string, error) {
 		return "", errInputOutOfRange("ussd")
 	}
 	if !strings.HasPrefix(ussd, "*") || !strings.HasSuffix(ussd, "#") {
-		return "", errInputInvalid("ussd")
+		return "", errors.New("invalid ussd format")
 	}
 
 	msg, err := c.exec("NET_SEND_USSD", []byte(ussd))

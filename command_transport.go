@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 )
 
@@ -63,7 +62,7 @@ func (c *commander) waitResponse(cmd *command) ([]byte, error) {
 		return nil, err
 	}
 
-	if err := validateResponse(cmd, res); err != nil {
+	if err := validateResponse(c.vin, cmd, res); err != nil {
 		return nil, err
 	}
 
@@ -91,43 +90,44 @@ func (c *commander) waitPacket(name string, timeout time.Duration) ([]byte, erro
 func validateAck(msg []byte) error {
 	ack := strToBytes(PREFIX_ACK)
 	if !bytes.Equal(msg, ack) {
-		return errPacketCorrupt("ack")
+		return errPacketAckCorrupt
 	}
 	return nil
 }
 
 // validateResponse validate incomming response packet.
 // It also parse response code and message
-func validateResponse(cmd *command, res *ResponsePacket) error {
-	// check code
-	if res.Header.Code != cmd.code || res.Header.SubCode != cmd.sub_code {
-		return errPacketCorrupt("response")
+func validateResponse(vin int, cmd *command, res *ResponsePacket) error {
+	if !res.ValidPrefix() {
+		return errInvalidPrefix
+	}
+	if int(res.Header.Size) != res.Size() {
+		return errInvalidSize
+	}
+	if int(res.Header.Vin) != vin {
+		return errInvalidVin
+	}
+	if !res.AnswerFor(cmd) {
+		return errInvalidCode
+	}
+	if !res.ValidResCode() {
+		return errInvalidResCode
+	}
+	if res.MessageOverflow() {
+		return errResMessageOverflow
 	}
 
 	// check resCode
-	resCode := &res.Header.ResCode
-	if *resCode == resCodeOk {
+	if res.Header.ResCode == resCodeOk {
 		return nil
 	}
 
-	var sb strings.Builder
-	sb.WriteString(fmt.Sprint(*resCode))
-
-	// check if message is empty
-	if len(res.Message) > 0 {
-		// subtitutes BIKE_STATE to message
-		str := string(res.Message)
-		for i := BikeStateUnknown; i < BikeStateLimit; i++ {
-			old := fmt.Sprintf("{%d}", i)
-			new := BikeState(i).String()
-			str = strings.ReplaceAll(str, old, new)
-		}
-		res.Message = []byte(str)
-
-		sb.WriteString(", ")
-		sb.WriteString(string(res.Message))
+	out := fmt.Sprint(res.Header.ResCode)
+	// check if message is not empty
+	if res.HasMessage() {
+		res.RenderMessage()
+		out += fmt.Sprintf(", %s", res.Message)
 	}
-
-	return errors.New(sb.String())
+	return errors.New(out)
 
 }

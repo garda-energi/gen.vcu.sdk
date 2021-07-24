@@ -29,6 +29,7 @@ Todo Report:
   ✔ add report encoder @done(21-07-24 06:12)
   ☐ validate report properly
   ☐ find a way to use units in tagger
+  ☐ add usefull method to ReportPacket
   
 Todo Command:
   ✘ try to reverse command encoder @cancelled(21-07-21 11:22)
@@ -39,6 +40,7 @@ Todo Command:
   ✔ add unit test, mock with interface @done(21-07-24 15:32)
   ✔ pass logging flag to command @done(21-07-24 15:32)
   ☐ test sending command for different VIN at the same time
+  ☐ refactor unit test, implement DRY pattern
     
 Todo Broker:  
   ☐ broker TLS support ?

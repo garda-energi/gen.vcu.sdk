@@ -200,6 +200,7 @@ const (
 	resCodeError resCode = iota
 	resCodeOk
 	resCodeInvalid
+	resCodeLimit
 )
 
 func (m resCode) String() string {

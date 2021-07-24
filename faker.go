@@ -1,53 +1,60 @@
 package sdk
 
 import (
-	"math/rand"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 type fakeBroker struct {
-	client       mqtt.Client
-	startPubChan chan struct{}
-	command      []byte
-	responses    [][]byte
+	client    mqtt.Client
+	responses [][]byte
+	cmdChan   chan []byte
+	resChan   chan struct{}
 }
 
-func (b *fakeBroker) connect() error {
-	return nil
-}
-func (b *fakeBroker) disconnect() {}
 func (b *fakeBroker) pub(topic string, qos byte, retained bool, payload []byte) error {
-	flush := payload == nil && qos == QOS_CMD_FLUSH
-	if !flush {
-		b.command = payload
-		b.startPubChan <- struct{}{}
+	if flush := payload == nil && qos == QOS_CMD_FLUSH; !flush {
+		b.cmdChan <- payload
 	}
 	return nil
 }
-func (b *fakeBroker) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
-	if isSubTopic(TOPIC_RESPONSE, topic) {
-		go func() {
-			select {
-			case <-b.startPubChan:
-				min, max := 50, 100
-				for _, res := range b.responses {
-					rng := rand.Intn(max-min) + min
-					time.Sleep(time.Duration(rng) * time.Millisecond)
 
-					handler(b.client, &fakeMessage{
-						topic:   topic,
-						payload: res,
-					})
-				}
-			case <-time.After(5 * time.Second):
+func (b *fakeBroker) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
+	switch toGlobalTopic(topic) {
+	case TOPIC_COMMAND:
+		go func() {
+			cmdPacket := <-b.cmdChan
+
+			handler(b.client, &fakeMessage{
+				topic:   topic,
+				payload: cmdPacket,
+			})
+			randomSleep(50, 100, time.Millisecond)
+			b.resChan <- struct{}{}
+		}()
+	case TOPIC_RESPONSE:
+		go func() {
+			<-b.resChan
+			for _, resPacket := range b.responses {
+				randomSleep(50, 100, time.Millisecond)
+				handler(b.client, &fakeMessage{
+					topic:   topic,
+					payload: resPacket,
+				})
 			}
 		}()
 	}
 
 	return nil
 }
+
+func (b *fakeBroker) connect() error {
+	return nil
+}
+
+func (b *fakeBroker) disconnect() {}
+
 func (b *fakeBroker) subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
 	return nil
 }
