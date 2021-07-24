@@ -1,4 +1,4 @@
-package shared
+package sdk
 
 import (
 	"bytes"
@@ -10,12 +10,12 @@ import (
 	"time"
 )
 
-// next problem in implementation.
+// TODO: next problem in implementation.
 // header has length and length get after encode.
 // alternative solution : change bit #3 after encode as length of body
 
-// Encode struct or pointer of struct to bytes
-func Encode(v interface{}) (resBytes []byte, resError error) {
+// encode struct or pointer of struct to bytes
+func encode(v interface{}) (resBytes []byte, resError error) {
 	buf := &bytes.Buffer{}
 
 	rv := reflect.ValueOf(v)
@@ -33,13 +33,13 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 		rvField := rv.Field(i)
 		rtField := rv.Type().Field(i)
 
-		tag := DeTag(rtField.Tag, rvField.Kind())
+		tag := deTag(rtField.Tag, rvField.Kind())
 
 		switch rk := rvField.Kind(); rk {
 
 		case reflect.Ptr:
 			if !rvField.IsNil() {
-				b, err := Encode(rvField.Interface())
+				b, err := encode(rvField.Interface())
 				if err != nil {
 					return nil, err
 				}
@@ -47,12 +47,12 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 			}
 
 		case reflect.Struct:
-			if rvField.Type() == TypeOfTime {
+			if rvField.Type() == typeOfTime {
 				t := rvField.Interface().(time.Time)
-				b := TimeToBytes(t)
+				b := timeToBytes(t)
 				buf.Write(b)
 			} else {
-				b, err := Encode(rvField.Addr().Interface())
+				b, err := encode(rvField.Addr().Interface())
 				if err != nil {
 					return nil, err
 				}
@@ -61,7 +61,7 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 
 		case reflect.Array:
 			for j := 0; j < rvField.Len(); j++ {
-				b, err := Encode(rvField.Index(j).Addr().Interface())
+				b, err := encode(rvField.Index(j).Addr().Interface())
 				if err != nil {
 					return nil, err
 				}
@@ -70,22 +70,22 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 
 		case reflect.String:
 			s := rvField.String()
-			b := StrToBytes(s)
+			b := strToBytes(s)
 			buf.Write(b)
 
 		case reflect.Bool:
 			x := rvField.Bool()
-			b := BoolToBytes(x)
+			b := boolToBytes(x)
 			buf.Write(b)
 
 		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
 			n := rvField.Uint()
-			b := UintToBytes(rk, n)[:tag.Len]
+			b := uintToBytes(rk, n)[:tag.Len]
 			buf.Write(b)
 
 		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 			n := rvField.Int()
-			b := UintToBytes(rk, uint64(n))[:tag.Len]
+			b := uintToBytes(rk, uint64(n))[:tag.Len]
 			buf.Write(b)
 
 		case reflect.Float32, reflect.Float64:
@@ -105,10 +105,10 @@ func Encode(v interface{}) (resBytes []byte, resError error) {
 				// set sesuai biner
 				if rk == reflect.Float32 {
 					x32 := math.Float32bits(float32(n))
-					b = UintToBytes(rk, uint64(x32))[:tag.Len]
+					b = uintToBytes(rk, uint64(x32))[:tag.Len]
 				} else {
 					x64 := math.Float64bits(n)
-					b = UintToBytes(rk, x64)[:tag.Len]
+					b = uintToBytes(rk, x64)[:tag.Len]
 				}
 			}
 			buf.Write(b)
@@ -165,12 +165,12 @@ func convertFloat64ToBytes(typedata string, v float64) []byte {
 	rv := setVarOfTypeData(typedata)
 
 	// convert to bytes
-	b := UintToBytes(rv.Kind(), uint64(v))
+	b := uintToBytes(rv.Kind(), uint64(v))
 	return b
 }
 
-// UintToBytes convert uint category type to byte slice (little endian)
-func UintToBytes(rk reflect.Kind, v uint64) []byte {
+// uintToBytes convert uint category type to byte slice (little endian)
+func uintToBytes(rk reflect.Kind, v uint64) []byte {
 	b := make([]byte, 8)
 	binary.LittleEndian.PutUint64(b, v)
 	switch rk {
@@ -185,8 +185,8 @@ func UintToBytes(rk reflect.Kind, v uint64) []byte {
 	}
 }
 
-// TimeToBytes convert time to slice byte (big endian)
-func TimeToBytes(t time.Time) []byte {
+// timeToBytes convert time to slice byte (big endian)
+func timeToBytes(t time.Time) []byte {
 	var buf bytes.Buffer
 	ed := binary.LittleEndian
 	binary.Write(&buf, ed, byte(t.Year()-2000))
@@ -201,8 +201,8 @@ func TimeToBytes(t time.Time) []byte {
 	return bytes
 }
 
-// BoolToBytes convert bool to byte slice.
-func BoolToBytes(d bool) []byte {
+// boolToBytes convert bool to byte slice.
+func boolToBytes(d bool) []byte {
 	var b uint8 = 0
 	if d {
 		b = 1
@@ -210,7 +210,7 @@ func BoolToBytes(d bool) []byte {
 	return []byte{b}
 }
 
-// StrToBytes convert string to byte slice (little endian)
-func StrToBytes(d string) []byte {
-	return Reverse([]byte(d))
+// strToBytes convert string to byte slice (little endian)
+func strToBytes(d string) []byte {
+	return reverseBytes([]byte(d))
 }

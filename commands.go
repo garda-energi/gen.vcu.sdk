@@ -1,4 +1,4 @@
-package command
+package sdk
 
 import (
 	"errors"
@@ -12,7 +12,7 @@ type command struct {
 	timeout  time.Duration
 }
 
-// getCommand get related command by name
+// getCommand get related command (code & subCode) by name
 func getCommand(name string) (*command, error) {
 	for code, sub_codes := range commands {
 		for sub_code, cmd := range sub_codes {

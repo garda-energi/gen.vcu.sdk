@@ -1,23 +1,27 @@
-package shared
+package sdk
 
 import (
 	"reflect"
 	"strconv"
 )
 
-type Tagger struct {
+type tagger struct {
 	Tipe   string
 	Len    int
 	Factor float64
 }
 
-// DeTag decode tagger from struct field.
-func DeTag(tag reflect.StructTag, rk reflect.Kind) Tagger {
-	t := Tagger{
+func newTagger() tagger {
+	return tagger{
 		Len:    1,
 		Factor: 1.0,
 		Tipe:   "uint64",
 	}
+}
+
+// deTag decode tagger from struct field.
+func deTag(tag reflect.StructTag, rk reflect.Kind) tagger {
+	t := newTagger()
 
 	if factor, ok := tag.Lookup("factor"); ok {
 		v, _ := strconv.ParseFloat(factor, 64)
