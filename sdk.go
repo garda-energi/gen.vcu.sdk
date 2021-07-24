@@ -1,19 +1,13 @@
-package gen_vcu_sdk
-
-import (
-	"github.com/pudjamansyurin/gen_vcu_sdk/broker"
-	cmd "github.com/pudjamansyurin/gen_vcu_sdk/command"
-	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
-)
+package sdk
 
 type Sdk struct {
-	broker  *broker.Broker
+	broker  *Broker
 	logging bool
 }
 
 // New create new instance of Sdk for VCU (Vehicle Control Unit).
 func New(host string, port int, user, pass string, logging bool) Sdk {
-	broker := broker.New(broker.Config{
+	broker := NewBroker(BrokerConfig{
 		Host: host,
 		Port: port,
 		User: user,
@@ -35,9 +29,9 @@ func (s *Sdk) Disconnect() {
 	s.broker.Disconnect()
 }
 
-// NewCommander create new instance of Commander for specific VIN.
-func (s *Sdk) NewCommander(vin int) (*cmd.Commander, error) {
-	return cmd.New(vin, s.broker)
+// NewCommander create new instance of commander for specific VIN.
+func (s *Sdk) NewCommander(vin int) (*commander, error) {
+	return NewCommander(vin, s.broker)
 }
 
 // AddListener subscribe to Status & Report topic (if callback is specified) for spesific vin in range.
@@ -54,15 +48,15 @@ func (s *Sdk) NewCommander(vin int) (*cmd.Commander, error) {
 // s.AddListener(sdk.VinRange(min, max), *listerner)
 func (s *Sdk) AddListener(vins []int, l *Listener) error {
 	if l.StatusFunc != nil {
-		topic := setTopicToVins(shared.TOPIC_STATUS, vins)
-		if err := s.broker.SubMulti(topic, 1, StatusListener(l.StatusFunc, s.logging)); err != nil {
+		topic := setTopicToVins(TOPIC_STATUS, vins)
+		if err := s.broker.SubMulti(topic, 1, statusListener(l.StatusFunc, s.logging)); err != nil {
 			return err
 		}
 	}
 
 	if l.ReportFunc != nil {
-		topic := setTopicToVins(shared.TOPIC_REPORT, vins)
-		if err := s.broker.SubMulti(topic, 1, ReportListener(l.ReportFunc, s.logging)); err != nil {
+		topic := setTopicToVins(TOPIC_REPORT, vins)
+		if err := s.broker.SubMulti(topic, 1, reportListener(l.ReportFunc, s.logging)); err != nil {
 			return err
 		}
 	}
@@ -72,8 +66,8 @@ func (s *Sdk) AddListener(vins []int, l *Listener) error {
 // RemoveListener unsubscribe status and report topic for spesific vin in range.
 func (s *Sdk) RemoveListener(vins []int) error {
 	topics := append(
-		setTopicToVins(shared.TOPIC_STATUS, vins),
-		setTopicToVins(shared.TOPIC_REPORT, vins)...,
+		setTopicToVins(TOPIC_STATUS, vins),
+		setTopicToVins(TOPIC_REPORT, vins)...,
 	)
 	return s.broker.UnsubMulti(topics)
 }
@@ -95,13 +89,4 @@ func VinRange(min int, max int) []int {
 		result[i] = min + i
 	}
 	return result
-}
-
-// setTopicToVins create multiple topic for list of vin
-func setTopicToVins(topic string, vins []int) []string {
-	topics := make([]string, len(vins))
-	for i, v := range vins {
-		topics[i] = shared.SetTopicToVin(topic, v)
-	}
-	return topics
 }

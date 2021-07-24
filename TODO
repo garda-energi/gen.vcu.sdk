@@ -1,0 +1,45 @@
+Notes:
+  ☐ write readable code, we work as team
+  ☐ don't export local only components
+  ☐ add documentation, at least for each func
+  ☐ handle error properly, dont discard with _
+  Goroutine:
+  ☐ watch-out from goroutine leakage
+  ☐ watch-out from goroutine race-condition 
+  
+Todo Package:
+  ✔ remove main.go, change as a package @done(21-07-14 12:32)
+  ✔ add development branch @done(21-07-14 12:44)
+  ✔ add payload logging control @done(21-07-14 13:52)
+  ✔ add github action for CI/CD @done(21-07-22 11:12)
+  ✘ add context.TODO, pass as function arguments @cancelled(21-07-22 08:49)
+  ✔ add Makefile for commands shortcut @done(21-07-24 06:11)
+  ☐ combine all sub package, into single package
+  ☐ rename repositories, notify to all repo consumer
+  
+Todo Report:
+  ✔ multiply value with factor tag @done(21-07-13 19:39)
+  ✔ add device status (online/offline) listener @done(21-07-14 13:27)
+  ✔ don't subscribe to report & status for nil Listener @done(21-07-21 08:06)
+  ✘ add multiple decode support for Struct and Array @cancelled(21-07-24 06:05)
+  ✔ merge report2.go and report.go, refactor decoder.go to support both of them @done(21-07-15 12:39)
+  ✘ get lengthOfType using reflect @cancelled(21-07-21 08:06)
+  ✔ add unit test @done(21-07-24 06:07)
+  ✘ discard duplicate reports @cancelled(21-07-24 06:07)
+  ✔ add report encoder @done(21-07-24 06:12)
+  ☐ validate report properly
+  ☐ find a way to use units in tagger
+  
+Todo Command:
+  ✘ try to reverse command encoder @cancelled(21-07-21 11:22)
+  ✔ add command list @done(21-07-14 17:02)
+  ✔ add mutex for multiple command to same VIN @done(21-07-23 16:19)
+  ✔ test sending command for same VIN at the same time @done(21-07-24 06:04)
+  ✔ validate response properly @done(21-07-23 15:44)
+  ☐ test sending command for different VIN at the same time
+  ☐ add unit test, mock with interface
+  ☐ pass logging flag to command
+    
+Todo Broker:  
+  ☐ boroker TLS support ?
+  ☐ broker ACL ?

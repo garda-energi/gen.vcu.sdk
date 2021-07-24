@@ -1,4 +1,4 @@
-package shared
+package sdk
 
 import (
 	"bytes"
@@ -11,14 +11,14 @@ import (
 	"time"
 )
 
-// TypeOfTime is for comparing struct type as time.Time
-var TypeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
+// typeOfTime is for comparing struct type as time.Time
+var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 
 // fix bug. in "decode func" before, It'll be error for case such as v isn't array of struct
 
-// Decode read buffer reader than decode and set it to v.
+// decode read buffer reader than decode and set it to v.
 // v is struct or pointer type that will contain decoded data
-func Decode(rdr *bytes.Reader, v interface{}, tags ...Tagger) error {
+func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 	var err error
 
 	rv := reflect.ValueOf(v)
@@ -32,11 +32,7 @@ func Decode(rdr *bytes.Reader, v interface{}, tags ...Tagger) error {
 	}
 
 	// default tag
-	tag := Tagger{
-		Len:    1,
-		Factor: 1.0,
-		Tipe:   "uint64",
-	}
+	tag := newTagger()
 	// if tag is pass in argument
 	if len(tags) > 0 {
 		tag = tags[0]
@@ -46,13 +42,13 @@ func Decode(rdr *bytes.Reader, v interface{}, tags ...Tagger) error {
 
 	case reflect.Ptr:
 		rv.Set(reflect.New(rv.Type().Elem()))
-		if err = Decode(rdr, rv.Interface()); err != nil {
+		if err = decode(rdr, rv.Interface()); err != nil {
 			return err
 		}
 
 	case reflect.Struct:
 		// if data type is time.Time
-		if rv.Type() == TypeOfTime {
+		if rv.Type() == typeOfTime {
 			b := make([]byte, tag.Len)
 			binary.Read(rdr, binary.LittleEndian, &b)
 			rv.Set(reflect.ValueOf(bytesToTime(b)))
@@ -62,8 +58,8 @@ func Decode(rdr *bytes.Reader, v interface{}, tags ...Tagger) error {
 				rvField := rv.Field(i)
 				rtField := rv.Type().Field(i)
 
-				tagField := DeTag(rtField.Tag, rvField.Kind())
-				if err = Decode(rdr, rvField.Addr().Interface(), tagField); err != nil {
+				tagField := deTag(rtField.Tag, rvField.Kind())
+				if err = decode(rdr, rvField.Addr().Interface(), tagField); err != nil {
 					return err
 				}
 			}
@@ -71,7 +67,7 @@ func Decode(rdr *bytes.Reader, v interface{}, tags ...Tagger) error {
 
 	case reflect.Array:
 		for j := 0; j < rv.Len(); j++ {
-			if err = Decode(rdr, rv.Index(j).Addr().Interface()); err != nil {
+			if err = decode(rdr, rv.Index(j).Addr().Interface()); err != nil {
 				return err
 			}
 		}
@@ -200,5 +196,5 @@ func bytesToTime(b []byte) time.Time {
 
 // bytesToStr convert byte slice (little endian) to string
 func bytesToStr(b []byte) string {
-	return string(Reverse(b))
+	return string(reverseBytes(b))
 }

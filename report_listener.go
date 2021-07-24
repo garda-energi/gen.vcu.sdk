@@ -1,15 +1,13 @@
-package gen_vcu_sdk
+package sdk
 
 import (
 	"log"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/pudjamansyurin/gen_vcu_sdk/report"
-	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
 type StatusListenerFunc func(vin int, online bool) error
-type ReportListenerFunc func(vin int, report *report.ReportPacket) error
+type ReportListenerFunc func(vin int, report *ReportPacket) error
 
 // Listener store status & report callback function
 type Listener struct {
@@ -17,14 +15,14 @@ type Listener struct {
 	ReportFunc ReportListenerFunc
 }
 
-// StatusListener is executed when got new packet on status topic.
-func StatusListener(sFunc StatusListenerFunc, logging bool) mqtt.MessageHandler {
+// statusListener is executed when got new packet on status topic.
+func statusListener(sFunc StatusListenerFunc, logging bool) mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
 		if logging {
-			shared.LogMessage(msg)
+			logPacket(msg)
 		}
 
-		vin := shared.GetTopicVin(msg.Topic())
+		vin := getTopicVin(msg.Topic())
 		online := parseOnline(msg.Payload())
 
 		if err := sFunc(vin, online); err != nil {
@@ -33,16 +31,16 @@ func StatusListener(sFunc StatusListenerFunc, logging bool) mqtt.MessageHandler 
 	}
 }
 
-// ReportListener is executed when got new packet on report topic.
-func ReportListener(rFunc ReportListenerFunc, logging bool) mqtt.MessageHandler {
+// reportListener is executed when got new packet on report topic.
+func reportListener(rFunc ReportListenerFunc, logging bool) mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
 		if logging {
-			shared.LogMessage(msg)
+			logPacket(msg)
 		}
 
-		vin := shared.GetTopicVin(msg.Topic())
+		vin := getTopicVin(msg.Topic())
 
-		result, err := report.New(msg.Payload()).Decode()
+		result, err := newReport(msg.Payload()).decode()
 		if err != nil {
 			log.Fatalf("cant decode, %v\n", err)
 		}

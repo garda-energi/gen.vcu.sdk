@@ -1,4 +1,4 @@
-package report
+package sdk
 
 import (
 	"encoding/json"
@@ -11,8 +11,6 @@ import (
 	"strconv"
 	"testing"
 	"time"
-
-	"github.com/pudjamansyurin/gen_vcu_sdk/shared"
 )
 
 func Test_report(t *testing.T) {
@@ -34,7 +32,7 @@ func Test_report(t *testing.T) {
 	tests := make([]tester, len(testData))
 	for i, d := range testData {
 		tests[i].name = "data #" + strconv.Itoa(i)
-		tests[i].args.b = shared.Hex2Byte(d)
+		tests[i].args.b = hexToByte(d)
 		tests[i].want = d
 	}
 
@@ -50,8 +48,8 @@ func Test_report(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 			// fmt.Printf("=== [%s] ===\n", tt.name)
-			rr := New(tt.args.b)
-			if got, err := rr.Decode(); err != nil {
+			rr := newReport(tt.args.b)
+			if got, err := rr.decode(); err != nil {
 				t.Errorf("got = %v, want %v", &got, tt.want)
 			} else {
 				if rr.reader.Len() != 0 {
@@ -60,12 +58,12 @@ func Test_report(t *testing.T) {
 
 				// many case that can't be handled. cz float factorial
 				// ex : 8.6 / 0.1 != 86.0
-				encRes, err := shared.Encode(got)
+				encRes, err := encode(got)
 				if err != nil {
 					t.Errorf("encode error")
 				}
 
-				got2, _ := New(encRes).Decode()
+				got2, _ := newReport(encRes).decode()
 				score := compareVar(got, got2)
 
 				if score != 100 {
@@ -130,7 +128,7 @@ func compareVar(v1 interface{}, v2 interface{}) (score int) {
 		if rv1.Type() != rv2.Type() {
 			return 0
 		}
-		if rv1.Type() == shared.TypeOfTime {
+		if rv1.Type() == typeOfTime {
 			t1 := rv1.Interface().(time.Time)
 			t2 := rv2.Interface().(time.Time)
 			if t1.Unix() == t2.Unix() {
