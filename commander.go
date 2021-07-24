@@ -14,15 +14,17 @@ import (
 
 type commander struct {
 	vin     int
+	logging bool
 	broker  *Broker
 	mutex   *sync.Mutex
 	resChan chan []byte
 }
 
 // NewCommander create new *commander instance and listen to command & response topic.
-func NewCommander(vin int, broker *Broker) (*commander, error) {
+func NewCommander(vin int, broker *Broker, logging bool) (*commander, error) {
 	cmder := &commander{
 		vin:     vin,
+		logging: logging,
 		broker:  broker,
 		mutex:   &sync.Mutex{},
 		resChan: make(chan []byte, 1),

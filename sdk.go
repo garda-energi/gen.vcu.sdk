@@ -31,7 +31,7 @@ func (s *Sdk) Disconnect() {
 
 // NewCommander create new instance of commander for specific VIN.
 func (s *Sdk) NewCommander(vin int) (*commander, error) {
-	return NewCommander(vin, s.broker)
+	return NewCommander(vin, s.broker, s.logging)
 }
 
 // AddListener subscribe to Status & Report topic (if callback is specified) for spesific vin in range.

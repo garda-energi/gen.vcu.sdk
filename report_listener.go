@@ -6,8 +6,8 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-type StatusListenerFunc func(vin int, online bool) error
-type ReportListenerFunc func(vin int, report *ReportPacket) error
+type StatusListenerFunc func(vin int, online bool)
+type ReportListenerFunc func(vin int, report *ReportPacket)
 
 // Listener store status & report callback function
 type Listener struct {
@@ -25,9 +25,7 @@ func statusListener(sFunc StatusListenerFunc, logging bool) mqtt.MessageHandler 
 		vin := getTopicVin(msg.Topic())
 		online := parseOnline(msg.Payload())
 
-		if err := sFunc(vin, online); err != nil {
-			log.Fatalf("listener callback, %v\n", err)
-		}
+		sFunc(vin, online)
 	}
 }
 
@@ -45,9 +43,7 @@ func reportListener(rFunc ReportListenerFunc, logging bool) mqtt.MessageHandler 
 			log.Fatalf("cant decode, %v\n", err)
 		}
 
-		if err := rFunc(vin, result); err != nil {
-			log.Fatalf("listener callback %v\n", err)
-		}
+		rFunc(vin, result)
 	}
 }
 
