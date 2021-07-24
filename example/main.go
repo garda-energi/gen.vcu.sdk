@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	stopChan := sdk.SetupGracefulShutdown()
+	stopChan := sdk.SetupGracefulShutdown() // optional code
 
 	api := sdk.New("test.mosquitto.org", 1883, "", "", true)
 
@@ -35,11 +35,11 @@ func main() {
 
 	// listen to report
 	// see api.Addlistener doc for usage
-	reportVins := sdk.VinRange(354309, 354323)
-	if err := api.AddListener(reportVins, listener); err != nil {
+	vins := sdk.VinRange(354309, 354323)
+	if err := api.AddListener(vins, listener); err != nil {
 		fmt.Println(err)
 	} else {
-		defer api.RemoveListener(reportVins)
+		defer api.RemoveListener(vins)
 	}
 
 	// listen to commands & response

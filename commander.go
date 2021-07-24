@@ -15,13 +15,13 @@ import (
 type commander struct {
 	vin     int
 	logging bool
-	broker  *broker
+	broker  Broker
 	mutex   *sync.Mutex
 	resChan chan []byte
 }
 
-// NewCommander create new *commander instance and listen to command & response topic.
-func NewCommander(vin int, broker *broker, logging bool) (*commander, error) {
+// newCommander create new *commander instance and listen to command & response topic.
+func newCommander(vin int, broker Broker, logging bool) (*commander, error) {
 	cmder := &commander{
 		vin:     vin,
 		logging: logging,
@@ -30,7 +30,7 @@ func NewCommander(vin int, broker *broker, logging bool) (*commander, error) {
 		resChan: make(chan []byte, 1),
 	}
 
-	if err := cmder.listen(); err != nil {
+	if err := cmder.listenResponse(); err != nil {
 		return nil, err
 	}
 	return cmder, nil
@@ -86,7 +86,7 @@ func (c *commander) GenReportBlock(on bool) error {
 func (c *commander) OvdState(state BikeState) error {
 	min, max := BikeStateNormal, BikeStateRun
 	if state < min || state > max {
-		return errors.New("state out of range")
+		return errInputOutOfRange("state")
 	}
 
 	payload := []byte{byte(state)}
@@ -98,7 +98,7 @@ func (c *commander) OvdState(state BikeState) error {
 func (c *commander) OvdReportInterval(dur time.Duration) error {
 	min, max := time.Duration(5), time.Duration(^uint16(0))
 	if dur < min*time.Second || dur > max*time.Second {
-		return errors.New("duration out of range")
+		return errInputOutOfRange("duration")
 	}
 	payload := uintToBytes(reflect.Uint16, uint64(dur.Seconds()))
 	_, err := c.exec("OVD_RPT_INTERVAL", payload)
@@ -108,7 +108,7 @@ func (c *commander) OvdReportInterval(dur time.Duration) error {
 // OvdReportFrame override report frame type.
 func (c *commander) OvdReportFrame(frame Frame) error {
 	if frame == FrameInvalid {
-		return errors.New("frame out of range")
+		return errInputOutOfRange("frame")
 	}
 
 	payload := []byte{byte(frame)}
@@ -167,7 +167,7 @@ func (c *commander) FingerAdd() (int, error) {
 func (c *commander) FingerDel(id int) error {
 	min, max := 1, FINGERPRINT_MAX
 	if id < min || id > max {
-		return errors.New("id out of range")
+		return errInputOutOfRange("id")
 	}
 
 	_, err := c.exec("FINGER_DEL", nil)
@@ -209,10 +209,10 @@ func (c *commander) FotaHmi() (string, error) {
 func (c *commander) NetSendUssd(ussd string) (string, error) {
 	min, max := 3, 20
 	if len(ussd) < min || len(ussd) > max {
-		return "", errors.New("ussd length out of range")
+		return "", errInputOutOfRange("ussd")
 	}
 	if !strings.HasPrefix(ussd, "*") || !strings.HasSuffix(ussd, "#") {
-		return "", errors.New("ussd is invalid")
+		return "", errInputInvalid("ussd")
 	}
 
 	msg, err := c.exec("NET_SEND_USSD", []byte(ussd))
@@ -234,7 +234,7 @@ func (c *commander) NetReadSms() (string, error) {
 // HbarDrive set handlebar drive mode.
 func (c *commander) HbarDrive(drive ModeDrive) error {
 	if drive == ModeDriveLimit {
-		return errors.New("drive mode out of range")
+		return errInputOutOfRange("drive-mode")
 	}
 
 	payload := []byte{byte(drive)}
@@ -245,7 +245,7 @@ func (c *commander) HbarDrive(drive ModeDrive) error {
 // HbarTrip set handlebar trip mode.
 func (c *commander) HbarTrip(trip ModeTrip) error {
 	if trip == ModeTripLimit {
-		return errors.New("trip mode out of range")
+		return errInputOutOfRange("trip-mode")
 	}
 
 	payload := []byte{byte(trip)}
@@ -256,7 +256,7 @@ func (c *commander) HbarTrip(trip ModeTrip) error {
 // HbarAvg set handlebar average mode.
 func (c *commander) HbarAvg(avg ModeAvg) error {
 	if avg == ModeAvgLimit {
-		return errors.New("average mode out of range")
+		return errInputOutOfRange("avg-mode")
 	}
 
 	payload := []byte{byte(avg)}
@@ -293,10 +293,10 @@ func (c *commander) McuTemplates(ts []McuTemplate) error {
 	for i, t := range ts {
 		driveMode := ModeDrive(i)
 		if t.DisCur < min || t.DisCur > maxDisCur {
-			return fmt.Errorf("dischare current for %s out of range", driveMode)
+			return errInputOutOfRange(fmt.Sprintf("%s:dischare-current", driveMode))
 		}
 		if t.Torque < min || t.Torque > maxTorque {
-			return fmt.Errorf("torque for %s out of range", driveMode)
+			return errInputOutOfRange(fmt.Sprintf("%s:torque", driveMode))
 		}
 
 		binary.Write(&buf, binary.LittleEndian, t.DisCur)

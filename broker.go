@@ -14,13 +14,28 @@ type brokerConfig struct {
 	Pass string
 }
 
+type Broker interface {
+	// connect open connection to mqtt broker.
+	connect() error
+	// disconnect close connection to mqtt broker.
+	disconnect()
+	// pub publish to mqtt topic.
+	pub(topic string, qos byte, retained bool, payload []byte) error
+	// sub subscribe to mqtt topic.
+	sub(topic string, qos byte, handler mqtt.MessageHandler) error
+	// subMulti subscribe to muliple mqtt topics.
+	subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error
+	// unsubMulti unsubscribe mqtt muliple topic.
+	unsubMulti(topics []string) error
+}
+
 type broker struct {
 	config brokerConfig
 	client mqtt.Client
 }
 
-// newBroker create instance of broker.
-func newBroker(config brokerConfig) *broker {
+// newBroker create instance of Broker.
+func newBroker(config brokerConfig) Broker {
 	return &broker{config: config}
 }
 
@@ -40,6 +55,16 @@ func (b *broker) connect() error {
 // disconnect close connection to mqtt broker.
 func (b *broker) disconnect() {
 	b.client.Disconnect(100)
+}
+
+// pub publish to mqtt topic.
+func (b *broker) pub(topic string, qos byte, retained bool, payload []byte) error {
+	token := b.client.Publish(topic, qos, retained, payload)
+	if token.Wait() && token.Error() != nil {
+		return token.Error()
+	}
+	log.Printf("[MQTT] Published to: %s\n", topic)
+	return nil
 }
 
 // sub subscribe to mqtt topic.
@@ -81,16 +106,6 @@ func (b *broker) unsubMulti(topics []string) error {
 	for _, v := range topics {
 		log.Printf("[MQTT] Un-subscribed from: %s\n", v)
 	}
-	return nil
-}
-
-// pub publish to mqtt topic.
-func (b *broker) pub(topic string, qos byte, retained bool, payload []byte) error {
-	token := b.client.Publish(topic, qos, retained, payload)
-	if token.Wait() && token.Error() != nil {
-		return token.Error()
-	}
-	log.Printf("[MQTT] Published to: %s\n", topic)
 	return nil
 }
 

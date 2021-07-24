@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func Test_report(t *testing.T) {
+func TestReport(t *testing.T) {
 	type args struct {
 		b []byte
 	}

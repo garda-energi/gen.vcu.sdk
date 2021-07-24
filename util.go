@@ -64,6 +64,12 @@ func getTopicVin(topic string) int {
 	return vin
 }
 
+func isSubTopic(parent, child string) bool {
+	s := strings.Split(child, "/")
+	s[1] = "+"
+	return strings.Join(s, "/") == parent
+}
+
 // setTopicToVin insert VIN into topic pattern
 func setTopicToVin(topic string, vin int) string {
 	return strings.Replace(topic, "+", strconv.Itoa(vin), 1)

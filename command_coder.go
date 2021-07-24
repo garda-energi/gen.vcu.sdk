@@ -3,14 +3,13 @@ package sdk
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"time"
 )
 
 // encode combine command and payload to bytes packet.
-func (c *commander) encode(cmd *command, payload []byte) ([]byte, error) {
+func encodeCommand(vin int, cmd *command, payload []byte) ([]byte, error) {
 	if len(payload) > PAYLOAD_LEN_MAX {
-		return nil, errors.New("payload overload")
+		return nil, errInputOutOfRange("payload")
 	}
 
 	var buf bytes.Buffer
@@ -19,7 +18,7 @@ func (c *commander) encode(cmd *command, payload []byte) ([]byte, error) {
 	binary.Write(&buf, ed, cmd.sub_code)
 	binary.Write(&buf, ed, cmd.code)
 	binary.Write(&buf, ed, reverseBytes(timeToBytes(time.Now())))
-	binary.Write(&buf, binary.BigEndian, uint32(c.vin))
+	binary.Write(&buf, binary.BigEndian, uint32(vin))
 	binary.Write(&buf, ed, byte(buf.Len()))
 	binary.Write(&buf, ed, []byte(PREFIX_COMMAND))
 	bytes := reverseBytes(buf.Bytes())
@@ -27,7 +26,7 @@ func (c *commander) encode(cmd *command, payload []byte) ([]byte, error) {
 }
 
 // decode extract header and message response from bytes packet.
-func (c *commander) decode(cmd *command, packet []byte) (*ResponsePacket, error) {
+func decodeResponse(packet []byte) (*ResponsePacket, error) {
 	reader := bytes.NewReader(packet)
 
 	r := &ResponsePacket{

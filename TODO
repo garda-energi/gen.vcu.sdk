@@ -36,9 +36,9 @@ Todo Command:
   ✔ add mutex for multiple command to same VIN @done(21-07-23 16:19)
   ✔ test sending command for same VIN at the same time @done(21-07-24 06:04)
   ✔ validate response properly @done(21-07-23 15:44)
+  ✔ add unit test, mock with interface @done(21-07-24 15:32)
+  ✔ pass logging flag to command @done(21-07-24 15:32)
   ☐ test sending command for different VIN at the same time
-  ☐ add unit test, mock with interface
-  ☐ pass logging flag to command
     
 Todo Broker:  
   ☐ broker TLS support ?
