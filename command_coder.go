@@ -7,7 +7,7 @@ import (
 )
 
 // encode combine command and value to bytes packet.
-func encodeCommand(vin int, cmd *command, val payload) ([]byte, error) {
+func encodeCommand(vin int, cmd *command, val message) ([]byte, error) {
 	if val.overflow() {
 		return nil, errInputOutOfRange("payload")
 	}
@@ -40,7 +40,7 @@ func decodeResponse(packet []byte) (*responsePacket, error) {
 
 	// message
 	if reader.Len() > 0 {
-		r.Message = make(payload, reader.Len())
+		r.Message = make(message, reader.Len())
 		reader.Read(r.Message)
 	}
 

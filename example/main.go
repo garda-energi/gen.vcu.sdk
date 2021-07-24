@@ -24,7 +24,7 @@ func main() {
 	defer api.Disconnect()
 
 	// prepare the status & report listener
-	listener := &sdk.Listener{
+	listener := sdk.Listener{
 		StatusFunc: func(vin int, online bool) {
 			status := map[bool]string{
 				false: "OFFLINE",
@@ -41,10 +41,10 @@ func main() {
 	// listen to report
 	// see api.Addlistener doc for usage
 	vins := sdk.VinRange(354309, 354323)
-	if err := api.AddListener(vins, listener); err != nil {
+	if err := api.AddListener(listener, vins...); err != nil {
 		fmt.Println(err)
 	} else {
-		defer api.RemoveListener(vins)
+		defer api.RemoveListener(vins...)
 	}
 
 	// listen to commands & response
