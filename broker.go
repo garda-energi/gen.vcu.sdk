@@ -7,26 +7,26 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-type BrokerConfig struct {
+type brokerConfig struct {
 	Host string
 	Port int
 	User string
 	Pass string
 }
 
-type Broker struct {
-	config BrokerConfig
+type broker struct {
+	config brokerConfig
 	client mqtt.Client
 }
 
-// New create instance of Broker.
-func NewBroker(config BrokerConfig) *Broker {
-	return &Broker{config: config}
+// newBroker create instance of broker.
+func newBroker(config brokerConfig) *broker {
+	return &broker{config: config}
 }
 
-// Connect open connection to mqtt broker.
-func (b *Broker) Connect() error {
-	opts := createClientOptions(b.config)
+// connect open connection to mqtt broker.
+func (b *broker) connect() error {
+	opts := newClientOptions(b.config)
 	b.client = mqtt.NewClient(opts)
 
 	token := b.client.Connect()
@@ -37,13 +37,13 @@ func (b *Broker) Connect() error {
 	return nil
 }
 
-// Disconnect close connection to mqtt broker.
-func (b *Broker) Disconnect() {
+// disconnect close connection to mqtt broker.
+func (b *broker) disconnect() {
 	b.client.Disconnect(100)
 }
 
-// Sub subscribe to mqtt topic.
-func (b *Broker) Sub(topic string, qos byte, handler mqtt.MessageHandler) error {
+// sub subscribe to mqtt topic.
+func (b *broker) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
 	token := b.client.Subscribe(topic, qos, handler)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
@@ -53,8 +53,8 @@ func (b *Broker) Sub(topic string, qos byte, handler mqtt.MessageHandler) error 
 	return nil
 }
 
-// SubMulti subscribe to muliple mqtt topics.
-func (b *Broker) SubMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
+// subMulti subscribe to muliple mqtt topics.
+func (b *broker) subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
 	topicFilters := map[string]byte{}
 	for _, v := range topics {
 		topicFilters[v] = qos
@@ -71,26 +71,31 @@ func (b *Broker) SubMulti(topics []string, qos byte, handler mqtt.MessageHandler
 	return nil
 }
 
-// UnsubMulti unsubscribe mqtt muliple topic.
-func (b *Broker) UnsubMulti(topics []string) error {
+// unsubMulti unsubscribe mqtt muliple topic.
+func (b *broker) unsubMulti(topics []string) error {
 	token := b.client.Unsubscribe(topics...)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 
+	for _, v := range topics {
+		log.Printf("[MQTT] Un-subscribed from: %s\n", v)
+	}
 	return nil
 }
 
-// Pub publish to mqtt topic.
-func (b *Broker) Pub(topic string, qos byte, retained bool, payload []byte) {
+// pub publish to mqtt topic.
+func (b *broker) pub(topic string, qos byte, retained bool, payload []byte) error {
 	token := b.client.Publish(topic, qos, retained, payload)
-	token.Wait()
-
+	if token.Wait() && token.Error() != nil {
+		return token.Error()
+	}
 	log.Printf("[MQTT] Published to: %s\n", topic)
+	return nil
 }
 
-// createClientOptions make client options for mqtt.
-func createClientOptions(config BrokerConfig) *mqtt.ClientOptions {
+// newClientOptions make client options for mqtt.
+func newClientOptions(config brokerConfig) *mqtt.ClientOptions {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", config.Host, config.Port))
 	opts.SetUsername(config.User)

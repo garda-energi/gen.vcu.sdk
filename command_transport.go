@@ -33,7 +33,7 @@ func (c *commander) sendCommand(cmd *command, payload []byte) error {
 		return err
 	}
 
-	c.broker.Pub(setTopicToVin(TOPIC_COMMAND, c.vin), 1, true, packet)
+	c.broker.pub(setTopicToVin(TOPIC_COMMAND, c.vin), 1, true, packet)
 	return nil
 }
 
@@ -89,8 +89,8 @@ func (c *commander) waitPacket(timeout time.Duration) ([]byte, error) {
 // flush clear command & response topic on broker.
 // It indicates that command is done or cancelled.
 func (c *commander) flush() {
-	c.broker.Pub(setTopicToVin(TOPIC_COMMAND, c.vin), 1, true, nil)
-	c.broker.Pub(setTopicToVin(TOPIC_RESPONSE, c.vin), 1, true, nil)
+	c.broker.pub(setTopicToVin(TOPIC_COMMAND, c.vin), 1, true, nil)
+	c.broker.pub(setTopicToVin(TOPIC_RESPONSE, c.vin), 1, true, nil)
 }
 
 // validateAck validate incomming ack packet.

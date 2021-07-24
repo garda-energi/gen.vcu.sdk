@@ -11,7 +11,7 @@ func (c *commander) listen() error {
 			logPacket(msg)
 		}
 	}
-	if err := c.broker.Sub(setTopicToVin(TOPIC_COMMAND, c.vin), 1, cFunc); err != nil {
+	if err := c.broker.sub(setTopicToVin(TOPIC_COMMAND, c.vin), 1, cFunc); err != nil {
 		return err
 	}
 
@@ -21,7 +21,7 @@ func (c *commander) listen() error {
 		}
 		c.resChan <- msg.Payload()
 	}
-	if err := c.broker.Sub(setTopicToVin(TOPIC_RESPONSE, c.vin), 1, rFunc); err != nil {
+	if err := c.broker.sub(setTopicToVin(TOPIC_RESPONSE, c.vin), 1, rFunc); err != nil {
 		return err
 	}
 	return nil
@@ -33,5 +33,5 @@ func (c *commander) Destroy() error {
 		setTopicToVin(TOPIC_COMMAND, c.vin),
 		setTopicToVin(TOPIC_RESPONSE, c.vin),
 	}
-	return c.broker.UnsubMulti(topics)
+	return c.broker.unsubMulti(topics)
 }

@@ -2,19 +2,30 @@ package sdk
 
 import (
 	"encoding/hex"
+	"fmt"
 	"log"
+	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-// // waitForCtrlC wait until ctrl+c is pressed
-// func waitForCtrlC() {
-// 	stop := make(chan os.Signal, 1)
-// 	signal.Notify(stop, os.Interrupt)
-// 	<-stop
-// }
+// SetupGracefulShutdown wait until ctrl+c is pressed
+func SetupGracefulShutdown() <-chan os.Signal {
+	stopChan := make(chan os.Signal, 1)
+	signal.Notify(stopChan, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-stopChan
+		fmt.Println("Gracefully exit application")
+		os.Exit(1)
+	}()
+
+	return stopChan
+}
 
 // // dd print detailed variable information
 // func dd(data interface{}) {

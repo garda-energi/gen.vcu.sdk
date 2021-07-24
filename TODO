@@ -14,8 +14,8 @@ Todo Package:
   ✔ add github action for CI/CD @done(21-07-22 11:12)
   ✘ add context.TODO, pass as function arguments @cancelled(21-07-22 08:49)
   ✔ add Makefile for commands shortcut @done(21-07-24 06:11)
-  ☐ combine all sub package, into single package
-  ☐ rename repositories, notify to all repo consumer
+  ✔ combine all sub package, into single package @done(21-07-24 09:28)
+  ✔ rename repositories, notify to all repo consumer @done(21-07-24 09:28)
   
 Todo Report:
   ✔ multiply value with factor tag @done(21-07-13 19:39)
@@ -41,5 +41,5 @@ Todo Command:
   ☐ pass logging flag to command
     
 Todo Broker:  
-  ☐ boroker TLS support ?
+  ☐ broker TLS support ?
   ☐ broker ACL ?

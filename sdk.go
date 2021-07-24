@@ -1,13 +1,13 @@
 package sdk
 
 type Sdk struct {
-	broker  *Broker
+	broker  *broker
 	logging bool
 }
 
 // New create new instance of Sdk for VCU (Vehicle Control Unit).
 func New(host string, port int, user, pass string, logging bool) Sdk {
-	broker := NewBroker(BrokerConfig{
+	broker := newBroker(brokerConfig{
 		Host: host,
 		Port: port,
 		User: user,
@@ -21,12 +21,12 @@ func New(host string, port int, user, pass string, logging bool) Sdk {
 
 // Connect open connection to mqtt broker.
 func (s *Sdk) Connect() error {
-	return s.broker.Connect()
+	return s.broker.connect()
 }
 
 // Disconnect close connection to mqtt broker.
 func (s *Sdk) Disconnect() {
-	s.broker.Disconnect()
+	s.broker.disconnect()
 }
 
 // NewCommander create new instance of commander for specific VIN.
@@ -49,14 +49,14 @@ func (s *Sdk) NewCommander(vin int) (*commander, error) {
 func (s *Sdk) AddListener(vins []int, l *Listener) error {
 	if l.StatusFunc != nil {
 		topic := setTopicToVins(TOPIC_STATUS, vins)
-		if err := s.broker.SubMulti(topic, 1, statusListener(l.StatusFunc, s.logging)); err != nil {
+		if err := s.broker.subMulti(topic, 1, statusListener(l.StatusFunc, s.logging)); err != nil {
 			return err
 		}
 	}
 
 	if l.ReportFunc != nil {
 		topic := setTopicToVins(TOPIC_REPORT, vins)
-		if err := s.broker.SubMulti(topic, 1, reportListener(l.ReportFunc, s.logging)); err != nil {
+		if err := s.broker.subMulti(topic, 1, reportListener(l.ReportFunc, s.logging)); err != nil {
 			return err
 		}
 	}
@@ -69,7 +69,7 @@ func (s *Sdk) RemoveListener(vins []int) error {
 		setTopicToVins(TOPIC_STATUS, vins),
 		setTopicToVins(TOPIC_REPORT, vins)...,
 	)
-	return s.broker.UnsubMulti(topics)
+	return s.broker.unsubMulti(topics)
 }
 
 // VinRange generate array of integer from min to max.
