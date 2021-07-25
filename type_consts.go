@@ -31,8 +31,29 @@ const (
 
 const BMS_PACK_CNT = 2
 const PAYLOAD_LEN_MAX = 200
-const FINGERPRINT_MAX = 5
 const SPEED_MAX = 110
+
+const (
+	FINGERPRINT_ID_MIN = 1
+	FINGERPRINT_ID_MAX = 5
+)
+
+const (
+	// TODO: check range in TATC datasheet
+	MCU_DISCUR_MIN = 1
+	MCU_DISCUR_MAX = 32767
+)
+
+const (
+	// TODO: check range in TATC datasheet
+	MCU_TORQUE_MIN = 7
+	MCU_TORQUE_MAX = 3276
+)
+
+const (
+	USSD_LENGTH_MIN = 3
+	USSD_LENGTH_MAX = 20
+)
 
 const REPORT_REALTIME_DURATION = -5 * time.Second
 const EEPROM_CRITICAL_CAPACITY_PERCENT = 90
@@ -44,6 +65,11 @@ const STACK_OVERFLOW_BYTE_MIN = 40
 const (
 	DEFAULT_CMD_TIMEOUT = 10 * time.Second
 	DEFAULT_ACK_TIMEOUT = 8 * time.Second
+)
+
+const (
+	REPORT_INTERVAL_MIN = time.Duration(5) * time.Second
+	REPORT_INTERVAL_MAX = time.Duration(^uint16(0)) * time.Second
 )
 
 const (

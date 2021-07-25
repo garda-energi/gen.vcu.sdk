@@ -3,7 +3,9 @@ Notes:
   ☐ don't export local only components
   ☐ add documentation, at least for each func
   ☐ handle error properly, dont discard with _
-  Goroutine:
+  ☐ implement Return Early pattern to avoid nested condition
+  ☐ implement Dont Repat Yourself (DRY) pattern as possible
+  ☐ implement Separate Of Concern (SOC) pattern as possible
   ☐ watch-out from goroutine leakage
   ☐ watch-out from goroutine race-condition 
   
@@ -51,6 +53,7 @@ Todo Command:
   ☐ test sending command for different VIN at the same time
   ☐ refactor unit test, implement DRY pattern
   ☐ ignore (or speed-up) time out for test
+  ☐ add code-doc for all methods & functions
     
 Todo Broker:  
   ☐ broker TLS support ?

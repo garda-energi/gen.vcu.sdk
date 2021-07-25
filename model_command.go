@@ -73,6 +73,7 @@ func (r *responsePacket) messageOverflow() bool {
 	return len(r.Message) > PAYLOAD_LEN_MAX
 }
 
+// renderMessage subtitue BikeState to r.Message
 func (r *responsePacket) renderMessage() {
 	str := string(r.Message)
 	for i := BikeStateUnknown; i < BikeStateLimit; i++ {

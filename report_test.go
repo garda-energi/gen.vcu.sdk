@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -47,12 +48,12 @@ func TestReport(t *testing.T) {
 		}
 
 		t.Run(tt.name, func(t *testing.T) {
-			// fmt.Printf("=== [%s] ===\n", tt.name)
-			rr := newReport(tt.args.b)
-			if got, err := rr.decode(); err != nil {
+			reader := bytes.NewReader(tt.args.b)
+			got := &ReportPacket{}
+			if err := decode(reader, got); err != nil {
 				t.Errorf("got = %v, want %v", &got, tt.want)
 			} else {
-				if rr.reader.Len() != 0 {
+				if reader.Len() != 0 {
 					t.Errorf("some buffer not read")
 				}
 
@@ -63,7 +64,8 @@ func TestReport(t *testing.T) {
 					t.Errorf("encode error")
 				}
 
-				got2, _ := newReport(encRes).decode()
+				got2 := &ReportPacket{}
+				_ = decode(bytes.NewReader(encRes), got2)
 				score := compareVar(got, got2)
 
 				if score != 100 {

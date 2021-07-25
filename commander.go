@@ -97,8 +97,7 @@ func (c *commander) OvdState(state BikeState) error {
 
 // OvdReportInterval override reporting interval.
 func (c *commander) OvdReportInterval(dur time.Duration) error {
-	min, max := time.Duration(5), time.Duration(^uint16(0))
-	if dur < min*time.Second || dur > max*time.Second {
+	if dur < REPORT_INTERVAL_MIN || dur > REPORT_INTERVAL_MAX {
 		return errInputOutOfRange("duration")
 	}
 	payload := uintToBytes(reflect.Uint16, uint64(dur.Seconds()))
@@ -166,8 +165,7 @@ func (c *commander) FingerAdd() (int, error) {
 
 // FingerDel delete a fingerprint id.
 func (c *commander) FingerDel(id int) error {
-	min, max := 1, FINGERPRINT_MAX
-	if id < min || id > max {
+	if id < FINGERPRINT_ID_MIN || id > FINGERPRINT_ID_MAX {
 		return errInputOutOfRange("id")
 	}
 
@@ -208,8 +206,7 @@ func (c *commander) FotaHmi() (string, error) {
 // NetSendUssd send USSD to cellular network.
 // Input example: *123*10*3#
 func (c *commander) NetSendUssd(ussd string) (string, error) {
-	min, max := 3, 20
-	if len(ussd) < min || len(ussd) > max {
+	if len(ussd) < USSD_LENGTH_MIN || len(ussd) > USSD_LENGTH_MAX {
 		return "", errInputOutOfRange("ussd")
 	}
 	if !strings.HasPrefix(ussd, "*") || !strings.HasSuffix(ussd, "#") {
@@ -290,13 +287,12 @@ func (c *commander) McuTemplates(ts []McuTemplate) error {
 	}
 
 	var buf bytes.Buffer
-	var min, maxDisCur, maxTorque uint16 = 1, 32767, 3276
 	for i, t := range ts {
 		driveMode := ModeDrive(i)
-		if t.DisCur < min || t.DisCur > maxDisCur {
+		if t.DisCur < MCU_DISCUR_MIN || t.DisCur > MCU_DISCUR_MAX {
 			return errInputOutOfRange(fmt.Sprintf("%s:dischare-current", driveMode))
 		}
-		if t.Torque < min || t.Torque > maxTorque {
+		if t.Torque < MCU_TORQUE_MIN || t.Torque > MCU_TORQUE_MAX {
 			return errInputOutOfRange(fmt.Sprintf("%s:torque", driveMode))
 		}
 

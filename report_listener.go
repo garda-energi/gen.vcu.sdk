@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"bytes"
 	"log"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -34,8 +35,8 @@ func (ls *Listener) report() mqtt.MessageHandler {
 
 		vin := getTopicVin(msg.Topic())
 
-		result, err := newReport(msg.Payload()).decode()
-		if err != nil {
+		result := &ReportPacket{}
+		if err := decode(bytes.NewReader(msg.Payload()), result); err != nil {
 			log.Fatalf("cant decode, %v\n", err)
 		}
 
