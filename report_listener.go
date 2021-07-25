@@ -13,28 +13,24 @@ type reportListenerFunc func(vin int, report *ReportPacket)
 type Listener struct {
 	StatusFunc statusListenerFunc
 	ReportFunc reportListenerFunc
+	logger     *log.Logger
 }
 
 // statusListener is executed when got new packet on status topic.
-func statusListener(sFunc statusListenerFunc, logging bool) mqtt.MessageHandler {
+func (ls *Listener) status() mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
-		if logging {
-			logPacket(msg)
-		}
-
+		ls.logger.Println(debugPacket(msg))
 		vin := getTopicVin(msg.Topic())
 		online := parseOnline(msg.Payload())
 
-		sFunc(vin, online)
+		ls.StatusFunc(vin, online)
 	}
 }
 
 // reportListener is executed when got new packet on report topic.
-func reportListener(rFunc reportListenerFunc, logging bool) mqtt.MessageHandler {
+func (ls *Listener) report() mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
-		if logging {
-			logPacket(msg)
-		}
+		ls.logger.Println(debugPacket(msg))
 
 		vin := getTopicVin(msg.Topic())
 
@@ -43,7 +39,7 @@ func reportListener(rFunc reportListenerFunc, logging bool) mqtt.MessageHandler 
 			log.Fatalf("cant decode, %v\n", err)
 		}
 
-		rFunc(vin, result)
+		ls.ReportFunc(vin, result)
 	}
 }
 

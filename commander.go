@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
 	"strconv"
 	"strings"
@@ -14,7 +15,7 @@ import (
 
 type commander struct {
 	vin     int
-	logging bool
+	logger  *log.Logger
 	broker  Broker
 	mutex   *sync.Mutex
 	resChan chan []byte
@@ -24,7 +25,7 @@ type commander struct {
 func newCommander(vin int, broker Broker, logging bool) (*commander, error) {
 	cmder := &commander{
 		vin:     vin,
-		logging: logging,
+		logger:  newLogger(logging, "COMMAND"),
 		broker:  broker,
 		mutex:   &sync.Mutex{},
 		resChan: make(chan []byte, 1),

@@ -31,15 +31,14 @@ type BrokerConfig struct {
 type broker struct {
 	config BrokerConfig
 	client mqtt.Client
-	// logger  log.Logger
-	logging bool
+	logger *log.Logger
 }
 
 // newBroker create instance of Broker.
 func newBroker(config BrokerConfig, logging bool) Broker {
 	return &broker{
-		config:  config,
-		logging: logging,
+		config: config,
+		logger: newLogger(logging, "BROKER"),
 	}
 }
 
@@ -68,9 +67,7 @@ func (b *broker) pub(topic string, qos byte, retained bool, payload []byte) erro
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
-	if b.logging {
-		log.Printf("[MQTT] Published to: %s\n", topic)
-	}
+	b.logger.Printf("Published to: %s\n", topic)
 	return nil
 }
 
@@ -80,9 +77,7 @@ func (b *broker) sub(topic string, qos byte, handler mqtt.MessageHandler) error 
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
-	if b.logging {
-		log.Printf("[MQTT] Subscribed to: %s\n", topic)
-	}
+	b.logger.Printf("Subscribed to: %s\n", topic)
 	return nil
 }
 
@@ -98,10 +93,8 @@ func (b *broker) subMulti(topics []string, qos byte, handler mqtt.MessageHandler
 		return token.Error()
 	}
 
-	if b.logging {
-		for _, v := range topics {
-			log.Printf("[MQTT] Subscribed to: %s\n", v)
-		}
+	for _, v := range topics {
+		b.logger.Printf("Subscribed to: %s\n", v)
 	}
 	return nil
 }
@@ -113,26 +106,20 @@ func (b *broker) unsubMulti(topics []string) error {
 		return token.Error()
 	}
 
-	if b.logging {
-		for _, v := range topics {
-			log.Printf("[MQTT] Un-subscribed from: %s\n", v)
-		}
+	for _, v := range topics {
+		b.logger.Printf("Un-subscribed from: %s\n", v)
 	}
 	return nil
 }
 
 // connectHandler executed when mqtt connection is ready.
 func (b *broker) connectHandler(client mqtt.Client) {
-	if b.logging {
-		log.Printf("[MQTT] Connected\n")
-	}
+	b.logger.Printf("Connected\n")
 }
 
 // disconnectHandler executed when mqtt is disconnected.
 func (b *broker) disconnectHandler(client mqtt.Client, err error) {
-	if b.logging {
-		log.Printf("[MQTT] Disconnected, %v\n", err)
-	}
+	b.logger.Printf("Disconnected, %v\n", err)
 }
 
 // newClientOptions make client options for mqtt.
@@ -149,5 +136,5 @@ func newClientOptions(config BrokerConfig) *mqtt.ClientOptions {
 
 // defaultPublishHandler executed when no publish handler specified.
 func defaultPublishHandler(client mqtt.Client, msg mqtt.Message) {
-	log.Printf("[MQTT] Topic: %s => %s\n", msg.Topic(), msg.Payload())
+	log.Printf("DEF_PUB_HANDLER: Topic: %s => %s\n", msg.Topic(), msg.Payload())
 }

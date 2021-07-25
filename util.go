@@ -3,6 +3,7 @@ package sdk
 import (
 	"encoding/hex"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -29,6 +30,15 @@ func SetupGracefulShutdown() <-chan os.Signal {
 	return stopChan
 }
 
+func newLogger(logging bool, prefix string) *log.Logger {
+	out := ioutil.Discard
+	if logging {
+		out = os.Stderr
+	}
+	return log.New(out, fmt.Sprintf("[%s] ", prefix), log.Ldate|log.Ltime)
+}
+
+// randomSleep will sleep betwen random time specified
 func randomSleep(min, max int, unit time.Duration) {
 	rng := rand.Intn(max-min) + min
 	time.Sleep(time.Duration(rng) * unit)
@@ -50,12 +60,12 @@ func hexToByte(s string) []byte {
 	return b
 }
 
-// logPacket print received mqtt message
-func logPacket(msg mqtt.Message) {
-	log.Printf("[%s] %s\n", msg.Topic(), byteToHex(msg.Payload()))
+// debugPacket format received mqtt message
+func debugPacket(msg mqtt.Message) string {
+	return fmt.Sprintf("%s => %s\n", msg.Topic(), byteToHex(msg.Payload()))
 }
 
-// Reverse swap bytes position
+// reverseBytes swap bytes position
 func reverseBytes(b []byte) []byte {
 	nb := make([]byte, len(b))
 	for i := range nb {
