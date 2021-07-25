@@ -41,7 +41,7 @@ func (s *Sdk) NewCommander(vin int) (*commander, error) {
 // listen by range :
 // s.AddListener(listerner, sdk.VinRange(min, max)...)
 func (s *Sdk) AddListener(ls Listener, vins ...int) error {
-	ls.logger = newLogger(s.logging, "REPORT")
+	ls.logger = newLogger(s.logging, "LISTENER")
 
 	if ls.StatusFunc != nil {
 		topics := setTopicToVins(TOPIC_STATUS, vins)
