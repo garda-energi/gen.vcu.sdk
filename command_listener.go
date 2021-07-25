@@ -13,8 +13,8 @@ func (c *commander) Destroy() error {
 	return c.broker.unsubMulti(topics)
 }
 
-// listenResponse subscribe to command & response topic for current VIN.
-func (c *commander) listenResponse() error {
+// listen subscribe to command & response topic for current VIN.
+func (c *commander) listen() error {
 	cFunc := func(client mqtt.Client, msg mqtt.Message) {
 		c.logger.Println(debugPacket(msg))
 	}

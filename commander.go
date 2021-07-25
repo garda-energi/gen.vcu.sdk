@@ -31,7 +31,7 @@ func newCommander(vin int, broker Broker, logging bool) (*commander, error) {
 		resChan: make(chan []byte, 1),
 	}
 
-	if err := cmder.listenResponse(); err != nil {
+	if err := cmder.listen(); err != nil {
 		return nil, err
 	}
 	return cmder, nil
