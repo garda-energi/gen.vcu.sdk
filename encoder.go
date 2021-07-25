@@ -15,7 +15,7 @@ import (
 // alternative solution : change bit #3 after encode as length of body
 
 // encode combine command and value to bytes packet.
-// can it be replaced with encode() func bellow
+// can it be replaced with encode() func bellow ?
 func encodeCommand(vin int, cmd *command, val message) ([]byte, error) {
 	if val.overflow() {
 		return nil, errInputOutOfRange("payload")

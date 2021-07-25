@@ -29,26 +29,29 @@ type ReportPacket struct {
 	Task   *Task         // 174 - 206
 }
 
+// ValidPrefix check if r's prefix is valid
 func (r *ReportPacket) ValidPrefix() bool {
-	if r.Header != nil {
-		return r.Header.Prefix == PREFIX_REPORT
+	if r.Header == nil {
+		return false
 	}
-	return false
+	return r.Header.Prefix == PREFIX_REPORT
 }
 
+// Size calculate total r's size, ignoring prefix & size field
 func (r *ReportPacket) Size() int {
 	// TODO: implement me
 	return 0
 }
 
+// ValidSize check if r's size is valid
 func (r *ReportPacket) ValidSize() bool {
-	if r.Header != nil {
-		return int(r.Header.Size) == r.Size()
+	if r.Header == nil {
+		return false
 	}
-	return false
+	return int(r.Header.Size) == r.Size()
 }
 
-// String is stringer implementation, it converts ReportPacket to string.
+// String converts r to string.
 func (r *ReportPacket) String() string {
 	var out string
 	rv := reflect.ValueOf(r).Elem()
@@ -71,23 +74,26 @@ type Vcu struct {
 	Uptime      float32   `type:"uint32" unit:"hour" factor:"0.000277"`
 }
 
+// Events parse v's events
 // func (v *Vcu) Events() VcuEvents {
 // 	TODO: implement me
 // }
 
+// RealtimeData check if current report log is realtime
 func (v *Vcu) RealtimeData() bool {
-	if v != nil {
-		realtimeDuration := time.Now().Add(REPORT_REALTIME_DURATION)
-		return v.LogBuffered == 0 && v.LogDatetime.After(realtimeDuration)
+	if v == nil {
+		return false
 	}
-	return false
+	realtimeDuration := time.Now().Add(REPORT_REALTIME_DURATION)
+	return v.LogBuffered == 0 && v.LogDatetime.After(realtimeDuration)
 }
 
+// BatteryCritical check if v's backup battery voltage is low
 func (v *Vcu) BatteryCritical() bool {
-	if v != nil {
-		return v.BatVoltage < BATTERY_CRITICAL_MV
+	if v == nil {
+		return false
 	}
-	return false
+	return v.BatVoltage < BATTERY_CRITICAL_MV
 }
 
 type Eeprom struct {
@@ -95,11 +101,12 @@ type Eeprom struct {
 	Used   uint8 `type:"uint8" unit:"%"`
 }
 
+// CapacityCritical check if e's storage capacity is low
 func (e *Eeprom) CapacityCritical() bool {
-	if e != nil {
-		return e.Used > EEPROM_CRITICAL_CAPACITY_PERCENT
+	if e == nil {
+		return false
 	}
-	return false
+	return e.Used > EEPROM_CRITICAL_CAPACITY_PERCENT
 }
 
 type Gps struct {
@@ -114,24 +121,24 @@ type Gps struct {
 	Altitude  float32 `type:"uint16" len:"2" unit:"m" factor:"0.1"`
 }
 
-func (g *Gps) ValidLongLat() bool {
-	if g != nil {
-		if g.HDOP <= GPS_DOP_MIN {
-			if g.Longitude > GPS_LNG_MIN && g.Longitude < GPS_LNG_MAX {
-				if g.Latitude > GPS_LAT_MIN && g.Latitude < GPS_LAT_MAX {
-					return true
-				}
-			}
-		}
+// ValidHorizontal check if g's horizontal section (heading, longitude, latitude) is valid
+func (g *Gps) ValidHorizontal() bool {
+	if g == nil {
+		return false
 	}
-	return false
+	if g.HDOP > GPS_DOP_MIN {
+		return false
+	}
+	return (g.Longitude > GPS_LNG_MIN && g.Longitude < GPS_LNG_MAX) &&
+		(g.Latitude > GPS_LAT_MIN && g.Latitude < GPS_LAT_MAX)
 }
 
-func (g *Gps) ValidAltitude() bool {
-	if g != nil {
-		return g.VDOP <= GPS_DOP_MIN
+// ValidVertical check if g's vertical section (altitude) is valid
+func (g *Gps) ValidVertical() bool {
+	if g == nil {
+		return false
 	}
-	return false
+	return g.VDOP <= GPS_DOP_MIN
 }
 
 type Hbar struct {
@@ -158,11 +165,12 @@ type Net struct {
 	IpStatus NetIpStatus `type:"int8"`
 }
 
+// LowSignal check if n's signal is low
 func (n *Net) LowSignal() bool {
-	if n != nil {
-		return n.Signal <= NET_SIGNAL_LOW_PERCENT
+	if n == nil {
+		return false
 	}
-	return false
+	return n.Signal <= NET_SIGNAL_LOW_PERCENT
 }
 
 type Mems struct {
@@ -224,15 +232,17 @@ type Bms struct {
 	}
 }
 
+// Faults parse b's fault field
 // func (b *Bms) Faults() BmsFault {
 // 	TODO: implement me
 // }
 
+// LowCapacity check if b's SoC (State of Charge) is low
 func (b *Bms) LowCapacity() bool {
-	if b != nil {
-		return b.SOC < BMS_LOW_CAPACITY_PERCENT
+	if b == nil {
+		return false
 	}
-	return false
+	return b.SOC < BMS_LOW_CAPACITY_PERCENT
 }
 
 type Mcu struct {
@@ -270,6 +280,7 @@ type Mcu struct {
 	}
 }
 
+// Fault parse m's fault field
 // func (m *Mcu) Faults() McuFault {
 // 	TODO: implement me
 // }
@@ -303,13 +314,15 @@ type Task struct {
 	}
 }
 
+// StackOverflow check if t's stack is near overflow fault
 func (t *Task) StackOverflow() bool {
-	if t != nil {
-		rv := reflect.ValueOf(t.Stack)
-		for i := 0; i < rv.NumField(); i++ {
-			if rv.Field(i).Uint() < STACK_OVERFLOW_BYTE_MIN {
-				return true
-			}
+	if t == nil {
+		return false
+	}
+	rv := reflect.ValueOf(t.Stack)
+	for i := 0; i < rv.NumField(); i++ {
+		if rv.Field(i).Uint() < STACK_OVERFLOW_BYTE_MIN {
+			return true
 		}
 	}
 	return false

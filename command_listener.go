@@ -18,7 +18,8 @@ func (c *commander) listenResponse() error {
 	cFunc := func(client mqtt.Client, msg mqtt.Message) {
 		c.logger.Println(debugPacket(msg))
 	}
-	if err := c.broker.sub(setTopicToVin(TOPIC_COMMAND, c.vin), QOS_SUB_COMMAND, cFunc); err != nil {
+	topic := setTopicToVin(TOPIC_COMMAND, c.vin)
+	if err := c.broker.sub(topic, QOS_SUB_COMMAND, cFunc); err != nil {
 		return err
 	}
 
@@ -26,7 +27,8 @@ func (c *commander) listenResponse() error {
 		c.logger.Println(debugPacket(msg))
 		c.resChan <- msg.Payload()
 	}
-	if err := c.broker.sub(setTopicToVin(TOPIC_RESPONSE, c.vin), QOS_SUB_RESPONSE, rFunc); err != nil {
+	topic = setTopicToVin(TOPIC_RESPONSE, c.vin)
+	if err := c.broker.sub(topic, QOS_SUB_RESPONSE, rFunc); err != nil {
 		return err
 	}
 	return nil

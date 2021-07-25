@@ -34,6 +34,7 @@ func decodeResponse(packet []byte) (*responsePacket, error) {
 	return r, nil
 }
 
+// decodeReport extract report from bytes packet.
 func decodeReport(packet []byte) (*ReportPacket, error) {
 	reader := bytes.NewReader(packet)
 	result := &ReportPacket{}

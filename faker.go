@@ -8,13 +8,14 @@ import (
 
 type fakeBroker struct {
 	client    mqtt.Client
+	connected bool
 	responses [][]byte
 	cmdChan   chan []byte
 	resChan   chan struct{}
 }
 
 func (b *fakeBroker) pub(topic string, qos byte, retained bool, payload []byte) error {
-	if flush := payload == nil && qos == QOS_CMD_FLUSH; !flush {
+	if flush := payload == nil; !flush {
 		b.cmdChan <- payload
 	}
 	return nil
@@ -49,15 +50,17 @@ func (b *fakeBroker) sub(topic string, qos byte, handler mqtt.MessageHandler) er
 			}
 		}()
 	}
-
 	return nil
 }
 
 func (b *fakeBroker) connect() error {
+	b.connected = true
 	return nil
 }
 
-func (b *fakeBroker) disconnect() {}
+func (b *fakeBroker) disconnect() {
+	b.connected = false
+}
 
 func (b *fakeBroker) subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
 	return nil
