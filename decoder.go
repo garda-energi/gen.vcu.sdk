@@ -14,10 +14,42 @@ import (
 // typeOfTime is for comparing struct type as time.Time
 var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 
-// fix bug. in "decode func" before, It'll be error for case such as v isn't array of struct
+// decodeResponse extract header and message response from bytes packet.
+// can it be replaced with decode() func bellow, without separate message part ?
+func decodeResponse(packet []byte) (*responsePacket, error) {
+	reader := bytes.NewReader(packet)
+	r := &responsePacket{
+		Header: &headerResponse{},
+	}
+
+	// header
+	if err := decode(reader, r.Header); err != nil {
+		return nil, err
+	}
+	// message
+	if reader.Len() > 0 {
+		r.Message = make(message, reader.Len())
+		reader.Read(r.Message)
+	}
+	return r, nil
+}
+
+// decodeReport extract report from bytes packet.
+func decodeReport(packet []byte) (*ReportPacket, error) {
+	reader := bytes.NewReader(packet)
+	result := &ReportPacket{}
+	if err := decode(reader, result); err != nil {
+		return nil, err
+	}
+	if reader.Len() != 0 {
+		return nil, errors.New("some buffer not read")
+	}
+	return result, nil
+}
 
 // decode read buffer reader than decode and set it to v.
-// v is struct or pointer type that will contain decoded data
+// v is struct or pointer type that will contain decoded data.
+// fix bug. in "decode func" before, It'll be error for case such as v isn't array of struct.
 func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 	var err error
 
@@ -135,17 +167,15 @@ func readUint(rdr io.Reader, len int) uint64 {
 	for i := 0; i < len; i++ {
 		newb[i] = b[i]
 	}
-
 	return binary.LittleEndian.Uint64(newb)
 }
 
 // convertToFloat64 convert bytes data to float64.
-// data read as typedata from tag
+// data is read as typedata from tag.
 func convertToFloat64(typedata string, x uint64) (result float64) {
-	// declaration
 	rv := setVarOfTypeData(typedata)
 
-	// set sesuai memori yang dideklarasi
+	// set ad declared memory size
 	switch rv.Kind() {
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
 		rv.SetUint(x)
@@ -153,7 +183,7 @@ func convertToFloat64(typedata string, x uint64) (result float64) {
 		rv.SetInt(int64(x))
 	}
 
-	// convert ke float
+	// convert to float
 	switch tmpIntr := rv.Interface().(type) {
 	case uint8:
 		result = float64(tmpIntr)

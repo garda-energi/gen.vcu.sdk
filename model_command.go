@@ -26,54 +26,62 @@ type responsePacket struct {
 	Message message `type:"slice"`
 }
 
+// validPrefix check if r's prefix is valid
 func (r *responsePacket) validPrefix() bool {
-	if r.Header != nil {
-		return r.Header.Prefix == PREFIX_RESPONSE
+	if r.Header == nil {
+		return false
 	}
-	return false
+	return r.Header.Prefix == PREFIX_RESPONSE
 }
 
+// size calculate r's size, ignoring prefix & size field
 func (r *responsePacket) size() int {
-	if r.Header != nil {
-		return 4 + 7 + 1 + 1 + 1 + len(r.Message)
+	if r.Header == nil {
+		return 0
 	}
-	return 0
+	return 4 + 7 + 1 + 1 + 1 + len(r.Message)
 }
 
+// validSize check if r's size is valid
 func (r *responsePacket) validSize() bool {
-	if r.Header != nil {
-		return int(r.Header.Size) == r.size()
+	if r.Header == nil {
+		return false
 	}
-	return false
+	return int(r.Header.Size) == r.size()
 }
 
+// matchWith check if r is response for cmd
 func (r *responsePacket) matchWith(cmd *command) bool {
-	if r.Header != nil && cmd != nil {
-		return r.Header.Code == cmd.code && r.Header.SubCode == cmd.subCode
+	if r.Header == nil || cmd == nil {
+		return false
 	}
-	return false
+	return r.Header.Code == cmd.code && r.Header.SubCode == cmd.subCode
 }
 
+// validResCode check if r's response code is valid
 func (r *responsePacket) validResCode() bool {
-	if r.Header != nil {
-		for i := resCodeError; i < resCodeLimit; i++ {
-			if r.Header.ResCode == i {
-				return true
-			}
+	if r.Header == nil {
+		return false
+	}
+	for i := resCodeError; i < resCodeLimit; i++ {
+		if r.Header.ResCode == i {
+			return true
 		}
 	}
 	return false
 }
 
+// hasMessage check if r has message
 func (r *responsePacket) hasMessage() bool {
 	return len(r.Message) > 0
 }
 
+// messageOverflow check if r's message is overflowed
 func (r *responsePacket) messageOverflow() bool {
-	return len(r.Message) > PAYLOAD_LEN_MAX
+	return len(r.Message) > MESSAGE_LEN_MAX
 }
 
-// renderMessage subtitue BikeState to r.Message
+// renderMessage subtitue BikeState to r's message
 func (r *responsePacket) renderMessage() {
 	str := string(r.Message)
 	for i := BikeStateUnknown; i < BikeStateLimit; i++ {
@@ -84,8 +92,10 @@ func (r *responsePacket) renderMessage() {
 	r.Message = []byte(str)
 }
 
+// message is type for command & response message (last field)
 type message []byte
 
-func (p message) overflow() bool {
-	return len(p) > PAYLOAD_LEN_MAX
+// overflow check if m length is overflowed
+func (m message) overflow() bool {
+	return len(m) > MESSAGE_LEN_MAX
 }

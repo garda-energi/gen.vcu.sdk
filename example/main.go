@@ -38,8 +38,8 @@ func main() {
 			if report.Vcu.RealtimeData() {
 				fmt.Println("Current report is realtime")
 			}
-			if report.Gps.ValidLongLat() {
-				fmt.Println("GPS horizontal position is valid")
+			if report.Gps.ValidHorizontal() {
+				fmt.Println("GPS longitude, latitude & heading is valid")
 			}
 			if report.Bms.LowCapacity() {
 				fmt.Println("BMS need to be charged on Charging Station")

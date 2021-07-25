@@ -8,11 +8,11 @@ import (
 )
 
 // exec execute command and return the response.
-func (c *commander) exec(cmd_name string, payload []byte) ([]byte, error) {
+func (c *commander) exec(name string, payload []byte) ([]byte, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	cmd, err := getCommand(cmd_name)
+	cmd, err := getCommand(name)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func (c *commander) sendCommand(cmd *command, payload []byte) error {
 	return nil
 }
 
-// waitResponse wait, decode and check of ACK and RESPONSE packet.
+// waitResponse wait, decode and check of incomming ACK and RESPONSE packet.
 func (c *commander) waitResponse(cmd *command) ([]byte, error) {
 	defer func() {
 		c.flush()
@@ -83,7 +83,6 @@ func (c *commander) waitPacket(name string, timeout time.Duration) ([]byte, erro
 	case <-time.After(timeout):
 		return nil, errPacketTimeout(name)
 	}
-
 }
 
 // validateAck validate incomming ack packet.
@@ -96,7 +95,7 @@ func validateAck(msg []byte) error {
 }
 
 // validateResponse validate incomming response packet.
-// It also parse response code and message
+// It also render message part (subtitutes BikeState).
 func validateResponse(vin int, cmd *command, res *responsePacket) error {
 	if !res.validPrefix() {
 		return errInvalidPrefix

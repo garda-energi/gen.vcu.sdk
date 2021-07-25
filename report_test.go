@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -13,6 +12,8 @@ import (
 	"testing"
 	"time"
 )
+
+const TEST_LIMIT = 10
 
 func TestReport(t *testing.T) {
 	type args struct {
@@ -29,7 +30,6 @@ func TestReport(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	// it was. cz i paste from hex lib example
 	tests := make([]tester, len(testData))
 	for i, d := range testData {
 		tests[i].name = "data #" + strconv.Itoa(i)
@@ -42,21 +42,14 @@ func TestReport(t *testing.T) {
 			continue
 		}
 
-		// limit test
-		if i > 10 {
+		if i > TEST_LIMIT {
 			break
 		}
 
 		t.Run(tt.name, func(t *testing.T) {
-			reader := bytes.NewReader(tt.args.b)
-			got := &ReportPacket{}
-			if err := decode(reader, got); err != nil {
+			if got, err := decodeReport(tt.args.b); err != nil {
 				t.Errorf("got = %v, want %v", &got, tt.want)
 			} else {
-				if reader.Len() != 0 {
-					t.Errorf("some buffer not read")
-				}
-
 				// many case that can't be handled. cz float factorial
 				// ex : 8.6 / 0.1 != 86.0
 				encRes, err := encode(got)
@@ -64,8 +57,7 @@ func TestReport(t *testing.T) {
 					t.Errorf("encode error")
 				}
 
-				got2 := &ReportPacket{}
-				_ = decode(bytes.NewReader(encRes), got2)
+				got2, _ := decodeReport(encRes)
 				score := compareVar(got, got2)
 
 				if score != 100 {
@@ -102,11 +94,9 @@ func openFileJSON(filename string, testData *[]string) error {
 
 // compare between 2 of any variabel
 func compareVar(v1 interface{}, v2 interface{}) (score int) {
-
 	rv1 := reflect.ValueOf(v1)
 	rv2 := reflect.ValueOf(v2)
 
-	// compare kind
 	if rv1.Kind() != rv2.Kind() {
 		return 0
 	}

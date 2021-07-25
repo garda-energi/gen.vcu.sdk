@@ -27,7 +27,7 @@ func TestCommandWithoutResponse(t *testing.T) {
 		t.Fatalf("want %s, got %s", wantErr, err)
 	}
 }
-func TestCommandInvalidAck(t *testing.T) {
+func TestResponseInvalidAck(t *testing.T) {
 	cmder := newFakeCommander([][]byte{
 		strToBytes(PREFIX_COMMAND),
 	})
@@ -41,7 +41,7 @@ func TestCommandInvalidAck(t *testing.T) {
 	}
 }
 
-func TestCommandValidAckNoResponse(t *testing.T) {
+func TestResponseValidAckOnly(t *testing.T) {
 	cmder := newFakeCommander([][]byte{
 		strToBytes(PREFIX_ACK),
 	})
@@ -55,7 +55,7 @@ func TestCommandValidAckNoResponse(t *testing.T) {
 	}
 }
 
-func TestValidResponse(t *testing.T) {
+func TestResponseValid(t *testing.T) {
 	cmder := newFakeCommander([][]byte{
 		strToBytes(PREFIX_ACK),
 		hexToByte(resGenInfo),
@@ -69,7 +69,7 @@ func TestValidResponse(t *testing.T) {
 	}
 }
 
-func TestValidResponseOtherCommand(t *testing.T) {
+func TestResponseValidDifferenntCommand(t *testing.T) {
 	cmder := newFakeCommander([][]byte{
 		strToBytes(PREFIX_ACK),
 		hexToByte(resGenLed),

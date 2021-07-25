@@ -19,17 +19,14 @@ func getCommand(name string) (*command, error) {
 			if cmd.name == name {
 				cmd.code = uint8(code)
 				cmd.subCode = uint8(subCode)
-
 				if cmd.timeout == 0 {
 					cmd.timeout = DEFAULT_CMD_TIMEOUT
 				}
-
 				return &cmd, nil
 			}
 		}
 	}
-
-	return nil, errors.New("no result found")
+	return nil, errors.New("no command found")
 }
 
 var commands = [][]command{
