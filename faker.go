@@ -7,8 +7,8 @@ import (
 )
 
 type fakeBroker struct {
+	Broker
 	client    mqtt.Client
-	connected bool
 	responses [][]byte
 	cmdChan   chan []byte
 	resChan   chan struct{}
@@ -53,48 +53,19 @@ func (b *fakeBroker) sub(topic string, qos byte, handler mqtt.MessageHandler) er
 	return nil
 }
 
-func (b *fakeBroker) connect() error {
-	b.connected = true
-	return nil
-}
-
-func (b *fakeBroker) disconnect() {
-	b.connected = false
-}
-
-func (b *fakeBroker) subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
-	return nil
-}
-
 func (b *fakeBroker) unsubMulti(topics []string) error {
 	return nil
 }
 
 type fakeMessage struct {
-	duplicate bool
-	qos       byte
-	retained  bool
-	topic     string
-	messageId uint16
-	payload   []byte
+	mqtt.Message
+	topic   string
+	payload []byte
 }
 
-func (m *fakeMessage) Duplicate() bool {
-	return m.duplicate
-}
-func (m *fakeMessage) Qos() byte {
-	return m.qos
-}
-func (m *fakeMessage) Retained() bool {
-	return m.retained
-}
 func (m *fakeMessage) Topic() string {
 	return m.topic
-}
-func (m *fakeMessage) MessageID() uint16 {
-	return m.messageId
 }
 func (m *fakeMessage) Payload() []byte {
 	return m.payload
 }
-func (m *fakeMessage) Ack() {}
