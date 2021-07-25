@@ -14,6 +14,26 @@ import (
 // header has length and length get after encode.
 // alternative solution : change bit #3 after encode as length of body
 
+// encode combine command and value to bytes packet.
+// can it be replaced with encode() func bellow
+func encodeCommand(vin int, cmd *command, val message) ([]byte, error) {
+	if val.overflow() {
+		return nil, errInputOutOfRange("payload")
+	}
+
+	var buf bytes.Buffer
+	ed := binary.LittleEndian
+	binary.Write(&buf, ed, reverseBytes(val))
+	binary.Write(&buf, ed, cmd.subCode)
+	binary.Write(&buf, ed, cmd.code)
+	binary.Write(&buf, ed, reverseBytes(timeToBytes(time.Now())))
+	binary.Write(&buf, binary.BigEndian, uint32(vin))
+	binary.Write(&buf, ed, byte(buf.Len()))
+	binary.Write(&buf, ed, []byte(PREFIX_COMMAND))
+	bytes := reverseBytes(buf.Bytes())
+	return bytes, nil
+}
+
 // encode struct or pointer of struct to bytes
 func encode(v interface{}) (resBytes []byte, resError error) {
 	buf := &bytes.Buffer{}
