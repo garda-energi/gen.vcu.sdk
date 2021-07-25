@@ -29,13 +29,13 @@ type BrokerConfig struct {
 	Pass string
 }
 type broker struct {
-	config BrokerConfig
-	client mqtt.Client
+	config *BrokerConfig
 	logger *log.Logger
+	client mqtt.Client
 }
 
 // newBroker create instance of Broker.
-func newBroker(config BrokerConfig, logging bool) Broker {
+func newBroker(config *BrokerConfig, logging bool) Broker {
 	return &broker{
 		config: config,
 		logger: newLogger(logging, "BROKER"),
@@ -44,10 +44,7 @@ func newBroker(config BrokerConfig, logging bool) Broker {
 
 // connect open connection to mqtt broker.
 func (b *broker) connect() error {
-	opts := newClientOptions(b.config)
-	opts.OnConnect = b.connectHandler
-	opts.OnConnectionLost = b.disconnectHandler
-	b.client = mqtt.NewClient(opts)
+	b.client = mqtt.NewClient(b.newClientOptions())
 
 	token := b.client.Connect()
 	if token.Wait() && token.Error() != nil {
@@ -112,29 +109,22 @@ func (b *broker) unsubMulti(topics []string) error {
 	return nil
 }
 
-// connectHandler executed when mqtt connection is ready.
-func (b *broker) connectHandler(client mqtt.Client) {
-	b.logger.Printf("Connected\n")
-}
-
-// disconnectHandler executed when mqtt is disconnected.
-func (b *broker) disconnectHandler(client mqtt.Client, err error) {
-	b.logger.Printf("Disconnected, %v\n", err)
-}
-
 // newClientOptions make client options for mqtt.
-func newClientOptions(config BrokerConfig) *mqtt.ClientOptions {
+func (b *broker) newClientOptions() *mqtt.ClientOptions {
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", config.Host, config.Port))
-	opts.SetUsername(config.User)
-	opts.SetPassword(config.Pass)
+	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", b.config.Host, b.config.Port))
+	opts.SetUsername(b.config.User)
+	opts.SetPassword(b.config.Pass)
 	opts.SetClientID("go_mqtt_client")
 
-	opts.SetDefaultPublishHandler(defaultPublishHandler)
+	opts.DefaultPublishHandler = func(client mqtt.Client, msg mqtt.Message) {
+		b.logger.Println(debugPacket(msg))
+	}
+	opts.OnConnect = func(client mqtt.Client) {
+		b.logger.Println("Connected")
+	}
+	opts.OnConnectionLost = func(client mqtt.Client, err error) {
+		b.logger.Printf("Disconnected, %v\n", err)
+	}
 	return opts
-}
-
-// defaultPublishHandler executed when no publish handler specified.
-func defaultPublishHandler(client mqtt.Client, msg mqtt.Message) {
-	log.Printf("DEF_PUB_HANDLER: Topic: %s => %s\n", msg.Topic(), msg.Payload())
 }

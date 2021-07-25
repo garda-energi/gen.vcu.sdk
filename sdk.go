@@ -9,7 +9,7 @@ type Sdk struct {
 func New(brokerConfig BrokerConfig, logging bool) Sdk {
 	return Sdk{
 		logging: logging,
-		broker:  newBroker(brokerConfig, logging),
+		broker:  newBroker(&brokerConfig, logging),
 	}
 }
 

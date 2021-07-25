@@ -30,7 +30,7 @@ const (
 )
 
 const BMS_PACK_CNT = 2
-const PAYLOAD_LEN_MAX = 200
+const MESSAGE_LEN_MAX = 200
 const SPEED_MAX = 110
 
 const (

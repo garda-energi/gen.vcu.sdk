@@ -70,7 +70,7 @@ func (r *responsePacket) hasMessage() bool {
 }
 
 func (r *responsePacket) messageOverflow() bool {
-	return len(r.Message) > PAYLOAD_LEN_MAX
+	return len(r.Message) > MESSAGE_LEN_MAX
 }
 
 // renderMessage subtitue BikeState to r.Message
@@ -87,5 +87,5 @@ func (r *responsePacket) renderMessage() {
 type message []byte
 
 func (p message) overflow() bool {
-	return len(p) > PAYLOAD_LEN_MAX
+	return len(p) > MESSAGE_LEN_MAX
 }
