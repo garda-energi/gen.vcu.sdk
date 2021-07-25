@@ -16,6 +16,7 @@ Todo Package:
   ✔ add Makefile for commands shortcut @done(21-07-24 06:11)
   ✔ combine all sub package, into single package @done(21-07-24 09:28)
   ✔ rename repositories, notify to all repo consumer @done(21-07-24 09:28)
+  ☐ Change all magic number to const
   
 Todo Report:
   ✔ multiply value with factor tag @done(21-07-13 19:39)
@@ -27,14 +28,14 @@ Todo Report:
   ✔ add unit test @done(21-07-24 06:07)
   ✘ discard duplicate reports @cancelled(21-07-24 06:07)
   ✔ add report encoder @done(21-07-24 06:12)
-  ☐ validate report (header) properly with test
+  ☐ validate report packet (specially header part) properly with test, see command_test for example.
   ☐ find a way to use units in tagger
-  ☐ add usefull method to ReportPacket
-    ☐ IsValidGPS
-    ☐ EepromCapacityCritical
+  ☐ add usefull method to *ReportPacket
+    ✔ IsValidGPS @done(21-07-25 09:19)
+    ✔ EepromCapacityCritical @done(21-07-25 09:19)
     ☐ Events Renderer
-    ☐ BatteryPackLow
-    ☐ StackOverflow
+    ✔ BatteryPackLow @done(21-07-25 09:19)
+    ✔ StackOverflow @done(21-07-25 09:19)
     ☐ FingerValidId
     ☐ UnitGetter
     ☐ BMS & MCU Error Renderer
