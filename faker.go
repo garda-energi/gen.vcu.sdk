@@ -24,24 +24,28 @@ func (b *fakeBroker) sub(topic string, qos byte, handler mqtt.MessageHandler) er
 	switch toGlobalTopic(topic) {
 	case TOPIC_COMMAND:
 		go func() {
-			cmdPacket := <-b.cmdChan
-
-			handler(b.client, &fakeMessage{
-				topic:   topic,
-				payload: cmdPacket,
-			})
-			randomSleep(50, 100, time.Millisecond)
-			b.resChan <- struct{}{}
+			select {
+			case cmdPacket := <-b.cmdChan:
+				handler(b.client, &fakeMessage{
+					topic:   topic,
+					payload: cmdPacket,
+				})
+				b.resChan <- struct{}{}
+			case <-time.After(time.Second):
+			}
 		}()
 	case TOPIC_RESPONSE:
 		go func() {
-			<-b.resChan
-			for _, resPacket := range b.responses {
-				randomSleep(50, 100, time.Millisecond)
-				handler(b.client, &fakeMessage{
-					topic:   topic,
-					payload: resPacket,
-				})
+			select {
+			case <-b.resChan:
+				for _, resPacket := range b.responses {
+					randomSleep(50, 100, time.Millisecond)
+					handler(b.client, &fakeMessage{
+						topic:   topic,
+						payload: resPacket,
+					})
+				}
+			case <-time.After(time.Second):
 			}
 		}()
 	}

@@ -8,8 +8,8 @@ type Sdk struct {
 // New create new instance of Sdk for VCU (Vehicle Control Unit).
 func New(brokerConfig BrokerConfig, logging bool) Sdk {
 	return Sdk{
-		broker:  newBroker(brokerConfig),
 		logging: logging,
+		broker:  newBroker(brokerConfig, logging),
 	}
 }
 
@@ -33,25 +33,27 @@ func (s *Sdk) NewCommander(vin int) (*commander, error) {
 // Examples :
 //
 // listen by list :
-// s.AddListener([]int{1, 2 ,3}, *listerner)
+// s.AddListener(listerner, []int{1, 2 ,3}...)
 //
 // listen one spesific vin 2341 :
-// s.AddListener([]int{2341}, *listerner)
+// s.AddListener(listerner, 2341)
 //
 // listen by range :
-// s.AddListener(sdk.VinRange(min, max), *listerner)
-func (s *Sdk) AddListener(vins []int, l *Listener) error {
-	if l.StatusFunc != nil {
+// s.AddListener(listerner, sdk.VinRange(min, max)...)
+func (s *Sdk) AddListener(ls Listener, vins ...int) error {
+	ls.logger = newLogger(s.logging, "REPORT")
+
+	if ls.StatusFunc != nil {
 		topics := setTopicToVins(TOPIC_STATUS, vins)
-		listener := statusListener(l.StatusFunc, s.logging)
+		listener := ls.status()
 		if err := s.broker.subMulti(topics, QOS_SUB_STATUS, listener); err != nil {
 			return err
 		}
 	}
 
-	if l.ReportFunc != nil {
+	if ls.ReportFunc != nil {
 		topics := setTopicToVins(TOPIC_REPORT, vins)
-		listener := reportListener(l.ReportFunc, s.logging)
+		listener := ls.report()
 		if err := s.broker.subMulti(topics, QOS_SUB_REPORT, listener); err != nil {
 			return err
 		}
@@ -60,7 +62,7 @@ func (s *Sdk) AddListener(vins []int, l *Listener) error {
 }
 
 // RemoveListener unsubscribe status and report topic for spesific vin in range.
-func (s *Sdk) RemoveListener(vins []int) error {
+func (s *Sdk) RemoveListener(vins ...int) error {
 	topics := append(
 		setTopicToVins(TOPIC_STATUS, vins),
 		setTopicToVins(TOPIC_REPORT, vins)...,

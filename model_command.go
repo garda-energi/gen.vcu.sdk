@@ -13,7 +13,7 @@ type HeaderCommand struct {
 
 // type CommandPacket struct {
 // 	Header  *HeaderCommand
-// 	Payload payload
+// 	Message message
 // }
 
 type headerResponse struct {
@@ -23,12 +23,12 @@ type headerResponse struct {
 
 type responsePacket struct {
 	Header  *headerResponse
-	Message payload `type:"slice"`
+	Message message `type:"slice"`
 }
 
-type payload []byte
+type message []byte
 
-func (p payload) overflow() bool {
+func (p message) overflow() bool {
 	return len(p) > PAYLOAD_LEN_MAX
 }
 
