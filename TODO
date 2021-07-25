@@ -18,7 +18,7 @@ Todo Package:
   ✔ add Makefile for commands shortcut @done(21-07-24 06:11)
   ✔ combine all sub package, into single package @done(21-07-24 09:28)
   ✔ rename repositories, notify to all repo consumer @done(21-07-24 09:28)
-  ☐ Change all magic number to const
+  ✔ change all magic number to const @done(21-07-25 19:40)
   
 Todo Report:
   ✔ multiply value with factor tag @done(21-07-13 19:39)
@@ -34,7 +34,7 @@ Todo Report:
   ☐ find a way to use units in tagger
   ☐ add usefull method to *ReportPacket
     ✔ IsValidGPS @done(21-07-25 09:19)
-    ✔ EepromCapacityCritical @done(21-07-25 09:19)
+    ✔ EepromCapacityLow @done(21-07-25 09:19)
     ☐ Events Renderer
     ✔ BatteryPackLow @done(21-07-25 09:19)
     ✔ StackOverflow @done(21-07-25 09:19)
@@ -53,7 +53,7 @@ Todo Command:
   ☐ test sending command for different VIN at the same time
   ☐ refactor unit test, implement DRY pattern
   ☐ ignore (or speed-up) time out for test
-  ☐ add code-doc for all methods & functions
+  ✔ add code-doc for all methods & functions @done(21-07-25 19:40)
     
 Todo Broker:  
   ☐ broker TLS support ?

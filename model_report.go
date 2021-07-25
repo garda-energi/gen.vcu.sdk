@@ -88,12 +88,12 @@ func (v *Vcu) RealtimeData() bool {
 	return v.LogBuffered == 0 && v.LogDatetime.After(realtimeDuration)
 }
 
-// BatteryCritical check if v's backup battery voltage is low
-func (v *Vcu) BatteryCritical() bool {
+// BatteryLow check if v's backup battery voltage is low
+func (v *Vcu) BatteryLow() bool {
 	if v == nil {
 		return false
 	}
-	return v.BatVoltage < BATTERY_CRITICAL_MV
+	return v.BatVoltage < BATTERY_BACKUP_LOW_MV
 }
 
 type Eeprom struct {
@@ -101,12 +101,12 @@ type Eeprom struct {
 	Used   uint8 `type:"uint8" unit:"%"`
 }
 
-// CapacityCritical check if e's storage capacity is low
-func (e *Eeprom) CapacityCritical() bool {
+// CapacityLow check if e's storage capacity is low
+func (e *Eeprom) CapacityLow() bool {
 	if e == nil {
 		return false
 	}
-	return e.Used > EEPROM_CRITICAL_CAPACITY_PERCENT
+	return e.Used > EEPROM_LOW_CAPACITY_PERCENT
 }
 
 type Gps struct {
@@ -170,7 +170,7 @@ func (n *Net) LowSignal() bool {
 	if n == nil {
 		return false
 	}
-	return n.Signal <= NET_SIGNAL_LOW_PERCENT
+	return n.Signal <= NET_LOW_SIGNAL_PERCENT
 }
 
 type Mems struct {
@@ -222,7 +222,7 @@ type Bms struct {
 	Run    bool   `type:"uint8"`
 	SOC    uint8  `type:"uint8" unit:"%"`
 	Fault  uint16 `type:"uint16"`
-	Pack   [BMS_PACK_CNT]struct {
+	Pack   [BMS_PACK_MAX]struct {
 		ID      uint32  `type:"uint32"`
 		Fault   uint16  `type:"uint16"`
 		Voltage float32 `type:"uint16" len:"2" unit:"Volt" factor:"0.01"`

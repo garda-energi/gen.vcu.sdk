@@ -16,18 +16,18 @@ type Listener struct {
 	logger     *log.Logger
 }
 
-// status is executed when got new packet on status topic.
+// status is executed when received new packet on status topic.
 func (ls *Listener) status() mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
 		ls.logger.Println(debugPacket(msg))
 		vin := getTopicVin(msg.Topic())
-		online := parseOnline(msg.Payload())
+		online := online(msg.Payload())
 
 		ls.StatusFunc(vin, online)
 	}
 }
 
-// report is executed when got new packet on report topic.
+// report is executed when received new packet on report topic.
 func (ls *Listener) report() mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
 		ls.logger.Println(debugPacket(msg))
@@ -43,7 +43,7 @@ func (ls *Listener) report() mqtt.MessageHandler {
 	}
 }
 
-// parseOnline convert status payload to online status.
-func parseOnline(b []byte) bool {
+// online convert status payload to online status.
+func online(b []byte) bool {
 	return b[0] == '1'
 }

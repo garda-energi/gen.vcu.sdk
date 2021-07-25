@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+const TEST_LIMIT = 10
+
 func TestReport(t *testing.T) {
 	type args struct {
 		b []byte
@@ -40,8 +42,7 @@ func TestReport(t *testing.T) {
 			continue
 		}
 
-		// limit test
-		if i > 10 {
+		if i > TEST_LIMIT {
 			break
 		}
 
@@ -93,11 +94,9 @@ func openFileJSON(filename string, testData *[]string) error {
 
 // compare between 2 of any variabel
 func compareVar(v1 interface{}, v2 interface{}) (score int) {
-
 	rv1 := reflect.ValueOf(v1)
 	rv2 := reflect.ValueOf(v2)
 
-	// compare kind
 	if rv1.Kind() != rv2.Kind() {
 		return 0
 	}
