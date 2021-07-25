@@ -45,16 +45,14 @@ func (s *Sdk) AddListener(ls Listener, vins ...int) error {
 
 	if ls.StatusFunc != nil {
 		topics := setTopicToVins(TOPIC_STATUS, vins)
-		listener := ls.status()
-		if err := s.broker.subMulti(topics, QOS_SUB_STATUS, listener); err != nil {
+		if err := s.broker.subMulti(topics, QOS_SUB_STATUS, ls.status()); err != nil {
 			return err
 		}
 	}
 
 	if ls.ReportFunc != nil {
 		topics := setTopicToVins(TOPIC_REPORT, vins)
-		listener := ls.report()
-		if err := s.broker.subMulti(topics, QOS_SUB_REPORT, listener); err != nil {
+		if err := s.broker.subMulti(topics, QOS_SUB_REPORT, ls.report()); err != nil {
 			return err
 		}
 	}

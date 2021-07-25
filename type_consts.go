@@ -6,28 +6,6 @@ import (
 	"time"
 )
 
-var (
-	errPacketAckCorrupt   = errors.New("packet ack corrupt")
-	errInvalidPrefix      = errors.New("prefix invalid")
-	errInvalidSize        = errors.New("size invalid")
-	errInvalidVin         = errors.New("vin invalid")
-	errInvalidCode        = errors.New("code invalid")
-	errInvalidResCode     = errors.New("resCode invalid")
-	errResMessageOverflow = errors.New("message overflow")
-)
-
-type errPacketTimeout string
-
-func (e errPacketTimeout) Error() string {
-	return fmt.Sprintf("packet %s timeout", string(e))
-}
-
-type errInputOutOfRange string
-
-func (e errInputOutOfRange) Error() string {
-	return fmt.Sprintf("input %s out of range", string(e))
-}
-
 const (
 	TOPIC_STATUS   = "VCU/+/STS"
 	TOPIC_REPORT   = "VCU/+/RPT"
@@ -56,21 +34,44 @@ const PAYLOAD_LEN_MAX = 200
 const FINGERPRINT_MAX = 5
 const SPEED_MAX = 110
 
+const REPORT_REALTIME_DURATION = -5 * time.Second
+const EEPROM_CRITICAL_CAPACITY_PERCENT = 90
+const BATTERY_CRITICAL_MV = 3300
+const NET_SIGNAL_LOW_PERCENT = 20
+const BMS_LOW_CAPACITY_PERCENT = 20
+const STACK_OVERFLOW_BYTE_MIN = 40
+
 const (
 	DEFAULT_CMD_TIMEOUT = 10 * time.Second
 	DEFAULT_ACK_TIMEOUT = 8 * time.Second
 )
 
-// var TASK_LIST = []string{
-// 	"manager",
-// 	"network",
-// 	"reporter",
-// 	"command",
-// 	"mems",
-// 	"remote",
-// 	"finger",
-// 	"audio",
-// 	"gate",
-// 	"canRx",
-// 	"canTx",
-// }
+const (
+	GPS_DOP_MIN = 5
+	GPS_LNG_MIN = 95.011198
+	GPS_LNG_MAX = 141.020354
+	GPS_LAT_MIN = -11.107187
+	GPS_LAT_MAX = 5.90713
+)
+
+var (
+	errPacketAckCorrupt   = errors.New("packet ack corrupt")
+	errInvalidPrefix      = errors.New("prefix invalid")
+	errInvalidSize        = errors.New("size invalid")
+	errInvalidVin         = errors.New("vin invalid")
+	errInvalidCode        = errors.New("code invalid")
+	errInvalidResCode     = errors.New("resCode invalid")
+	errResMessageOverflow = errors.New("message overflow")
+)
+
+type errPacketTimeout string
+
+func (e errPacketTimeout) Error() string {
+	return fmt.Sprintf("packet %s timeout", string(e))
+}
+
+type errInputOutOfRange string
+
+func (e errInputOutOfRange) Error() string {
+	return fmt.Sprintf("input %s out of range", string(e))
+}

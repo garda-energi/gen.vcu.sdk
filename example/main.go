@@ -30,11 +30,20 @@ func main() {
 				false: "OFFLINE",
 				true:  "ONLINE",
 			}[online]
-
 			fmt.Printf("%d => %s\n", vin, status)
 		},
 		ReportFunc: func(vin int, report *sdk.ReportPacket) {
 			fmt.Println(report)
+			// show-off all *ReportPacket methods available
+			if report.Vcu.RealtimeData() {
+				fmt.Println("Current report is realtime")
+			}
+			if report.Gps.ValidLongLat() {
+				fmt.Println("GPS horizontal position is valid")
+			}
+			if report.Bms.LowCapacity() {
+				fmt.Println("BMS need to be charged on Charging Station")
+			}
 		},
 	}
 
@@ -53,6 +62,7 @@ func main() {
 	} else {
 		defer dev354313.Destroy()
 
+		// show-off all commands available
 		if info, err := dev354313.GenInfo(); err != nil {
 			fmt.Println(err)
 		} else {
