@@ -29,10 +29,28 @@ type ReportPacket struct {
 	Task   *Task         // 174 - 206
 }
 
+func (r *ReportPacket) ValidPrefix() bool {
+	if r.Header != nil {
+		return r.Header.Prefix == PREFIX_REPORT
+	}
+	return false
+}
+
+func (r *ReportPacket) Size() int {
+	// TODO: implement me
+	return 0
+}
+
+func (r *ReportPacket) ValidSize() bool {
+	if r.Header != nil {
+		return int(r.Header.Size) == r.Size()
+	}
+	return false
+}
+
 // String is stringer implementation, it converts ReportPacket to string.
 func (r *ReportPacket) String() string {
 	var out string
-
 	rv := reflect.ValueOf(r).Elem()
 	for i := 0; i < rv.NumField(); i++ {
 		rvField := rv.Field(i)
@@ -53,9 +71,35 @@ type Vcu struct {
 	Uptime      float32   `type:"uint32" unit:"hour" factor:"0.000277"`
 }
 
+// func (v *Vcu) Events() VcuEvents {
+// 	TODO: implement me
+// }
+
+func (v *Vcu) RealtimeData() bool {
+	if v != nil {
+		realtimeDuration := time.Now().Add(REPORT_REALTIME_DURATION)
+		return v.LogBuffered == 0 && v.LogDatetime.After(realtimeDuration)
+	}
+	return false
+}
+
+func (v *Vcu) BatteryCritical() bool {
+	if v != nil {
+		return v.BatVoltage < BATTERY_CRITICAL_MV
+	}
+	return false
+}
+
 type Eeprom struct {
 	Active bool  `type:"uint8"`
 	Used   uint8 `type:"uint8" unit:"%"`
+}
+
+func (e *Eeprom) CapacityCritical() bool {
+	if e != nil {
+		return e.Used > EEPROM_CRITICAL_CAPACITY_PERCENT
+	}
+	return false
 }
 
 type Gps struct {
@@ -68,6 +112,26 @@ type Gps struct {
 	Longitude float32 `type:"int32" factor:"0.0000001"`
 	Latitude  float32 `type:"int32" factor:"0.0000001"`
 	Altitude  float32 `type:"uint16" len:"2" unit:"m" factor:"0.1"`
+}
+
+func (g *Gps) ValidLongLat() bool {
+	if g != nil {
+		if g.HDOP <= GPS_DOP_MIN {
+			if g.Longitude > GPS_LNG_MIN && g.Longitude < GPS_LNG_MAX {
+				if g.Latitude > GPS_LAT_MIN && g.Latitude < GPS_LAT_MAX {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+func (g *Gps) ValidAltitude() bool {
+	if g != nil {
+		return g.VDOP <= GPS_DOP_MIN
+	}
+	return false
 }
 
 type Hbar struct {
@@ -92,6 +156,13 @@ type Net struct {
 	Signal   uint8       `type:"uint8" unit:"%"`
 	State    NetState    `type:"int8"`
 	IpStatus NetIpStatus `type:"int8"`
+}
+
+func (n *Net) LowSignal() bool {
+	if n != nil {
+		return n.Signal <= NET_SIGNAL_LOW_PERCENT
+	}
+	return false
 }
 
 type Mems struct {
@@ -153,6 +224,17 @@ type Bms struct {
 	}
 }
 
+// func (b *Bms) Faults() BmsFault {
+// 	TODO: implement me
+// }
+
+func (b *Bms) LowCapacity() bool {
+	if b != nil {
+		return b.SOC < BMS_LOW_CAPACITY_PERCENT
+	}
+	return false
+}
+
 type Mcu struct {
 	Active    bool      `type:"uint8"`
 	Run       bool      `type:"uint8"`
@@ -188,6 +270,10 @@ type Mcu struct {
 	}
 }
 
+// func (m *Mcu) Faults() McuFault {
+// 	TODO: implement me
+// }
+
 type Task struct {
 	Stack struct {
 		Manager  uint16 `type:"uint16" unit:"Bytes"`
@@ -215,4 +301,16 @@ type Task struct {
 		CanRX    uint8 `type:"uint8" unit:"s"`
 		CanTX    uint8 `type:"uint8" unit:"s"`
 	}
+}
+
+func (t *Task) StackOverflow() bool {
+	if t != nil {
+		rv := reflect.ValueOf(t.Stack)
+		for i := 0; i < rv.NumField(); i++ {
+			if rv.Field(i).Uint() < STACK_OVERFLOW_BYTE_MIN {
+				return true
+			}
+		}
+	}
+	return false
 }

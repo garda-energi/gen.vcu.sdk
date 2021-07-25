@@ -26,32 +26,40 @@ type responsePacket struct {
 	Message message `type:"slice"`
 }
 
-type message []byte
-
-func (p message) overflow() bool {
-	return len(p) > PAYLOAD_LEN_MAX
-}
-
 func (r *responsePacket) validPrefix() bool {
-	return r.Header.Prefix == PREFIX_RESPONSE
+	if r.Header != nil {
+		return r.Header.Prefix == PREFIX_RESPONSE
+	}
+	return false
 }
 
 func (r *responsePacket) size() int {
-	return 4 + 7 + 1 + 1 + 1 + len(r.Message)
+	if r.Header != nil {
+		return 4 + 7 + 1 + 1 + 1 + len(r.Message)
+	}
+	return 0
 }
 
 func (r *responsePacket) validSize() bool {
-	return int(r.Header.Size) == r.size()
+	if r.Header != nil {
+		return int(r.Header.Size) == r.size()
+	}
+	return false
 }
 
 func (r *responsePacket) matchWith(cmd *command) bool {
-	return r.Header.Code == cmd.code && r.Header.SubCode == cmd.subCode
+	if r.Header != nil && cmd != nil {
+		return r.Header.Code == cmd.code && r.Header.SubCode == cmd.subCode
+	}
+	return false
 }
 
 func (r *responsePacket) validResCode() bool {
-	for i := resCodeError; i < resCodeLimit; i++ {
-		if r.Header.ResCode == i {
-			return true
+	if r.Header != nil {
+		for i := resCodeError; i < resCodeLimit; i++ {
+			if r.Header.ResCode == i {
+				return true
+			}
 		}
 	}
 	return false
@@ -73,4 +81,10 @@ func (r *responsePacket) renderMessage() {
 		str = strings.ReplaceAll(str, old, new)
 	}
 	r.Message = []byte(str)
+}
+
+type message []byte
+
+func (p message) overflow() bool {
+	return len(p) > PAYLOAD_LEN_MAX
 }
