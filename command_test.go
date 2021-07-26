@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"bytes"
 	"reflect"
 	"strconv"
 	"testing"
@@ -89,24 +88,14 @@ func TestCommands(t *testing.T) {
 			cmdName: "FINGER_FETCH",
 			args:    nil,
 			want:    []int{1, 2, 3, 4, 5},
-			msg: func() message {
-				var buf bytes.Buffer
-				for _, v := range []int{1, 2, 3, 4, 5} {
-					buf.WriteString(strconv.Itoa(v))
-				}
-				return message(buf.Bytes())
-			}(),
+			msg:     message([]byte("12345")),
 		},
 		{
 			cmd:     "FingerAdd",
 			cmdName: "FINGER_ADD",
 			args:    nil,
 			want:    3,
-			msg: func() message {
-				id := int(3)
-				msg := []byte(strconv.Itoa(id))
-				return message(msg)
-			}(),
+			msg:     message([]byte(strconv.Itoa(3))),
 		},
 		{
 			cmd:     "FingerDel",
