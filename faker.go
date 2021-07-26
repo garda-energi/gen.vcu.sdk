@@ -6,23 +6,23 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-// fakeBroker implements fake broker stub
-type fakeBroker struct {
-	Broker
+// fakeClient implements fake client stub
+type fakeClient struct {
+	Client
 	client    mqtt.Client
 	responses [][]byte
 	cmdChan   chan []byte
 	resChan   chan struct{}
 }
 
-func (b *fakeBroker) pub(topic string, qos byte, retained bool, payload []byte) error {
+func (b *fakeClient) pub(topic string, qos byte, retained bool, payload []byte) error {
 	if flush := payload == nil; !flush {
 		b.cmdChan <- payload
 	}
 	return nil
 }
 
-func (b *fakeBroker) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
+func (b *fakeClient) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
 	switch toGlobalTopic(topic) {
 	case TOPIC_COMMAND:
 		go func() {
@@ -54,11 +54,11 @@ func (b *fakeBroker) sub(topic string, qos byte, handler mqtt.MessageHandler) er
 	return nil
 }
 
-func (b *fakeBroker) unsub(topics []string) error {
+func (b *fakeClient) unsub(topics []string) error {
 	return nil
 }
 
-// fakeMessage implement fake message stub
+// fakeMessage implements fake message stub
 type fakeMessage struct {
 	mqtt.Message
 	topic   string
@@ -76,20 +76,55 @@ func (m *fakeMessage) Payload() []byte {
 type fakeSleeper struct{}
 
 func (s *fakeSleeper) Sleep(d time.Duration) {
-	d = reduceDuration(d, time.Millisecond)
+	d = faster(d, time.Millisecond)
 	time.Sleep(d)
 }
 
 func (s *fakeSleeper) After(d time.Duration) <-chan time.Time {
-	d = reduceDuration(d, 125*time.Millisecond)
+	d = faster(d, 125*time.Millisecond)
 	return time.After(d)
 }
 
-// reduceDuration reduce d for faster sleep stub with minimum limit
-func reduceDuration(d time.Duration, min time.Duration) time.Duration {
+// faster reduce d for faster sleep stub with minimum duration
+func faster(d time.Duration, min time.Duration) time.Duration {
 	d /= time.Microsecond
 	if d < min {
 		d = min
 	}
 	return d
+}
+
+func newFakeResponse(vin int, cmdName string) *responsePacket {
+	cmd, _ := getCommand(cmdName)
+
+	return &responsePacket{
+		Header: &headerResponse{
+			HeaderCommand: HeaderCommand{
+				Header: Header{
+					Prefix:       PREFIX_RESPONSE,
+					Size:         0,
+					Vin:          uint32(vin),
+					SendDatetime: time.Now(),
+				},
+				Code:    cmd.code,
+				SubCode: cmd.subCode,
+			},
+			ResCode: resCodeOk,
+		},
+		Message: nil,
+	}
+}
+
+// mockResponse combine response and message to bytes packet.
+func mockResponse(r *responsePacket) []byte {
+	resBytes, err := encode(&r)
+	if err != nil {
+		return nil
+	}
+
+	// change Header.Size
+	if r.Header.Size == 0 {
+		resBytes[2] = uint8(len(resBytes) - 3)
+	}
+	return resBytes
 }

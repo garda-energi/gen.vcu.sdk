@@ -11,10 +11,10 @@ type HeaderCommand struct {
 	SubCode uint8 `type:"uint8"`
 }
 
-// type CommandPacket struct {
-// 	Header  *HeaderCommand
-// 	Message message
-// }
+type commandPacket struct {
+	Header  *HeaderCommand
+	Message message
+}
 
 type headerResponse struct {
 	HeaderCommand
@@ -74,11 +74,6 @@ func (r *responsePacket) validResCode() bool {
 // hasMessage check if r has message
 func (r *responsePacket) hasMessage() bool {
 	return len(r.Message) > 0
-}
-
-// messageOverflow check if r's message is overflowed
-func (r *responsePacket) messageOverflow() bool {
-	return len(r.Message) > MESSAGE_LEN_MAX
 }
 
 // renderMessage subtitue BikeState to r's message

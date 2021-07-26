@@ -1,204 +1,239 @@
 package sdk
 
 import (
+	"bytes"
+	"reflect"
+	"strconv"
 	"testing"
+	"time"
 )
 
-const (
-	resGenLed                = "53400E096805001507180D181F01000101"
-	resGenInfo               = "534023096805001507180D19130100000156435520762E3636342C2047454E202D2032303231"
-	resGenInfoInvalidPrefix  = "123423096805001507180D19130100000156435520762E3636342C2047454E202D2032303231"
-	resGenInfoInvalidSize    = "534023096805001507180D19130100000156435520762E3636342C204"
-	resGenInfoInvalidVin     = "534023123456781507180D19130100000156435520762E3636342C2047454E202D2032303231"
-	resGenInfoInvalidCode    = "534023096805001507180D19130167890156435520762E3636342C2047454E202D2032303231"
-	resGenInfoInvalidResCode = "534023096805001507180D19130100009956435520762E3636342C2047454E202D2032303231"
-	resGenInfoResCodeError   = "534023096805001507180D19130100000056435520762E3636342C2047454E202D2032303231"
-	resGenInfoOverflow       = "5340E0096805001507180D19130100000156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D2032303231"
-)
+const testVin = 354313
 
-func TestResponse(t *testing.T) {
-	t.Run("no packet", func(t *testing.T) {
-		cmder := newFakeCommander(nil)
-		defer cmder.Destroy()
+func TestCommands(t *testing.T) {
+	testCases := []struct {
+		cmd     string
+		cmdName string
+		want    interface{}
+		args    interface{}
+		msg     message
+	}{
+		{
+			cmd:     "GenInfo",
+			cmdName: "GEN_INFO",
+			args:    nil,
+			msg:     message("VCU v.664, GEN - 2021"),
+		},
+		{
+			cmd:     "GenLed",
+			cmdName: "GEN_LED",
+			args:    true,
+		},
+		{
+			cmd:     "GenRtc",
+			cmdName: "GEN_RTC",
+			args:    time.Now(),
+		},
+		{
+			cmd:     "GenOdo",
+			cmdName: "GEN_ODO",
+			args:    uint16(4321),
+		},
+		{
+			cmd:     "GenAntiTheaf",
+			cmdName: "GEN_ANTI_THIEF",
+			args:    nil,
+		},
+		{
+			cmd:     "GenReportFlush",
+			cmdName: "GEN_RPT_FLUSH",
+			args:    nil,
+		},
+		{
+			cmd:     "GenReportBlock",
+			cmdName: "GEN_RPT_BLOCK",
+			args:    false,
+		},
+		{
+			cmd:     "OvdState",
+			cmdName: "OVD_STATE",
+			args:    BikeStateNormal,
+		},
+		{
+			cmd:     "OvdReportInterval",
+			cmdName: "OVD_RPT_INTERVAL",
+			args:    5 * time.Second,
+		},
+		{
+			cmd:     "OvdReportFrame",
+			cmdName: "OVD_RPT_FRAME",
+			args:    FrameFull,
+		},
+		{
+			cmd:     "OvdRemoteSeat",
+			cmdName: "OVD_RMT_SEAT",
+			args:    nil,
+		},
+		{
+			cmd:     "OvdRemoteAlarm",
+			cmdName: "OVD_RMT_ALARM",
+			args:    nil,
+		},
+		{
+			cmd:     "AudioBeep",
+			cmdName: "AUDIO_BEEP",
+			args:    nil,
+		},
+		{
+			cmd:     "FingerFetch",
+			cmdName: "FINGER_FETCH",
+			args:    nil,
+			want:    []int{1, 2, 3, 4, 5},
+			msg: func() message {
+				var buf bytes.Buffer
+				for _, v := range []int{1, 2, 3, 4, 5} {
+					buf.WriteString(strconv.Itoa(v))
+				}
+				return message(buf.Bytes())
+			}(),
+		},
+		{
+			cmd:     "FingerAdd",
+			cmdName: "FINGER_ADD",
+			args:    nil,
+			want:    3,
+			msg: func() message {
+				id := int(3)
+				msg := []byte(strconv.Itoa(id))
+				return message(msg)
+			}(),
+		},
+		{
+			cmd:     "FingerDel",
+			cmdName: "FINGER_DEL",
+			args:    3,
+		},
+		{
+			cmd:     "FingerRst",
+			cmdName: "FINGER_RST",
+			args:    nil,
+		},
+		{
+			cmd:     "RemotePairing",
+			cmdName: "REMOTE_PAIRING",
+			args:    nil,
+		},
+		{
+			cmd:     "FotaVcu",
+			cmdName: "FOTA_VCU",
+			args:    nil,
+			msg:     message("VCU upgraded v.664 -> v.665"),
+		},
+		{
+			cmd:     "FotaHmi",
+			cmdName: "FOTA_HMI",
+			args:    nil,
+			msg:     message("HMI upgraded v.123 -> v.124"),
+		},
+		{
+			cmd:     "NetSendUssd",
+			cmdName: "NET_SEND_USSD",
+			args:    "*123*10*3#",
+			msg:     message("Terima kasih, permintaan kamu akan diproses,cek SMS untuk info lengkap. Dapatkan informasi seputar kartu Tri mu di aplikasi BimaTri, download di bima.tri.co.id"),
+		},
+		{
+			cmd:     "NetReadSms",
+			cmdName: "NET_READ_SMS",
+			args:    nil,
+			msg:     message("Poin Bonstri kamu: 20 Sisa Kuota kamu : Kuota ++ 372 MB s.d 03/01/2031 13:30:18 Temukan beragam paket lain di bima+ https://goo.gl/RQ1DBA"),
+		},
+		{
+			cmd:     "HbarDrive",
+			cmdName: "HBAR_DRIVE",
+			args:    ModeDriveEconomy,
+		},
+		{
+			cmd:     "HbarTrip",
+			cmdName: "HBAR_TRIP",
+			args:    ModeTripB,
+		},
+		{
+			cmd:     "HbarAvg",
+			cmdName: "HBAR_AVG",
+			args:    ModeAvgEfficiency,
+		},
+		{
+			cmd:     "HbarReverse",
+			cmdName: "HBAR_REVERSE",
+			args:    false,
+		},
+		{
+			cmd:     "McuSpeedMax",
+			cmdName: "MCU_SPEED_MAX",
+			args:    uint8(90),
+		},
+		{
+			cmd:     "McuTemplates",
+			cmdName: "MCU_TEMPLATES",
+			args: []McuTemplate{
+				{DisCur: 50, Torque: 10}, // economy
+				{DisCur: 50, Torque: 20}, // standard
+				{DisCur: 50, Torque: 25}, // sport
+			},
+		},
+	}
 
-		_, err := cmder.GenInfo()
-		wantErr := errPacketTimeout("ack")
+	for _, tC := range testCases {
+		t.Run(tC.cmd, func(t *testing.T) {
+			fakeRes := newFakeResponse(testVin, tC.cmdName)
+			if tC.msg != nil {
+				fakeRes.Message = tC.msg
+				if tC.want == nil {
+					tC.want = string(tC.msg)
+				}
+			}
 
-		if err != wantErr {
-			t.Errorf("want %s, got %s", wantErr, err)
-		}
-	})
+			cmder := newFakeCommander([][]byte{
+				strToBytes(PREFIX_ACK),
+				mockResponse(fakeRes),
+			})
+			defer cmder.Destroy()
 
-	t.Run("invalid ack packet", func(t *testing.T) {
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_COMMAND),
+			// call related method, pass in args, evaluate outs
+			meth := reflect.ValueOf(cmder).MethodByName(tC.cmd)
+			args := []reflect.Value{}
+			if tC.args != nil {
+				args = append(args, reflect.ValueOf(tC.args))
+			}
+			outs := meth.Call(args)
+
+			outRes := outs[0]
+			outError := outs[len(outs)-1]
+
+			// check output error
+			if err := outError; !err.IsNil() {
+				t.Fatalf("want no error, got %s\n", err)
+			}
+
+			// check output response
+			if len(outs) == 1 {
+				return
+			}
+			if !reflect.DeepEqual(outRes.Interface(), tC.want) {
+				t.Fatalf("want %s, got %s", tC.want, outRes)
+			}
 		})
-		defer cmder.Destroy()
-
-		_, err := cmder.GenInfo()
-		wantErr := errPacketAckCorrupt
-
-		if err != wantErr {
-			t.Fatalf("want %s, got %s", wantErr, err)
-		}
-	})
-
-	t.Run("only valid ack packet", func(t *testing.T) {
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-		})
-		defer cmder.Destroy()
-
-		_, err := cmder.GenInfo()
-		wantErr := errPacketTimeout("response")
-
-		if err != wantErr {
-			t.Fatalf("want %s, got %s", wantErr, err)
-		}
-	})
-
-	t.Run("valid packet", func(t *testing.T) {
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			hexToByte(resGenInfo),
-		})
-		defer cmder.Destroy()
-
-		_, err := cmder.GenInfo()
-
-		if err != nil {
-			t.Fatalf("want no error, got %s\n", err)
-		}
-	})
-
-	t.Run("different command, valid packet", func(t *testing.T) {
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			hexToByte(resGenLed),
-		})
-		defer cmder.Destroy()
-
-		err := cmder.GenLed(true)
-
-		if err != nil {
-			t.Fatalf("want no error, got %s\n", err)
-		}
-	})
-
-	t.Run("invalid prefix", func(t *testing.T) {
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			hexToByte(resGenInfoInvalidPrefix),
-		})
-		defer cmder.Destroy()
-
-		_, err := cmder.GenInfo()
-		wantErr := errInvalidPrefix
-
-		if err != wantErr {
-			t.Fatalf("want %s, got %s", wantErr, err)
-		}
-
-	})
-
-	t.Run("invalid size", func(t *testing.T) {
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			hexToByte(resGenInfoInvalidSize),
-		})
-		defer cmder.Destroy()
-
-		_, err := cmder.GenInfo()
-		wantErr := errInvalidSize
-
-		if err != wantErr {
-			t.Fatalf("want %s, got %s", wantErr, err)
-		}
-	})
-
-	t.Run("invalid VIN", func(t *testing.T) {
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			hexToByte(resGenInfoInvalidVin),
-		})
-		defer cmder.Destroy()
-
-		_, err := cmder.GenInfo()
-		wantErr := errInvalidVin
-
-		if err != wantErr {
-			t.Fatalf("want %s, got %s", wantErr, err)
-		}
-	})
-
-	t.Run("invalid code", func(t *testing.T) {
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			hexToByte(resGenInfoInvalidCode),
-		})
-		defer cmder.Destroy()
-
-		_, err := cmder.GenInfo()
-		wantErr := errInvalidCode
-
-		if err != wantErr {
-			t.Fatalf("want %s, got %s", wantErr, err)
-		}
-	})
-
-	t.Run("invalid resCode", func(t *testing.T) {
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			hexToByte(resGenInfoInvalidResCode),
-		})
-		defer cmder.Destroy()
-
-		_, err := cmder.GenInfo()
-		wantErr := errInvalidResCode
-
-		if err != wantErr {
-			t.Fatalf("want %s, got %s", wantErr, err)
-		}
-	})
-
-	t.Run("simulate code error", func(t *testing.T) {
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			hexToByte(resGenInfoResCodeError),
-		})
-		defer cmder.Destroy()
-
-		_, err := cmder.GenInfo()
-		if err == nil {
-			t.Fatal("want an error, got none")
-		}
-	})
-
-	t.Run("message overflowed", func(t *testing.T) {
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			hexToByte(resGenInfoOverflow),
-		})
-		defer cmder.Destroy()
-
-		_, err := cmder.GenInfo()
-		wantErr := errResMessageOverflow
-
-		if err != wantErr {
-			t.Fatalf("want %s, got %s", wantErr, err)
-		}
-	})
+	}
 }
 
 func newFakeCommander(responses [][]byte) *commander {
-	vin := 354313
 	logging := false
-	broker := &fakeBroker{
+	client := &fakeClient{
 		responses: responses,
 		cmdChan:   make(chan []byte),
 		resChan:   make(chan struct{}),
 	}
 
-	cmder, _ := newCommander(vin, broker, &fakeSleeper{}, logging)
+	cmder, _ := newCommander(testVin, client, &fakeSleeper{}, logging)
 	return cmder
 }

@@ -8,7 +8,7 @@ import (
 )
 
 // exec execute command and return the response.
-func (c *commander) exec(name string, payload []byte) ([]byte, error) {
+func (c *commander) exec(name string, msg message) ([]byte, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -17,22 +17,22 @@ func (c *commander) exec(name string, payload []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	if err := c.sendCommand(cmd, payload); err != nil {
+	if err := c.sendCommand(cmd, msg); err != nil {
 		return nil, err
 	}
 
-	msg, err := c.waitResponse(cmd)
-	return msg, err
+	res, err := c.waitResponse(cmd)
+	return res, err
 }
 
 // sendCommand encode and send outgoing command.
-func (c *commander) sendCommand(cmd *command, payload []byte) error {
-	packet, err := encodeCommand(c.vin, cmd, payload)
+func (c *commander) sendCommand(cmd *command, msg message) error {
+	packet, err := encodeCommand(c.vin, cmd, msg)
 	if err != nil {
 		return err
 	}
 
-	c.broker.pub(setTopicToVin(TOPIC_COMMAND, c.vin), 1, true, packet)
+	c.client.pub(setTopicToVin(TOPIC_COMMAND, c.vin), 1, true, packet)
 	return nil
 }
 
@@ -111,9 +111,6 @@ func validateResponse(vin int, cmd *command, res *responsePacket) error {
 	}
 	if !res.validResCode() {
 		return errInvalidResCode
-	}
-	if res.messageOverflow() {
-		return errResMessageOverflow
 	}
 
 	// check resCode

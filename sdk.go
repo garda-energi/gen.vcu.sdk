@@ -2,34 +2,34 @@ package sdk
 
 type Sdk struct {
 	logging bool
-	broker  Broker
+	client  Client
 }
 
 // New create new instance of Sdk for VCU (Vehicle Control Unit).
-func New(brokerConfig BrokerConfig, logging bool) Sdk {
+func New(clientConfig ClientConfig, logging bool) Sdk {
 	return Sdk{
 		logging: logging,
-		broker:  newBroker(&brokerConfig, logging),
+		client:  newClient(&clientConfig, logging),
 	}
 }
 
-// Connect open connection to mqtt broker.
+// Connect open connection to mqtt client.
 func (s *Sdk) Connect() error {
-	token := s.broker.Connect()
+	token := s.client.Connect()
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 	return nil
 }
 
-// Disconnect close connection to mqtt broker.
+// Disconnect close connection to mqtt client.
 func (s *Sdk) Disconnect() {
-	s.broker.Disconnect(100)
+	s.client.Disconnect(100)
 }
 
 // NewCommander create new instance of commander for specific VIN.
 func (s *Sdk) NewCommander(vin int) (*commander, error) {
-	return newCommander(vin, s.broker, &realSleeper{}, s.logging)
+	return newCommander(vin, s.client, &realSleeper{}, s.logging)
 }
 
 // AddListener subscribe to Status & Report topic (if callback is specified) for spesific vin in range.
@@ -49,14 +49,14 @@ func (s *Sdk) AddListener(ls Listener, vins ...int) error {
 
 	if ls.StatusFunc != nil {
 		topics := setTopicToVins(TOPIC_STATUS, vins)
-		if err := s.broker.subMulti(topics, QOS_SUB_STATUS, ls.status()); err != nil {
+		if err := s.client.subMulti(topics, QOS_SUB_STATUS, ls.status()); err != nil {
 			return err
 		}
 	}
 
 	if ls.ReportFunc != nil {
 		topics := setTopicToVins(TOPIC_REPORT, vins)
-		if err := s.broker.subMulti(topics, QOS_SUB_REPORT, ls.report()); err != nil {
+		if err := s.client.subMulti(topics, QOS_SUB_REPORT, ls.report()); err != nil {
 			return err
 		}
 	}
@@ -69,7 +69,7 @@ func (s *Sdk) RemoveListener(vins ...int) error {
 		setTopicToVins(TOPIC_STATUS, vins),
 		setTopicToVins(TOPIC_REPORT, vins)...,
 	)
-	return s.broker.unsub(topics)
+	return s.client.unsub(topics)
 }
 
 // VinRange generate array of integer from min to max.

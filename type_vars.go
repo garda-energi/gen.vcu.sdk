@@ -10,14 +10,16 @@ import (
 // typeOfTime is for comparing struct type as time.Time
 var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 
+// typeOfMessage is for comparing slice type as message ([]byte)
+var typeOfMessage reflect.Type = reflect.ValueOf(message{}).Type()
+
 var (
-	errPacketAckCorrupt   = errors.New("packet ack corrupt")
-	errInvalidPrefix      = errors.New("prefix invalid")
-	errInvalidSize        = errors.New("size invalid")
-	errInvalidVin         = errors.New("vin invalid")
-	errInvalidCode        = errors.New("code invalid")
-	errInvalidResCode     = errors.New("resCode invalid")
-	errResMessageOverflow = errors.New("message overflow")
+	errPacketAckCorrupt = errors.New("packet ack corrupt")
+	errInvalidPrefix    = errors.New("prefix invalid")
+	errInvalidSize      = errors.New("size invalid")
+	errInvalidVin       = errors.New("vin invalid")
+	errInvalidCode      = errors.New("code invalid")
+	errInvalidResCode   = errors.New("resCode invalid")
 )
 
 type errPacketTimeout string

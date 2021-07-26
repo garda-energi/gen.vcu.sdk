@@ -7,41 +7,41 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-// Broker is building block broker client.
-type Broker interface {
+// Client is building block for client client (with extra things).
+type Client interface {
 	mqtt.Client
 	// pub publish to mqtt topic.
 	pub(topic string, qos byte, retained bool, payload []byte) error
 	// sub subscribe to mqtt topic.
 	sub(topic string, qos byte, handler mqtt.MessageHandler) error
-	// subMulti subscribe to muliple mqtt topics.
+	// subMulti subscribe to mqtt topics.
 	subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error
 	// unsub unsubscribe from mqtt topics.
 	unsub(topics []string) error
 }
 
-// BrokerConfig store connecting string for broker
-type BrokerConfig struct {
+// ClientConfig store connection string for client client
+type ClientConfig struct {
 	Host string
 	Port int
 	User string
 	Pass string
 }
-type broker struct {
+type client struct {
 	mqtt.Client
 	logger *log.Logger
 }
 
-// newBroker create instance of Broker.
-func newBroker(config *BrokerConfig, logging bool) Broker {
-	logger := newLogger(logging, "BROKER")
-	return &broker{
+// newClient create instance of Client client.
+func newClient(config *ClientConfig, logging bool) Client {
+	logger := newLogger(logging, "CLIENT")
+	return &client{
 		Client: mqtt.NewClient(newClientOptions(config, logger)),
 		logger: logger,
 	}
 }
 
-func (b *broker) pub(topic string, qos byte, retained bool, payload []byte) error {
+func (b *client) pub(topic string, qos byte, retained bool, payload []byte) error {
 	token := b.Publish(topic, qos, retained, payload)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
@@ -50,7 +50,7 @@ func (b *broker) pub(topic string, qos byte, retained bool, payload []byte) erro
 	return nil
 }
 
-func (b *broker) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
+func (b *client) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
 	token := b.Subscribe(topic, qos, handler)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
@@ -59,7 +59,7 @@ func (b *broker) sub(topic string, qos byte, handler mqtt.MessageHandler) error 
 	return nil
 }
 
-func (b *broker) subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
+func (b *client) subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
 	topicFilters := map[string]byte{}
 	for _, v := range topics {
 		topicFilters[v] = qos
@@ -76,7 +76,7 @@ func (b *broker) subMulti(topics []string, qos byte, handler mqtt.MessageHandler
 	return nil
 }
 
-func (b *broker) unsub(topics []string) error {
+func (b *client) unsub(topics []string) error {
 	token := b.Unsubscribe(topics...)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
@@ -89,7 +89,7 @@ func (b *broker) unsub(topics []string) error {
 }
 
 // newClientOptions make client options for mqtt.
-func newClientOptions(c *BrokerConfig, logger *log.Logger) *mqtt.ClientOptions {
+func newClientOptions(c *ClientConfig, logger *log.Logger) *mqtt.ClientOptions {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", c.Host, c.Port))
 	opts.SetUsername(c.User)
