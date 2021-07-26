@@ -15,19 +15,13 @@ import (
 // can it be replaced with decode() func bellow, without separate message part ?
 func decodeResponse(packet []byte) (*responsePacket, error) {
 	reader := bytes.NewReader(packet)
-	r := &responsePacket{
-		Header: &headerResponse{},
-	}
+	r := &responsePacket{}
 
 	// header
-	if err := decode(reader, r.Header); err != nil {
+	if err := decode(reader, r); err != nil {
 		return nil, err
 	}
-	// message
-	if reader.Len() > 0 {
-		r.Message = make(message, reader.Len())
-		reader.Read(r.Message)
-	}
+
 	return r, nil
 }
 
@@ -99,6 +93,13 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 			if err = decode(rdr, rv.Index(j).Addr().Interface()); err != nil {
 				return err
 			}
+		}
+
+	case reflect.Slice:
+		if rv.Type() == typeOfMessage {
+			x := make(message, rdr.Len())
+			binary.Read(rdr, binary.LittleEndian, &x)
+			rv.Set(reflect.ValueOf(x))
 		}
 
 	case reflect.String:
