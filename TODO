@@ -54,7 +54,7 @@ Todo Command:
   ✔ add unit test, mock with interface @done(21-07-24 15:32)
   ✔ pass logging flag to command @done(21-07-24 15:32)
   ☐ test sending command for different VIN at the same time
-  ☐ refactor unit test, implement DRY pattern. use t.Run()
+  ✔ refactor unit test, implement DRY pattern. use t.Run() for parallel test @done(21-07-26 09:28)
   ✔ speed-up time (sleep) for test, mock sleeper with interface @done(21-07-26 08:28)
   ✔ add code-doc for all methods & functions @done(21-07-25 19:40)
     

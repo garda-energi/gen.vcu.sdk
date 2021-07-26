@@ -16,173 +16,178 @@ const (
 	resGenInfoOverflow       = "5340E0096805001507180D19130100000156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D2032303231"
 )
 
-func TestCommandWithoutResponse(t *testing.T) {
-	cmder := newFakeCommander(nil)
-	defer cmder.Destroy()
+func TestResponse(t *testing.T) {
+	t.Run("no packet", func(t *testing.T) {
+		cmder := newFakeCommander(nil)
+		defer cmder.Destroy()
 
-	_, err := cmder.GenInfo()
-	wantErr := errPacketTimeout("ack")
+		_, err := cmder.GenInfo()
+		wantErr := errPacketTimeout("ack")
 
-	if err != wantErr {
-		t.Fatalf("want %s, got %s", wantErr, err)
-	}
-}
-func TestResponseInvalidAck(t *testing.T) {
-	cmder := newFakeCommander([][]byte{
-		strToBytes(PREFIX_COMMAND),
+		if err != wantErr {
+			t.Errorf("want %s, got %s", wantErr, err)
+		}
 	})
-	defer cmder.Destroy()
 
-	_, err := cmder.GenInfo()
-	wantErr := errPacketAckCorrupt
+	t.Run("invalid ack packet", func(t *testing.T) {
+		cmder := newFakeCommander([][]byte{
+			strToBytes(PREFIX_COMMAND),
+		})
+		defer cmder.Destroy()
 
-	if err != wantErr {
-		t.Fatalf("want %s, got %s", wantErr, err)
-	}
-}
+		_, err := cmder.GenInfo()
+		wantErr := errPacketAckCorrupt
 
-func TestResponseValidAckOnly(t *testing.T) {
-	cmder := newFakeCommander([][]byte{
-		strToBytes(PREFIX_ACK),
+		if err != wantErr {
+			t.Fatalf("want %s, got %s", wantErr, err)
+		}
 	})
-	defer cmder.Destroy()
 
-	_, err := cmder.GenInfo()
-	wantErr := errPacketTimeout("response")
+	t.Run("only valid ack packet", func(t *testing.T) {
+		cmder := newFakeCommander([][]byte{
+			strToBytes(PREFIX_ACK),
+		})
+		defer cmder.Destroy()
 
-	if err != wantErr {
-		t.Fatalf("want %s, got %s", wantErr, err)
-	}
-}
+		_, err := cmder.GenInfo()
+		wantErr := errPacketTimeout("response")
 
-func TestResponseValid(t *testing.T) {
-	cmder := newFakeCommander([][]byte{
-		strToBytes(PREFIX_ACK),
-		hexToByte(resGenInfo),
+		if err != wantErr {
+			t.Fatalf("want %s, got %s", wantErr, err)
+		}
 	})
-	defer cmder.Destroy()
 
-	_, err := cmder.GenInfo()
+	t.Run("valid packet", func(t *testing.T) {
+		cmder := newFakeCommander([][]byte{
+			strToBytes(PREFIX_ACK),
+			hexToByte(resGenInfo),
+		})
+		defer cmder.Destroy()
 
-	if err != nil {
-		t.Fatalf("got no error, got %s\n", err)
-	}
-}
+		_, err := cmder.GenInfo()
 
-func TestResponseValidDifferenntCommand(t *testing.T) {
-	cmder := newFakeCommander([][]byte{
-		strToBytes(PREFIX_ACK),
-		hexToByte(resGenLed),
+		if err != nil {
+			t.Fatalf("want no error, got %s\n", err)
+		}
 	})
-	defer cmder.Destroy()
 
-	err := cmder.GenLed(true)
+	t.Run("different command, valid packet", func(t *testing.T) {
+		cmder := newFakeCommander([][]byte{
+			strToBytes(PREFIX_ACK),
+			hexToByte(resGenLed),
+		})
+		defer cmder.Destroy()
 
-	if err != nil {
-		t.Fatalf("want no error, got %s\n", err)
-	}
-}
+		err := cmder.GenLed(true)
 
-func TestResponseInvalidPrefix(t *testing.T) {
-	cmder := newFakeCommander([][]byte{
-		strToBytes(PREFIX_ACK),
-		hexToByte(resGenInfoInvalidPrefix),
+		if err != nil {
+			t.Fatalf("want no error, got %s\n", err)
+		}
 	})
-	defer cmder.Destroy()
 
-	_, err := cmder.GenInfo()
-	wantErr := errInvalidPrefix
+	t.Run("invalid prefix", func(t *testing.T) {
+		cmder := newFakeCommander([][]byte{
+			strToBytes(PREFIX_ACK),
+			hexToByte(resGenInfoInvalidPrefix),
+		})
+		defer cmder.Destroy()
 
-	if err != wantErr {
-		t.Fatalf("want %s, got %s", wantErr, err)
-	}
-}
+		_, err := cmder.GenInfo()
+		wantErr := errInvalidPrefix
 
-func TestResponseInvalidSize(t *testing.T) {
-	cmder := newFakeCommander([][]byte{
-		strToBytes(PREFIX_ACK),
-		hexToByte(resGenInfoInvalidSize),
+		if err != wantErr {
+			t.Fatalf("want %s, got %s", wantErr, err)
+		}
+
 	})
-	defer cmder.Destroy()
 
-	_, err := cmder.GenInfo()
-	wantErr := errInvalidSize
+	t.Run("invalid size", func(t *testing.T) {
+		cmder := newFakeCommander([][]byte{
+			strToBytes(PREFIX_ACK),
+			hexToByte(resGenInfoInvalidSize),
+		})
+		defer cmder.Destroy()
 
-	if err != wantErr {
-		t.Fatalf("want %s, got %s", wantErr, err)
-	}
-}
+		_, err := cmder.GenInfo()
+		wantErr := errInvalidSize
 
-func TestResponseInvalidVin(t *testing.T) {
-	cmder := newFakeCommander([][]byte{
-		strToBytes(PREFIX_ACK),
-		hexToByte(resGenInfoInvalidVin),
+		if err != wantErr {
+			t.Fatalf("want %s, got %s", wantErr, err)
+		}
 	})
-	defer cmder.Destroy()
 
-	_, err := cmder.GenInfo()
-	wantErr := errInvalidVin
+	t.Run("invalid VIN", func(t *testing.T) {
+		cmder := newFakeCommander([][]byte{
+			strToBytes(PREFIX_ACK),
+			hexToByte(resGenInfoInvalidVin),
+		})
+		defer cmder.Destroy()
 
-	if err != wantErr {
-		t.Fatalf("want %s, got %s", wantErr, err)
-	}
-}
+		_, err := cmder.GenInfo()
+		wantErr := errInvalidVin
 
-func TestResponseInvalidCode(t *testing.T) {
-	cmder := newFakeCommander([][]byte{
-		strToBytes(PREFIX_ACK),
-		hexToByte(resGenInfoInvalidCode),
+		if err != wantErr {
+			t.Fatalf("want %s, got %s", wantErr, err)
+		}
 	})
-	defer cmder.Destroy()
 
-	_, err := cmder.GenInfo()
-	wantErr := errInvalidCode
+	t.Run("invalid code", func(t *testing.T) {
+		cmder := newFakeCommander([][]byte{
+			strToBytes(PREFIX_ACK),
+			hexToByte(resGenInfoInvalidCode),
+		})
+		defer cmder.Destroy()
 
-	if err != wantErr {
-		t.Fatalf("want %s, got %s", wantErr, err)
-	}
-}
+		_, err := cmder.GenInfo()
+		wantErr := errInvalidCode
 
-func TestResponseInvalidResCode(t *testing.T) {
-	cmder := newFakeCommander([][]byte{
-		strToBytes(PREFIX_ACK),
-		hexToByte(resGenInfoInvalidResCode),
+		if err != wantErr {
+			t.Fatalf("want %s, got %s", wantErr, err)
+		}
 	})
-	defer cmder.Destroy()
 
-	_, err := cmder.GenInfo()
-	wantErr := errInvalidResCode
+	t.Run("invalid resCode", func(t *testing.T) {
+		cmder := newFakeCommander([][]byte{
+			strToBytes(PREFIX_ACK),
+			hexToByte(resGenInfoInvalidResCode),
+		})
+		defer cmder.Destroy()
 
-	if err != wantErr {
-		t.Fatalf("want %s, got %s", wantErr, err)
-	}
-}
-func TestResponseResCodeError(t *testing.T) {
-	cmder := newFakeCommander([][]byte{
-		strToBytes(PREFIX_ACK),
-		hexToByte(resGenInfoResCodeError),
+		_, err := cmder.GenInfo()
+		wantErr := errInvalidResCode
+
+		if err != wantErr {
+			t.Fatalf("want %s, got %s", wantErr, err)
+		}
 	})
-	defer cmder.Destroy()
 
-	_, err := cmder.GenInfo()
-	if err == nil {
-		t.Fatal("want an error, got none")
-	}
-}
+	t.Run("simulate code error", func(t *testing.T) {
+		cmder := newFakeCommander([][]byte{
+			strToBytes(PREFIX_ACK),
+			hexToByte(resGenInfoResCodeError),
+		})
+		defer cmder.Destroy()
 
-func TestResponseOverflow(t *testing.T) {
-	cmder := newFakeCommander([][]byte{
-		strToBytes(PREFIX_ACK),
-		hexToByte(resGenInfoOverflow),
+		_, err := cmder.GenInfo()
+		if err == nil {
+			t.Fatal("want an error, got none")
+		}
 	})
-	defer cmder.Destroy()
 
-	_, err := cmder.GenInfo()
-	wantErr := errResMessageOverflow
+	t.Run("message overflowed", func(t *testing.T) {
+		cmder := newFakeCommander([][]byte{
+			strToBytes(PREFIX_ACK),
+			hexToByte(resGenInfoOverflow),
+		})
+		defer cmder.Destroy()
 
-	if err != wantErr {
-		t.Fatalf("want %s, got %s", wantErr, err)
-	}
+		_, err := cmder.GenInfo()
+		wantErr := errResMessageOverflow
+
+		if err != wantErr {
+			t.Fatalf("want %s, got %s", wantErr, err)
+		}
+	})
 }
 
 func newFakeCommander(responses [][]byte) *commander {
