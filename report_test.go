@@ -49,8 +49,19 @@ var testDataError = []struct {
 }
 
 func getTestDataFromJson() []string {
+	jsonFile, err := os.Open("report_test_data.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer jsonFile.Close()
+
 	var testData []string
-	if err := openFileJSON("report_test_data.json", &testData); err != nil {
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err = json.Unmarshal(byteValue, &testData); err != nil {
 		log.Fatal(err)
 	}
 	return testData
@@ -148,19 +159,6 @@ func TestReportErrorHandler(t *testing.T) {
 			}
 		})
 	}
-}
-
-// openFileJSON open and decode json file
-func openFileJSON(filename string, testData *[]string) error {
-	jsonFile, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer jsonFile.Close()
-
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-	json.Unmarshal(byteValue, testData)
-	return nil
 }
 
 // compare between 2 of any variabel
