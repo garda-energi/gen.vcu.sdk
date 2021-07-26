@@ -18,7 +18,7 @@ var (
 	errInvalidPrefix    = errors.New("prefix invalid")
 	errInvalidSize      = errors.New("size invalid")
 	errInvalidVin       = errors.New("vin invalid")
-	errInvalidCode      = errors.New("code invalid")
+	errInvalidCmdCode   = errors.New("cmd code invalid")
 	errInvalidResCode   = errors.New("resCode invalid")
 )
 

@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"os"
 	"os/signal"
 	"strconv"
 	"strings"
 	"syscall"
-	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -38,11 +36,11 @@ func newLogger(logging bool, prefix string) *log.Logger {
 	return log.New(out, fmt.Sprintf("[%s] ", prefix), log.Ldate|log.Ltime)
 }
 
-// randomSleep will sleep betwen random time specified
-func randomSleep(min, max int, unit time.Duration) {
-	rng := rand.Intn(max-min) + min
-	time.Sleep(time.Duration(rng) * unit)
-}
+// // randomSleep will sleep betwen random time specified
+// func randomSleep(min, max int, unit time.Duration) {
+// 	rng := rand.Intn(max-min) + min
+// 	time.Sleep(time.Duration(rng) * unit)
+// }
 
 // // dd print detailed variable information
 // func dd(data interface{}) {

@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"errors"
 	"testing"
 )
 
@@ -65,131 +66,81 @@ func TestResponse(t *testing.T) {
 			t.Fatalf("want %s, got %s", wantMsg, msg)
 		}
 	})
+}
 
-	t.Run("invalid prefix", func(t *testing.T) {
-		res := newFakeResponse(testVin, "AUDIO_BEEP")
-		res.Header.Prefix = PREFIX_REPORT
+func TestResponseError(t *testing.T) {
+	testCases := []struct {
+		desc      string
+		wantErr   error
+		formatter func(r *responsePacket)
+	}{
+		{
+			desc:    "invalid prefix",
+			wantErr: errInvalidPrefix,
+			formatter: func(r *responsePacket) {
+				r.Header.Prefix = PREFIX_REPORT
+			},
+		},
+		{
+			desc:    "invalid size",
+			wantErr: errInvalidSize,
+			formatter: func(r *responsePacket) {
+				r.Header.Size = 55
+			},
+		},
+		{
+			desc:    "invalid VIN",
+			wantErr: errInvalidVin,
+			formatter: func(r *responsePacket) {
+				r.Header.Vin = 12345
+			},
+		},
+		{
+			desc:    "invalid cmd code",
+			wantErr: errInvalidCmdCode,
+			formatter: func(r *responsePacket) {
+				r.Header.Code = 9
+				r.Header.SubCode = 5
+			},
+		},
+		{
+			desc:    "invalid resCode",
+			wantErr: errInvalidResCode,
+			formatter: func(r *responsePacket) {
+				r.Header.ResCode = 99
+			},
+		},
+		{
+			desc:    "message overflowed",
+			wantErr: errInvalidSize,
+			formatter: func(r *responsePacket) {
+				r.Message = message("'Google Go' redirects here. For the Android search app by Google, 'Google Go', for low-end Lollipop+ devices, see Android Go. For the computer program by Google to play the board game Go, see AlphaGo. For the 2003 agent-based programming language, see Go! (programming language).")
+				r.Header.Size = uint8(len(r.Message))
+			},
+		},
+		{
+			desc:    "simulate code error",
+			wantErr: errors.New(resCodeError.String()),
+			formatter: func(r *responsePacket) {
+				r.Header.ResCode = resCodeError
+			},
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			res := newFakeResponse(testVin, "GEN_INFO")
+			tC.formatter(res)
 
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			mockResponse(res),
+			cmder := newFakeCommander([][]byte{
+				strToBytes(PREFIX_ACK),
+				mockResponse(res),
+			})
+			defer cmder.Destroy()
+
+			_, err := cmder.GenInfo()
+			if err.Error() != tC.wantErr.Error() {
+				t.Fatalf("want %s, got %s", tC.wantErr, err)
+			}
 		})
-		defer cmder.Destroy()
-
-		err := cmder.AudioBeep()
-		wantErr := errInvalidPrefix
-
-		if err != wantErr {
-			t.Fatalf("want %s, got %s", wantErr, err)
-		}
-
-	})
-
-	t.Run("invalid size", func(t *testing.T) {
-		res := newFakeResponse(testVin, "AUDIO_BEEP")
-		res.Header.Size = 55
-
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			mockResponse(res),
-		})
-		defer cmder.Destroy()
-
-		err := cmder.AudioBeep()
-		wantErr := errInvalidSize
-
-		if err != wantErr {
-			t.Fatalf("want %s, got %s", wantErr, err)
-		}
-	})
-
-	t.Run("invalid VIN", func(t *testing.T) {
-		res := newFakeResponse(testVin, "AUDIO_BEEP")
-		res.Header.Vin = 12345
-
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			mockResponse(res),
-		})
-		defer cmder.Destroy()
-
-		err := cmder.AudioBeep()
-		wantErr := errInvalidVin
-
-		if err != wantErr {
-			t.Fatalf("want %s, got %s", wantErr, err)
-		}
-	})
-
-	t.Run("invalid code", func(t *testing.T) {
-		res := newFakeResponse(testVin, "AUDIO_BEEP")
-		res.Header.Code = 9
-		res.Header.SubCode = 5
-
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			mockResponse(res),
-		})
-		defer cmder.Destroy()
-
-		err := cmder.AudioBeep()
-		wantErr := errInvalidCode
-
-		if err != wantErr {
-			t.Fatalf("want %s, got %s", wantErr, err)
-		}
-	})
-
-	t.Run("invalid resCode", func(t *testing.T) {
-		res := newFakeResponse(testVin, "AUDIO_BEEP")
-		res.Header.ResCode = 99
-
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			mockResponse(res),
-		})
-		defer cmder.Destroy()
-
-		err := cmder.AudioBeep()
-		wantErr := errInvalidResCode
-
-		if err != wantErr {
-			t.Fatalf("want %s, got %s", wantErr, err)
-		}
-	})
-
-	t.Run("simulate code error", func(t *testing.T) {
-		res := newFakeResponse(testVin, "AUDIO_BEEP")
-		res.Header.ResCode = resCodeError
-
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			mockResponse(res),
-		})
-		defer cmder.Destroy()
-
-		err := cmder.AudioBeep()
-		if err == nil {
-			t.Fatal("want an error, got none")
-		}
-	})
-
-	t.Run("message overflowed", func(t *testing.T) {
-		res := newFakeResponse(testVin, "GEN_INFO")
-		res.Message = message("'Google Go' redirects here. For the Android search app by Google, 'Google Go', for low-end Lollipop+ devices, see Android Go. For the computer program by Google to play the board game Go, see AlphaGo. For the 2003 agent-based programming language, see Go! (programming language).")
-		res.Header.Size = uint8(len(res.Message))
-
-		cmder := newFakeCommander([][]byte{
-			strToBytes(PREFIX_ACK),
-			mockResponse(res),
-		})
-		defer cmder.Destroy()
-
-		_, err := cmder.GenInfo()
-		wantErr := errInvalidSize
-
-		if err != wantErr {
-			t.Fatalf("want %s, got %s", wantErr, err)
-		}
-	})
+	}
 }
