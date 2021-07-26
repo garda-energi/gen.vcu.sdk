@@ -6,9 +6,10 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+// fakeBroker implements fake broker stub
 type fakeBroker struct {
+	Broker
 	client    mqtt.Client
-	connected bool
 	responses [][]byte
 	cmdChan   chan []byte
 	resChan   chan struct{}
@@ -53,48 +54,42 @@ func (b *fakeBroker) sub(topic string, qos byte, handler mqtt.MessageHandler) er
 	return nil
 }
 
-func (b *fakeBroker) connect() error {
-	b.connected = true
+func (b *fakeBroker) unsub(topics []string) error {
 	return nil
 }
 
-func (b *fakeBroker) disconnect() {
-	b.connected = false
-}
-
-func (b *fakeBroker) subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
-	return nil
-}
-
-func (b *fakeBroker) unsubMulti(topics []string) error {
-	return nil
-}
-
+// fakeMessage implement fake message stub
 type fakeMessage struct {
-	duplicate bool
-	qos       byte
-	retained  bool
-	topic     string
-	messageId uint16
-	payload   []byte
+	mqtt.Message
+	topic   string
+	payload []byte
 }
 
-func (m *fakeMessage) Duplicate() bool {
-	return m.duplicate
-}
-func (m *fakeMessage) Qos() byte {
-	return m.qos
-}
-func (m *fakeMessage) Retained() bool {
-	return m.retained
-}
 func (m *fakeMessage) Topic() string {
 	return m.topic
-}
-func (m *fakeMessage) MessageID() uint16 {
-	return m.messageId
 }
 func (m *fakeMessage) Payload() []byte {
 	return m.payload
 }
-func (m *fakeMessage) Ack() {}
+
+// fakeSleeper implement fake sleeper stub
+type fakeSleeper struct{}
+
+func (s *fakeSleeper) Sleep(d time.Duration) {
+	d = reduceDuration(d, time.Millisecond)
+	time.Sleep(d)
+}
+
+func (s *fakeSleeper) After(d time.Duration) <-chan time.Time {
+	d = reduceDuration(d, 125*time.Millisecond)
+	return time.After(d)
+}
+
+// reduceDuration reduce d for faster sleep stub with minimum limit
+func reduceDuration(d time.Duration, min time.Duration) time.Duration {
+	d /= time.Microsecond
+	if d < min {
+		d = min
+	}
+	return d
+}

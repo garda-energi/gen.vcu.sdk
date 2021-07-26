@@ -40,7 +40,7 @@ func (c *commander) sendCommand(cmd *command, payload []byte) error {
 func (c *commander) waitResponse(cmd *command) ([]byte, error) {
 	defer func() {
 		c.flush()
-		time.Sleep(1 * time.Second)
+		c.sleeper.Sleep(1 * time.Second)
 	}()
 
 	packet, err := c.waitPacket("ack", DEFAULT_ACK_TIMEOUT)
@@ -80,7 +80,7 @@ func (c *commander) waitPacket(name string, timeout time.Duration) ([]byte, erro
 	select {
 	case data := <-c.resChan:
 		return data, nil
-	case <-time.After(timeout):
+	case <-c.sleeper.After(timeout):
 		return nil, errPacketTimeout(name)
 	}
 }

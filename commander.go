@@ -16,22 +16,24 @@ import (
 type commander struct {
 	vin     int
 	logger  *log.Logger
-	broker  Broker
 	mutex   *sync.Mutex
 	resChan chan []byte
+	broker  Broker
+	sleeper Sleeper
 }
 
 // newCommander create new *commander instance and listen to command & response topic.
-func newCommander(vin int, broker Broker, logging bool) (*commander, error) {
+func newCommander(vin int, broker Broker, sleeper Sleeper, logging bool) (*commander, error) {
 	cmder := &commander{
 		vin:     vin,
 		logger:  newLogger(logging, "COMMAND"),
-		broker:  broker,
 		mutex:   &sync.Mutex{},
 		resChan: make(chan []byte, 1),
+		broker:  broker,
+		sleeper: sleeper,
 	}
 
-	if err := cmder.listenResponse(); err != nil {
+	if err := cmder.listen(); err != nil {
 		return nil, err
 	}
 	return cmder, nil

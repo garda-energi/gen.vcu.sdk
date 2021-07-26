@@ -11,9 +11,6 @@ import (
 	"time"
 )
 
-// typeOfTime is for comparing struct type as time.Time
-var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
-
 // decodeResponse extract header and message response from bytes packet.
 // can it be replaced with decode() func bellow, without separate message part ?
 func decodeResponse(packet []byte) (*responsePacket, error) {

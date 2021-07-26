@@ -3,11 +3,13 @@ Notes:
   ☐ don't export local only components
   ☐ add documentation, at least for each func
   ☐ handle error properly, dont discard with _
-  ☐ implement Return Early pattern to avoid nested condition
-  ☐ implement Dont Repat Yourself (DRY) pattern as possible
-  ☐ implement Separate Of Concern (SOC) pattern as possible
-  ☐ watch-out from goroutine leakage
-  ☐ watch-out from goroutine race-condition 
+  ☐ implement pattern:
+    ☐ Return Early to avoid nested condition
+    ☐ Dont Repeat Yourself (DRY) as possible
+    ☐ Separate Of Concern (SOC) as possible
+  ☐ watch-out from goroutine:
+    ☐ leakage
+    ☐ race-condition 
   
 Todo Package:
   ✔ remove main.go, change as a package @done(21-07-14 12:32)
@@ -19,6 +21,7 @@ Todo Package:
   ✔ combine all sub package, into single package @done(21-07-24 09:28)
   ✔ rename repositories, notify to all repo consumer @done(21-07-24 09:28)
   ✔ change all magic number to const @done(21-07-25 19:40)
+  ☐ make test coverage, at least near 100%
   
 Todo Report:
   ✔ multiply value with factor tag @done(21-07-13 19:39)
@@ -30,7 +33,7 @@ Todo Report:
   ✔ add unit test @done(21-07-24 06:07)
   ✘ discard duplicate reports @cancelled(21-07-24 06:07)
   ✔ add report encoder @done(21-07-24 06:12)
-  ☐ validate report packet (specially header part) properly with test, see command_test for example.
+  ☐ validate report packet (specially header part) properly with test.
   ☐ find a way to use units in tagger
   ☐ add usefull method to *ReportPacket
     ✔ IsValidGPS @done(21-07-25 09:19)
@@ -51,8 +54,8 @@ Todo Command:
   ✔ add unit test, mock with interface @done(21-07-24 15:32)
   ✔ pass logging flag to command @done(21-07-24 15:32)
   ☐ test sending command for different VIN at the same time
-  ☐ refactor unit test, implement DRY pattern
-  ☐ ignore (or speed-up) time out for test
+  ✔ refactor unit test, implement DRY pattern. use t.Run() for parallel test @done(21-07-26 09:28)
+  ✔ speed-up time (sleep) for test, mock sleeper with interface @done(21-07-26 08:28)
   ✔ add code-doc for all methods & functions @done(21-07-25 19:40)
     
 Todo Broker:  

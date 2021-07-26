@@ -1,8 +1,6 @@
 package sdk
 
 import (
-	"errors"
-	"fmt"
 	"time"
 )
 
@@ -79,25 +77,3 @@ const (
 	GPS_LAT_MIN = -11.107187
 	GPS_LAT_MAX = 5.90713
 )
-
-var (
-	errPacketAckCorrupt   = errors.New("packet ack corrupt")
-	errInvalidPrefix      = errors.New("prefix invalid")
-	errInvalidSize        = errors.New("size invalid")
-	errInvalidVin         = errors.New("vin invalid")
-	errInvalidCode        = errors.New("code invalid")
-	errInvalidResCode     = errors.New("resCode invalid")
-	errResMessageOverflow = errors.New("message overflow")
-)
-
-type errPacketTimeout string
-
-func (e errPacketTimeout) Error() string {
-	return fmt.Sprintf("packet %s timeout", string(e))
-}
-
-type errInputOutOfRange string
-
-func (e errInputOutOfRange) Error() string {
-	return fmt.Sprintf("input %s out of range", string(e))
-}

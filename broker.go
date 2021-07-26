@@ -7,21 +7,20 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+// Broker is building block broker client.
 type Broker interface {
-	// connect open connection to mqtt broker.
-	connect() error
-	// disconnect close connection to mqtt broker.
-	disconnect()
+	mqtt.Client
 	// pub publish to mqtt topic.
 	pub(topic string, qos byte, retained bool, payload []byte) error
 	// sub subscribe to mqtt topic.
 	sub(topic string, qos byte, handler mqtt.MessageHandler) error
 	// subMulti subscribe to muliple mqtt topics.
 	subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error
-	// unsubMulti unsubscribe mqtt muliple topic.
-	unsubMulti(topics []string) error
+	// unsub unsubscribe from mqtt topics.
+	unsub(topics []string) error
 }
 
+// BrokerConfig store connecting string for broker
 type BrokerConfig struct {
 	Host string
 	Port int
@@ -29,38 +28,21 @@ type BrokerConfig struct {
 	Pass string
 }
 type broker struct {
-	config *BrokerConfig
+	mqtt.Client
 	logger *log.Logger
-	client mqtt.Client
 }
 
 // newBroker create instance of Broker.
 func newBroker(config *BrokerConfig, logging bool) Broker {
+	logger := newLogger(logging, "BROKER")
 	return &broker{
-		config: config,
-		logger: newLogger(logging, "BROKER"),
+		Client: mqtt.NewClient(newClientOptions(config, logger)),
+		logger: logger,
 	}
 }
 
-// connect open connection to mqtt broker.
-func (b *broker) connect() error {
-	b.client = mqtt.NewClient(b.newClientOptions())
-
-	token := b.client.Connect()
-	if token.Wait() && token.Error() != nil {
-		return token.Error()
-	}
-	return nil
-}
-
-// disconnect close connection to mqtt broker.
-func (b *broker) disconnect() {
-	b.client.Disconnect(100)
-}
-
-// pub publish to mqtt topic.
 func (b *broker) pub(topic string, qos byte, retained bool, payload []byte) error {
-	token := b.client.Publish(topic, qos, retained, payload)
+	token := b.Publish(topic, qos, retained, payload)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
@@ -68,9 +50,8 @@ func (b *broker) pub(topic string, qos byte, retained bool, payload []byte) erro
 	return nil
 }
 
-// sub subscribe to mqtt topic.
 func (b *broker) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
-	token := b.client.Subscribe(topic, qos, handler)
+	token := b.Subscribe(topic, qos, handler)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
@@ -78,14 +59,13 @@ func (b *broker) sub(topic string, qos byte, handler mqtt.MessageHandler) error 
 	return nil
 }
 
-// subMulti subscribe to muliple mqtt topics.
 func (b *broker) subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
 	topicFilters := map[string]byte{}
 	for _, v := range topics {
 		topicFilters[v] = qos
 	}
 
-	token := b.client.SubscribeMultiple(topicFilters, handler)
+	token := b.SubscribeMultiple(topicFilters, handler)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
@@ -96,9 +76,8 @@ func (b *broker) subMulti(topics []string, qos byte, handler mqtt.MessageHandler
 	return nil
 }
 
-// unsubMulti unsubscribe mqtt muliple topic.
-func (b *broker) unsubMulti(topics []string) error {
-	token := b.client.Unsubscribe(topics...)
+func (b *broker) unsub(topics []string) error {
+	token := b.Unsubscribe(topics...)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
@@ -110,21 +89,21 @@ func (b *broker) unsubMulti(topics []string) error {
 }
 
 // newClientOptions make client options for mqtt.
-func (b *broker) newClientOptions() *mqtt.ClientOptions {
+func newClientOptions(c *BrokerConfig, logger *log.Logger) *mqtt.ClientOptions {
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", b.config.Host, b.config.Port))
-	opts.SetUsername(b.config.User)
-	opts.SetPassword(b.config.Pass)
+	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", c.Host, c.Port))
+	opts.SetUsername(c.User)
+	opts.SetPassword(c.Pass)
 	opts.SetClientID("go_mqtt_client")
 
 	opts.DefaultPublishHandler = func(client mqtt.Client, msg mqtt.Message) {
-		b.logger.Println(debugPacket(msg))
+		logger.Println(debugPacket(msg))
 	}
 	opts.OnConnect = func(client mqtt.Client) {
-		b.logger.Println("Connected")
+		logger.Println("Connected")
 	}
 	opts.OnConnectionLost = func(client mqtt.Client, err error) {
-		b.logger.Printf("Disconnected, %v\n", err)
+		logger.Printf("Disconnected, %v\n", err)
 	}
 	return opts
 }
