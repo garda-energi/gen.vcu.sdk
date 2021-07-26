@@ -13,13 +13,13 @@ type HeaderReport struct {
 
 type ReportPacket struct {
 	// name type         byte index
-	Header *HeaderReport // 0 - 15
-	Vcu    *Vcu          // 16 - 30
-	Eeprom *Eeprom       // 31 - 32
-	Gps    *Gps          // 33 - 48
-	Hbar   *Hbar         // 49 - 60
-	Net    *Net          // 61 - 64
-	Mems   *Mems         // 64 - 90
+	Header *HeaderReport // 1 - 15
+	Vcu    *Vcu          // 16 - 31
+	Eeprom *Eeprom       // 32 - 33
+	Gps    *Gps          // 34 - 49
+	Hbar   *Hbar         // 49 - 61
+	Net    *Net          // 62 - 64
+	Mems   *Mems         // 65 - 90
 	Remote *Remote       // 91 - 92
 	Finger *Finger       // 93 - 94
 	Audio  *Audio        // 95 - 98
@@ -40,7 +40,37 @@ func (r *ReportPacket) ValidPrefix() bool {
 // Size calculate total r's size, ignoring prefix & size field
 func (r *ReportPacket) Size() int {
 	// TODO: implement me
-	return 0
+	packetSizes := []struct {
+		// check is nil or not
+		isNil bool
+		// actual size per attribute
+		size int
+	}{
+		{r.Header == nil, 15},
+		{r.Vcu == nil, 16},
+		{r.Eeprom == nil, 2},
+		{r.Gps == nil, 16},
+		{r.Hbar == nil, 12},
+		{r.Net == nil, 4},
+		{r.Mems == nil, 26},
+		{r.Remote == nil, 2},
+		{r.Finger == nil, 2},
+		{r.Audio == nil, 4},
+		{r.Hmi == nil, 1},
+		{r.Bms == nil, 31},
+		{r.Mcu == nil, 42},
+		{r.Task == nil, 32},
+	}
+
+	validSize := 0
+	for _, v := range packetSizes {
+		if !v.isNil {
+			validSize += v.size
+		}
+	}
+
+	validSize -= 3
+	return validSize
 }
 
 // ValidSize check if r's size is valid
