@@ -10,7 +10,7 @@ func (c *commander) Destroy() error {
 		setTopicToVin(TOPIC_COMMAND, c.vin),
 		setTopicToVin(TOPIC_RESPONSE, c.vin),
 	}
-	return c.broker.unsubMulti(topics)
+	return c.broker.unsub(topics)
 }
 
 // listen subscribe to command & response topic for current VIN.

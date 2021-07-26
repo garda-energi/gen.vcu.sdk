@@ -15,12 +15,16 @@ func New(brokerConfig BrokerConfig, logging bool) Sdk {
 
 // Connect open connection to mqtt broker.
 func (s *Sdk) Connect() error {
-	return s.broker.connect()
+	token := s.broker.Connect()
+	if token.Wait() && token.Error() != nil {
+		return token.Error()
+	}
+	return nil
 }
 
 // Disconnect close connection to mqtt broker.
 func (s *Sdk) Disconnect() {
-	s.broker.disconnect()
+	s.broker.Disconnect(100)
 }
 
 // NewCommander create new instance of commander for specific VIN.
@@ -65,7 +69,7 @@ func (s *Sdk) RemoveListener(vins ...int) error {
 		setTopicToVins(TOPIC_STATUS, vins),
 		setTopicToVins(TOPIC_REPORT, vins)...,
 	)
-	return s.broker.unsubMulti(topics)
+	return s.broker.unsub(topics)
 }
 
 // VinRange generate array of integer from min to max.
