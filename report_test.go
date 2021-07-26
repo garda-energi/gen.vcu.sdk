@@ -50,6 +50,17 @@ func TestReport(t *testing.T) {
 			if got, err := decodeReport(tt.args.b); err != nil {
 				t.Errorf("got = %v, want %v", &got, tt.want)
 			} else {
+				// Validator
+				if !got.ValidPrefix() {
+					t.Errorf("Prefix is Not Valid")
+				}
+
+				if !got.ValidSize() {
+					errString := fmt.Sprintf("Size is Not Valid. Got %d. want %d", got.Header.Size, got.Size())
+					t.Errorf(errString)
+				}
+
+				// Encode Test
 				// many case that can't be handled. cz float factorial
 				// ex : 8.6 / 0.1 != 86.0
 				encRes, err := encode(got)
@@ -63,17 +74,7 @@ func TestReport(t *testing.T) {
 				if score != 100 {
 					errString := fmt.Sprintf("Not match. Score %d", score)
 					t.Errorf(errString)
-					// fmt.Println("============", notMatchIdx/2)
-					// fmt.Println(tt.want)
-					// fmt.Println(hexRes[:notMatchIdx+1])
-					// fmt.Println(tt.args.b)
-					// fmt.Println(encRes)
-					// fmt.Println(got)
 				}
-				// if got.Mcu != nil && !got.Mcu.Active {
-				// 	fmt.Printf("=== [%s] ===\n", tt.name)
-				// 	fmt.Println(got)
-				// }
 			}
 		})
 	}
