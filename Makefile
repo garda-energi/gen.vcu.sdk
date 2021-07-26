@@ -1,5 +1,9 @@
 test:
-	go test -v
+	go test -v -race -cover
+
+cover:
+	go test -v -coverprofile=go.cover.out
+	go tool cover -html=go.cover.out
 
 build:
 	go build ./...

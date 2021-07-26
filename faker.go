@@ -6,31 +6,31 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-type fakeBroker struct {
-	client    mqtt.Client
-	connected bool
+// fakeClient implements fake client stub
+type fakeClient struct {
+	Client
 	responses [][]byte
 	cmdChan   chan []byte
 	resChan   chan struct{}
 }
 
-func (b *fakeBroker) pub(topic string, qos byte, retained bool, payload []byte) error {
+func (b *fakeClient) pub(topic string, qos byte, retained bool, payload []byte) error {
 	if flush := payload == nil; !flush {
 		b.cmdChan <- payload
 	}
 	return nil
 }
 
-func (b *fakeBroker) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
+func (b *fakeClient) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
+	var client mqtt.Client
+	msg := &fakeMessage{topic: topic}
+
 	switch toGlobalTopic(topic) {
 	case TOPIC_COMMAND:
 		go func() {
 			select {
-			case cmdPacket := <-b.cmdChan:
-				handler(b.client, &fakeMessage{
-					topic:   topic,
-					payload: cmdPacket,
-				})
+			case msg.payload = <-b.cmdChan:
+				handler(client, msg)
 				b.resChan <- struct{}{}
 			case <-time.After(time.Second):
 			}
@@ -39,12 +39,9 @@ func (b *fakeBroker) sub(topic string, qos byte, handler mqtt.MessageHandler) er
 		go func() {
 			select {
 			case <-b.resChan:
-				for _, resPacket := range b.responses {
-					randomSleep(50, 100, time.Millisecond)
-					handler(b.client, &fakeMessage{
-						topic:   topic,
-						payload: resPacket,
-					})
+				for _, msg.payload = range b.responses {
+					time.Sleep(5 * time.Millisecond)
+					handler(client, msg)
 				}
 			case <-time.After(time.Second):
 			}
@@ -53,48 +50,69 @@ func (b *fakeBroker) sub(topic string, qos byte, handler mqtt.MessageHandler) er
 	return nil
 }
 
-func (b *fakeBroker) connect() error {
-	b.connected = true
+func (b *fakeClient) unsub(topics []string) error {
 	return nil
 }
 
-func (b *fakeBroker) disconnect() {
-	b.connected = false
-}
-
-func (b *fakeBroker) subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
-	return nil
-}
-
-func (b *fakeBroker) unsubMulti(topics []string) error {
-	return nil
-}
-
+// fakeMessage implements fake message stub
 type fakeMessage struct {
-	duplicate bool
-	qos       byte
-	retained  bool
-	topic     string
-	messageId uint16
-	payload   []byte
+	mqtt.Message
+	topic   string
+	payload []byte
 }
 
-func (m *fakeMessage) Duplicate() bool {
-	return m.duplicate
-}
-func (m *fakeMessage) Qos() byte {
-	return m.qos
-}
-func (m *fakeMessage) Retained() bool {
-	return m.retained
-}
 func (m *fakeMessage) Topic() string {
 	return m.topic
-}
-func (m *fakeMessage) MessageID() uint16 {
-	return m.messageId
 }
 func (m *fakeMessage) Payload() []byte {
 	return m.payload
 }
-func (m *fakeMessage) Ack() {}
+
+// fakeSleeper implement fake sleeper stub
+type fakeSleeper struct {
+	sleep time.Duration
+	after time.Duration
+}
+
+func (s *fakeSleeper) Sleep(d time.Duration) {
+	time.Sleep(s.sleep)
+}
+
+func (s *fakeSleeper) After(d time.Duration) <-chan time.Time {
+	return time.After(s.after)
+}
+
+func newFakeResponse(vin int, cmdName string) *responsePacket {
+	cmd, _ := getCmdByName(cmdName)
+
+	return &responsePacket{
+		Header: &headerResponse{
+			HeaderCommand: HeaderCommand{
+				Header: Header{
+					Prefix:       PREFIX_RESPONSE,
+					Size:         0,
+					Vin:          uint32(vin),
+					SendDatetime: time.Now(),
+				},
+				Code:    cmd.code,
+				SubCode: cmd.subCode,
+			},
+			ResCode: resCodeOk,
+		},
+		Message: nil,
+	}
+}
+
+// mockResponse combine response and message to bytes packet.
+func mockResponse(r *responsePacket) []byte {
+	resBytes, err := encode(&r)
+	if err != nil {
+		return nil
+	}
+
+	// change Header.Size
+	if r.Header.Size == 0 {
+		resBytes[2] = uint8(len(resBytes) - 3)
+	}
+	return resBytes
+}

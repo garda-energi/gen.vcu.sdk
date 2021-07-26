@@ -7,13 +7,14 @@ import (
 
 type command struct {
 	name    string
+	invoker string
 	code    uint8
 	subCode uint8
 	timeout time.Duration
 }
 
-// getCommand get related command (code & subCode) by name
-func getCommand(name string) (*command, error) {
+// getCmdByName get related command by name
+func getCmdByName(name string) (*command, error) {
 	for code, subCodes := range commands {
 		for subCode, cmd := range subCodes {
 			if cmd.name == name {
@@ -29,92 +30,131 @@ func getCommand(name string) (*command, error) {
 	return nil, errors.New("no command found")
 }
 
+// getCmdByCode get related command by code
+func getCmdByCode(code, subCode int) (*command, error) {
+	for c, subCodes := range commands {
+		for sc, cmd := range subCodes {
+			if code == c && subCode == sc {
+				cmd.code = uint8(code)
+				cmd.subCode = uint8(subCode)
+				if cmd.timeout == 0 {
+					cmd.timeout = DEFAULT_CMD_TIMEOUT
+				}
+				return &cmd, nil
+			}
+		}
+	}
+	return nil, errors.New("no command found")
+}
+
 var commands = [][]command{
 	{
 		command{
-			name: "GEN_INFO",
+			name:    "GEN_INFO",
+			invoker: "GenInfo",
 		},
 		command{
-			name: "GEN_LED",
+			name:    "GEN_LED",
+			invoker: "GenLed",
 		},
 		command{
-			name: "GEN_RTC",
+			name:    "GEN_RTC",
+			invoker: "GenRtc",
 		},
 		command{
-			name: "GEN_ODO",
+			name:    "GEN_ODO",
+			invoker: "GenOdo",
 		},
 		command{
-			name: "GEN_ANTI_THIEF",
+			name:    "GEN_ANTI_THIEF",
+			invoker: "GenAntiThief",
 		},
 		command{
-			name: "GEN_RPT_FLUSH",
+			name:    "GEN_RPT_FLUSH",
+			invoker: "GenReportFlush",
 		},
 		command{
-			name: "GEN_RPT_BLOCK",
-		},
-	},
-	{
-		command{
-			name: "OVD_STATE",
-		},
-		command{
-			name: "OVD_RPT_INTERVAL",
-		},
-		command{
-			name: "OVD_RPT_FRAME",
-		},
-		command{
-			name: "OVD_RMT_SEAT",
-		},
-		command{
-			name: "OVD_RMT_ALARM",
+			name:    "GEN_RPT_BLOCK",
+			invoker: "GenReportBlock",
 		},
 	},
 	{
 		command{
-			name: "AUDIO_BEEP",
+			name:    "OVD_STATE",
+			invoker: "OvdState",
+		},
+		command{
+			name:    "OVD_RPT_INTERVAL",
+			invoker: "OvdReportInterval",
+		},
+		command{
+			name:    "OVD_RPT_FRAME",
+			invoker: "OvdReportFrame",
+		},
+		command{
+			name:    "OVD_RMT_SEAT",
+			invoker: "OvdRemoteSeat",
+		},
+		command{
+			name:    "OVD_RMT_ALARM",
+			invoker: "OvdRemoteAlarm",
+		},
+	},
+	{
+		command{
+			name:    "AUDIO_BEEP",
+			invoker: "AudioBeep",
 		},
 	},
 	{
 		command{
 			name:    "FINGER_FETCH",
+			invoker: "FingerFetch",
 			timeout: 15 * time.Second,
 		},
 		command{
 			name:    "FINGER_ADD",
+			invoker: "FingerAdd",
 			timeout: 20 * time.Second,
 		},
 		command{
 			name:    "FINGER_DEL",
+			invoker: "FingerDel",
 			timeout: 15 * time.Second,
 		},
 		command{
 			name:    "FINGER_RST",
+			invoker: "FingerRst",
 			timeout: 15 * time.Second,
 		},
 	},
 	{
 		command{
 			name:    "REMOTE_PAIRING",
+			invoker: "RemotePairing",
 			timeout: 15 * time.Second,
 		},
 	},
 	{
 		command{
 			name:    "FOTA_VCU",
+			invoker: "FotaVcu",
 			timeout: 6 * 60 * time.Second,
 		},
 		command{
 			name:    "FOTA_HMI",
+			invoker: "FotaHmi",
 			timeout: 12 * 60 * time.Second,
 		},
 	},
 	{
 		command{
-			name: "NET_SEND_USSD",
+			name:    "NET_SEND_USSD",
+			invoker: "NetSendUssd",
 		},
 		command{
-			name: "NET_READ_SMS",
+			name:    "NET_READ_SMS",
+			invoker: "NetReadSms",
 		},
 	},
 	{
@@ -162,24 +202,30 @@ var commands = [][]command{
 	},
 	{
 		command{
-			name: "HBAR_DRIVE",
+			name:    "HBAR_DRIVE",
+			invoker: "HbarDrive",
 		},
 		command{
-			name: "HBAR_TRIP",
+			name:    "HBAR_TRIP",
+			invoker: "HbarTrip",
 		},
 		command{
-			name: "HBAR_AVG",
+			name:    "HBAR_AVG",
+			invoker: "HbarAvg",
 		},
 		command{
-			name: "HBAR_REVERSE",
+			name:    "HBAR_REVERSE",
+			invoker: "HbarReverse",
 		},
 	},
 	{
 		command{
-			name: "MCU_SPEED_MAX",
+			name:    "MCU_SPEED_MAX",
+			invoker: "McuSpeedMax",
 		},
 		command{
-			name: "MCU_TEMPLATES",
+			name:    "MCU_TEMPLATES",
+			invoker: "McuTemplates",
 		},
 	},
 }

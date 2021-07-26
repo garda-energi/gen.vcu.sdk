@@ -11,10 +11,10 @@ type HeaderCommand struct {
 	SubCode uint8 `type:"uint8"`
 }
 
-// type CommandPacket struct {
-// 	Header  *HeaderCommand
-// 	Message message
-// }
+type commandPacket struct {
+	Header  *HeaderCommand
+	Message message
+}
 
 type headerResponse struct {
 	HeaderCommand
@@ -58,6 +58,15 @@ func (r *responsePacket) matchWith(cmd *command) bool {
 	return r.Header.Code == cmd.code && r.Header.SubCode == cmd.subCode
 }
 
+// validCmdCode check if r's command code & subCode is valid
+func (r *responsePacket) validCmdCode() bool {
+	if r.Header == nil {
+		return false
+	}
+	_, err := getCmdByCode(int(r.Header.Code), int(r.Header.SubCode))
+	return err == nil
+}
+
 // validResCode check if r's response code is valid
 func (r *responsePacket) validResCode() bool {
 	if r.Header == nil {
@@ -74,11 +83,6 @@ func (r *responsePacket) validResCode() bool {
 // hasMessage check if r has message
 func (r *responsePacket) hasMessage() bool {
 	return len(r.Message) > 0
-}
-
-// messageOverflow check if r's message is overflowed
-func (r *responsePacket) messageOverflow() bool {
-	return len(r.Message) > MESSAGE_LEN_MAX
 }
 
 // renderMessage subtitue BikeState to r's message

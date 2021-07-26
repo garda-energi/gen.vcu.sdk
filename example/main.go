@@ -10,14 +10,14 @@ import (
 func main() {
 	stopChan := sdk.SetupGracefulShutdown() // optional code
 
-	api := sdk.New(sdk.BrokerConfig{
+	api := sdk.New(sdk.ClientConfig{
 		Host: "test.mosquitto.org",
 		Port: 1883,
 		User: "",
 		Pass: "",
 	}, true)
 
-	// connect to broker
+	// connect to client
 	if err := api.Connect(); err != nil {
 		log.Fatal(err)
 	}
@@ -33,17 +33,18 @@ func main() {
 			fmt.Printf("%d => %s\n", vin, status)
 		},
 		ReportFunc: func(vin int, report *sdk.ReportPacket) {
-			fmt.Println(report)
+			// fmt.Println(report)
+
 			// show-off all *ReportPacket methods available
-			if report.Vcu.RealtimeData() {
-				fmt.Println("Current report is realtime")
-			}
-			if report.Gps.ValidHorizontal() {
-				fmt.Println("GPS longitude, latitude & heading is valid")
-			}
-			if report.Bms.LowCapacity() {
-				fmt.Println("BMS need to be charged on Charging Station")
-			}
+			// if report.Vcu.RealtimeData() {
+			// 	fmt.Println("Current report is realtime")
+			// }
+			// if report.Gps.ValidHorizontal() {
+			// 	fmt.Println("GPS longitude, latitude & heading is valid")
+			// }
+			// if report.Bms.LowCapacity() {
+			// 	fmt.Println("BMS need to be charged on Charging Station")
+			// }
 		},
 	}
 
@@ -89,7 +90,7 @@ func main() {
 		// 	fmt.Printf("Odometer changed to %d km\n", km)
 		// }
 
-		// if err := dev354313.GenAntiTheaf(); err != nil {
+		// if err := dev354313.GenAntiThief(); err != nil {
 		// 	fmt.Println(err)
 		// } else {
 		// 	fmt.Println("Anti-theaf detector was toggled")

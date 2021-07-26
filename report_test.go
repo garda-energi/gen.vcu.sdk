@@ -2,7 +2,7 @@ package sdk
 
 import (
 	"encoding/json"
-	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"math"
@@ -15,6 +15,57 @@ import (
 
 const TEST_LIMIT = 10
 
+var testDataNormal = getTestDataFromJson()
+
+var testDataError = []struct {
+	data string
+	want error
+}{
+	{
+		data: "54422E0968050015070F110E11010115070F110E100100040000E4CCE202000108010B070B010000EB2343B83E9BFB0000",
+		want: errInvalidPrefix,
+	},
+	{
+		data: "5440200968050015070F110E11010115070F110E100100040000E4CCE202000108010B070B010000EB2343B83E9BFB0000",
+		want: errInvalidSize,
+	},
+	{
+		data: "5440CA0968050015070F110E16010215070F110E160100040000E4D1E202000108010A070B010080EB2343103F9BFB000000020000F301FFFF0400000030070601000700F3FF62002000070004002900B4FF6200210055007D0101000100010100000100170000030000000000A5140000182000010000000000B414000017200000000001000000000000000000000000000000000000000000000000000000000000000000000000000000680374047401600154014801D4014801CC0108024401000004FF0000000000000020FA",
+		want: errInvalidSize,
+	},
+	{
+		data: "54402E0968050015070F110F0C010115070F110F0C0100040000E503E3020001080109080C000080EB2343D83F9BFB00",
+		want: io.ErrUnexpectedEOF,
+	},
+	{
+		data: "54402E0968050015070F110F0C010115070F110F0C0100040000E503E3020001080109080C000080EB2343D83F9B",
+		want: io.ErrUnexpectedEOF,
+	},
+	{
+		data: "54402E0968050015070F110F0C010115070F110F0C0100040000E503E3",
+		want: io.ErrUnexpectedEOF,
+	},
+}
+
+func getTestDataFromJson() []string {
+	jsonFile, err := os.Open("report_test_data.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer jsonFile.Close()
+
+	var testData []string
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err = json.Unmarshal(byteValue, &testData); err != nil {
+		log.Fatal(err)
+	}
+	return testData
+}
+
 func TestReport(t *testing.T) {
 	type args struct {
 		b []byte
@@ -25,13 +76,8 @@ func TestReport(t *testing.T) {
 		want string
 	}
 
-	var testData []string
-	if err := openFileJSON("report_test_data.json", &testData); err != nil {
-		log.Fatal(err)
-	}
-
-	tests := make([]tester, len(testData))
-	for i, d := range testData {
+	tests := make([]tester, len(testDataNormal))
+	for i, d := range testDataNormal {
 		tests[i].name = "data #" + strconv.Itoa(i)
 		tests[i].args.b = hexToByte(d)
 		tests[i].want = d
@@ -48,8 +94,18 @@ func TestReport(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 			if got, err := decodeReport(tt.args.b); err != nil {
-				t.Errorf("got = %v, want %v", &got, tt.want)
+				t.Errorf("error : %s", err)
 			} else {
+				// Validator
+				if !got.ValidPrefix() {
+					t.Errorf("Prefix is Not Valid")
+				}
+
+				if !got.ValidSize() {
+					t.Errorf("Size is Not Valid. Got %d. want %d", got.Header.Size, got.Size())
+				}
+
+				// Encode Test
 				// many case that can't be handled. cz float factorial
 				// ex : 8.6 / 0.1 != 86.0
 				encRes, err := encode(got)
@@ -61,35 +117,43 @@ func TestReport(t *testing.T) {
 				score := compareVar(got, got2)
 
 				if score != 100 {
-					errString := fmt.Sprintf("Not match. Score %d", score)
-					t.Errorf(errString)
-					// fmt.Println("============", notMatchIdx/2)
-					// fmt.Println(tt.want)
-					// fmt.Println(hexRes[:notMatchIdx+1])
-					// fmt.Println(tt.args.b)
-					// fmt.Println(encRes)
-					// fmt.Println(got)
+					t.Errorf("Not match. Score %d", score)
 				}
-				// if got.Mcu != nil && !got.Mcu.Active {
-				// 	fmt.Printf("=== [%s] ===\n", tt.name)
-				// 	fmt.Println(got)
-				// }
 			}
 		})
 	}
 }
 
-// openFileJSON open and decode json file
-func openFileJSON(filename string, testData *[]string) error {
-	jsonFile, err := os.Open(filename)
-	if err != nil {
-		return err
+func TestReportErrorHandler(t *testing.T) {
+	type args struct {
+		b []byte
 	}
-	defer jsonFile.Close()
+	type tester struct {
+		name string
+		args args
+		want error
+	}
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-	json.Unmarshal(byteValue, testData)
-	return nil
+	tests := make([]tester, len(testDataError))
+	for i, d := range testDataError {
+		tests[i].name = "data #" + strconv.Itoa(i)
+		tests[i].args.b = hexToByte(d.data)
+		tests[i].want = d.want
+	}
+
+	for _, tt := range tests {
+		if tt.name == "" {
+			continue
+		}
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := decodeReport(tt.args.b)
+			if err == nil {
+				t.Errorf("Success?? Packet should be Error (%s)", tt.want)
+			} else if err != tt.want {
+				t.Errorf("Gor error: %s. Packet should be Error (%s)", err, tt.want)
+			}
+		})
+	}
 }
 
 // compare between 2 of any variabel
