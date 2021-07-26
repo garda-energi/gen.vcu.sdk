@@ -58,7 +58,7 @@ func (b *fakeBroker) unsub(topics []string) error {
 	return nil
 }
 
-// fakeMessage implement fake message stub
+// fakeMessage implements fake message stub
 type fakeMessage struct {
 	mqtt.Message
 	topic   string
@@ -76,17 +76,17 @@ func (m *fakeMessage) Payload() []byte {
 type fakeSleeper struct{}
 
 func (s *fakeSleeper) Sleep(d time.Duration) {
-	d = reduceDuration(d, time.Millisecond)
+	d = faster(d, time.Millisecond)
 	time.Sleep(d)
 }
 
 func (s *fakeSleeper) After(d time.Duration) <-chan time.Time {
-	d = reduceDuration(d, 125*time.Millisecond)
+	d = faster(d, 125*time.Millisecond)
 	return time.After(d)
 }
 
-// reduceDuration reduce d for faster sleep stub with minimum limit
-func reduceDuration(d time.Duration, min time.Duration) time.Duration {
+// faster reduce d for faster sleep stub with minimum duration
+func faster(d time.Duration, min time.Duration) time.Duration {
 	d /= time.Microsecond
 	if d < min {
 		d = min

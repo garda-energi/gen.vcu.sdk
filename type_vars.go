@@ -14,13 +14,12 @@ var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 var typeOfMessage reflect.Type = reflect.ValueOf(message{}).Type()
 
 var (
-	errPacketAckCorrupt   = errors.New("packet ack corrupt")
-	errInvalidPrefix      = errors.New("prefix invalid")
-	errInvalidSize        = errors.New("size invalid")
-	errInvalidVin         = errors.New("vin invalid")
-	errInvalidCode        = errors.New("code invalid")
-	errInvalidResCode     = errors.New("resCode invalid")
-	errResMessageOverflow = errors.New("message overflow")
+	errPacketAckCorrupt = errors.New("packet ack corrupt")
+	errInvalidPrefix    = errors.New("prefix invalid")
+	errInvalidSize      = errors.New("size invalid")
+	errInvalidVin       = errors.New("vin invalid")
+	errInvalidCode      = errors.New("code invalid")
+	errInvalidResCode   = errors.New("resCode invalid")
 )
 
 type errPacketTimeout string

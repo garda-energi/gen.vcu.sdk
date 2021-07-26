@@ -7,7 +7,7 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-// Broker is building block broker client (with extra things).
+// Broker is building block for broker client (with extra things).
 type Broker interface {
 	mqtt.Client
 	// pub publish to mqtt topic.
@@ -20,7 +20,7 @@ type Broker interface {
 	unsub(topics []string) error
 }
 
-// BrokerConfig store connection string for broker
+// BrokerConfig store connection string for broker client
 type BrokerConfig struct {
 	Host string
 	Port int

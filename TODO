@@ -22,6 +22,7 @@ Todo Package:
   ✔ rename repositories, notify to all repo consumer @done(21-07-24 09:28)
   ✔ change all magic number to const @done(21-07-25 19:40)
   ☐ make test coverage, at least near 100%
+  ☐ rename Broker to Client
   
 Todo Report:
   ✔ multiply value with factor tag @done(21-07-13 19:39)

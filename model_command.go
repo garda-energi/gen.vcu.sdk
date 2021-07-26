@@ -76,11 +76,6 @@ func (r *responsePacket) hasMessage() bool {
 	return len(r.Message) > 0
 }
 
-// messageOverflow check if r's message is overflowed
-func (r *responsePacket) messageOverflow() bool {
-	return len(r.Message) > MESSAGE_LEN_MAX
-}
-
 // renderMessage subtitue BikeState to r's message
 func (r *responsePacket) renderMessage() {
 	str := string(r.Message)

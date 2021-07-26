@@ -13,8 +13,7 @@ import (
 // header has length and length get after encode.
 // alternative solution : change bit #3 after encode as length of body
 
-// encode combine command and message to bytes packet.
-// can it be replaced with encode() func bellow ?
+// encodeCommand combine command and message to bytes packet.
 func encodeCommand(vin int, cmd *command, msg message) ([]byte, error) {
 	if msg.overflow() {
 		return nil, errInputOutOfRange("message")
@@ -34,10 +33,13 @@ func encodeCommand(vin int, cmd *command, msg message) ([]byte, error) {
 		Message: msg,
 	}
 
-	resBytes, _ := encode(&cp)
+	resBytes, err := encode(&cp)
+	if err != nil {
+		return nil, err
+	}
+
 	// change Header.Size
 	resBytes[2] = uint8(len(resBytes) - 3)
-
 	return resBytes, nil
 }
 

@@ -112,9 +112,6 @@ func validateResponse(vin int, cmd *command, res *responsePacket) error {
 	if !res.validResCode() {
 		return errInvalidResCode
 	}
-	if res.messageOverflow() {
-		return errResMessageOverflow
-	}
 
 	// check resCode
 	if res.Header.ResCode == resCodeOk {
