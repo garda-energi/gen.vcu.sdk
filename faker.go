@@ -6,6 +6,7 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+// fakeBroker implements fake broker stub
 type fakeBroker struct {
 	Broker
 	client    mqtt.Client
@@ -57,6 +58,7 @@ func (b *fakeBroker) unsubMulti(topics []string) error {
 	return nil
 }
 
+// fakeMessage implement fake message stub
 type fakeMessage struct {
 	mqtt.Message
 	topic   string
@@ -70,19 +72,20 @@ func (m *fakeMessage) Payload() []byte {
 	return m.payload
 }
 
+// fakeSleeper implement fake sleeper stub
 type fakeSleeper struct{}
 
 func (s *fakeSleeper) Sleep(d time.Duration) {
-	time.Sleep(getMinFakeDuration(d))
+	d = minFakeDuration(d, time.Millisecond)
+	time.Sleep(d)
 }
 
 func (s *fakeSleeper) After(d time.Duration) <-chan time.Time {
-	return time.After(getMinFakeDuration(d))
+	d = minFakeDuration(d, 125*time.Millisecond)
+	return time.After(d)
 }
 
-func getMinFakeDuration(d time.Duration) time.Duration {
-	const min = 100 * time.Millisecond
-
+func minFakeDuration(d time.Duration, min time.Duration) time.Duration {
 	d /= time.Microsecond
 	if d < min {
 		d = min

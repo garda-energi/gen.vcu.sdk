@@ -3,8 +3,12 @@ package sdk
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"time"
 )
+
+// typeOfTime is for comparing struct type as time.Time
+var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 
 var (
 	errPacketAckCorrupt   = errors.New("packet ack corrupt")
@@ -28,7 +32,7 @@ func (e errInputOutOfRange) Error() string {
 	return fmt.Sprintf("input %s out of range", string(e))
 }
 
-// Sleeper is building block for sleep function
+// Sleeper is building block for sleep things
 type Sleeper interface {
 	// Sleep pauses the current goroutine for at least the duration d.
 	// A negative or zero duration causes Sleep to return immediately.

@@ -42,7 +42,6 @@ func newBroker(config *BrokerConfig, logging bool) Broker {
 	}
 }
 
-// connect open connection to mqtt broker.
 func (b *broker) connect() error {
 	b.client = mqtt.NewClient(b.newClientOptions())
 
@@ -53,12 +52,10 @@ func (b *broker) connect() error {
 	return nil
 }
 
-// disconnect close connection to mqtt broker.
 func (b *broker) disconnect() {
 	b.client.Disconnect(100)
 }
 
-// pub publish to mqtt topic.
 func (b *broker) pub(topic string, qos byte, retained bool, payload []byte) error {
 	token := b.client.Publish(topic, qos, retained, payload)
 	if token.Wait() && token.Error() != nil {
@@ -68,7 +65,6 @@ func (b *broker) pub(topic string, qos byte, retained bool, payload []byte) erro
 	return nil
 }
 
-// sub subscribe to mqtt topic.
 func (b *broker) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
 	token := b.client.Subscribe(topic, qos, handler)
 	if token.Wait() && token.Error() != nil {
@@ -78,7 +74,6 @@ func (b *broker) sub(topic string, qos byte, handler mqtt.MessageHandler) error 
 	return nil
 }
 
-// subMulti subscribe to muliple mqtt topics.
 func (b *broker) subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
 	topicFilters := map[string]byte{}
 	for _, v := range topics {
@@ -96,7 +91,6 @@ func (b *broker) subMulti(topics []string, qos byte, handler mqtt.MessageHandler
 	return nil
 }
 
-// unsubMulti unsubscribe mqtt muliple topic.
 func (b *broker) unsubMulti(topics []string) error {
 	token := b.client.Unsubscribe(topics...)
 	if token.Wait() && token.Error() != nil {
