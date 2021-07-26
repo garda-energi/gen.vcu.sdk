@@ -228,12 +228,12 @@ func TestCommands(t *testing.T) {
 
 func newFakeCommander(responses [][]byte) *commander {
 	logging := false
-	broker := &fakeBroker{
+	client := &fakeClient{
 		responses: responses,
 		cmdChan:   make(chan []byte),
 		resChan:   make(chan struct{}),
 	}
 
-	cmder, _ := newCommander(testVin, broker, &fakeSleeper{}, logging)
+	cmder, _ := newCommander(testVin, client, &fakeSleeper{}, logging)
 	return cmder
 }

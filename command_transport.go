@@ -32,7 +32,7 @@ func (c *commander) sendCommand(cmd *command, msg message) error {
 		return err
 	}
 
-	c.broker.pub(setTopicToVin(TOPIC_COMMAND, c.vin), 1, true, packet)
+	c.client.pub(setTopicToVin(TOPIC_COMMAND, c.vin), 1, true, packet)
 	return nil
 }
 

@@ -6,23 +6,23 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-// fakeBroker implements fake broker stub
-type fakeBroker struct {
-	Broker
+// fakeClient implements fake client stub
+type fakeClient struct {
+	Client
 	client    mqtt.Client
 	responses [][]byte
 	cmdChan   chan []byte
 	resChan   chan struct{}
 }
 
-func (b *fakeBroker) pub(topic string, qos byte, retained bool, payload []byte) error {
+func (b *fakeClient) pub(topic string, qos byte, retained bool, payload []byte) error {
 	if flush := payload == nil; !flush {
 		b.cmdChan <- payload
 	}
 	return nil
 }
 
-func (b *fakeBroker) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
+func (b *fakeClient) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
 	switch toGlobalTopic(topic) {
 	case TOPIC_COMMAND:
 		go func() {
@@ -54,7 +54,7 @@ func (b *fakeBroker) sub(topic string, qos byte, handler mqtt.MessageHandler) er
 	return nil
 }
 
-func (b *fakeBroker) unsub(topics []string) error {
+func (b *fakeClient) unsub(topics []string) error {
 	return nil
 }
 

@@ -10,7 +10,7 @@ func (c *commander) Destroy() error {
 		setTopicToVin(TOPIC_COMMAND, c.vin),
 		setTopicToVin(TOPIC_RESPONSE, c.vin),
 	}
-	return c.broker.unsub(topics)
+	return c.client.unsub(topics)
 }
 
 // listen subscribe to command & response topic for current VIN.
@@ -19,7 +19,7 @@ func (c *commander) listen() error {
 		c.logger.Println(debugPacket(msg))
 	}
 	topic := setTopicToVin(TOPIC_COMMAND, c.vin)
-	if err := c.broker.sub(topic, QOS_SUB_COMMAND, cFunc); err != nil {
+	if err := c.client.sub(topic, QOS_SUB_COMMAND, cFunc); err != nil {
 		return err
 	}
 
@@ -28,16 +28,16 @@ func (c *commander) listen() error {
 		c.resChan <- msg.Payload()
 	}
 	topic = setTopicToVin(TOPIC_RESPONSE, c.vin)
-	if err := c.broker.sub(topic, QOS_SUB_RESPONSE, rFunc); err != nil {
+	if err := c.client.sub(topic, QOS_SUB_RESPONSE, rFunc); err != nil {
 		return err
 	}
 	return nil
 }
 
-// flush clear command & response topic on broker.
+// flush clear command & response topic on client.
 // It indicates that command is done or cancelled.
 func (c *commander) flush() {
 	for _, t := range []string{TOPIC_COMMAND, TOPIC_RESPONSE} {
-		c.broker.pub(setTopicToVin(t, c.vin), QOS_CMD_FLUSH, true, nil)
+		c.client.pub(setTopicToVin(t, c.vin), QOS_CMD_FLUSH, true, nil)
 	}
 }
