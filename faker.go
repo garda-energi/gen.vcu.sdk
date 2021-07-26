@@ -93,3 +93,38 @@ func faster(d time.Duration, min time.Duration) time.Duration {
 	}
 	return d
 }
+
+func newFakeResponse(vin int, cmdName string) *responsePacket {
+	cmd, _ := getCommand(cmdName)
+
+	return &responsePacket{
+		Header: &headerResponse{
+			HeaderCommand: HeaderCommand{
+				Header: Header{
+					Prefix:       PREFIX_RESPONSE,
+					Size:         0,
+					Vin:          uint32(vin),
+					SendDatetime: time.Now(),
+				},
+				Code:    cmd.code,
+				SubCode: cmd.subCode,
+			},
+			ResCode: resCodeOk,
+		},
+		Message: nil,
+	}
+}
+
+// mockResponse combine response and message to bytes packet.
+func mockResponse(r *responsePacket) []byte {
+	resBytes, err := encode(&r)
+	if err != nil {
+		return nil
+	}
+
+	// change Header.Size
+	if r.Header.Size == 0 {
+		resBytes[2] = uint8(len(resBytes) - 3)
+	}
+	return resBytes
+}
