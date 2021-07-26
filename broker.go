@@ -7,20 +7,20 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-// Broker is building block broker client.
+// Broker is building block broker client (with extra things).
 type Broker interface {
 	mqtt.Client
 	// pub publish to mqtt topic.
 	pub(topic string, qos byte, retained bool, payload []byte) error
 	// sub subscribe to mqtt topic.
 	sub(topic string, qos byte, handler mqtt.MessageHandler) error
-	// subMulti subscribe to muliple mqtt topics.
+	// subMulti subscribe to mqtt topics.
 	subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error
 	// unsub unsubscribe from mqtt topics.
 	unsub(topics []string) error
 }
 
-// BrokerConfig store connecting string for broker
+// BrokerConfig store connection string for broker
 type BrokerConfig struct {
 	Host string
 	Port int
@@ -32,7 +32,7 @@ type broker struct {
 	logger *log.Logger
 }
 
-// newBroker create instance of Broker.
+// newBroker create instance of Broker client.
 func newBroker(config *BrokerConfig, logging bool) Broker {
 	logger := newLogger(logging, "BROKER")
 	return &broker{

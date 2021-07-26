@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	sdk "github.com/pudjamansyurin/gen.vcu.sdk"
 )
@@ -33,7 +34,7 @@ func main() {
 			fmt.Printf("%d => %s\n", vin, status)
 		},
 		ReportFunc: func(vin int, report *sdk.ReportPacket) {
-			fmt.Println(report)
+			// fmt.Println(report)
 			// show-off all *ReportPacket methods available
 			if report.Vcu.RealtimeData() {
 				fmt.Println("Current report is realtime")
@@ -75,12 +76,12 @@ func main() {
 		// 	fmt.Println("Device led (on-board) was turned-off")
 		// }
 
-		// rtc := time.Now()
-		// if err := dev354313.GenRtc(rtc); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Printf("RTC synced to %s\n", rtc)
-		// }
+		rtc := time.Now()
+		if err := dev354313.GenRtc(rtc); err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Printf("RTC synced to %s\n", rtc)
+		}
 
 		// km := uint16(54321)
 		// if err := dev354313.GenOdo(km); err != nil {

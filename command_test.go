@@ -1,7 +1,9 @@
 package sdk
 
 import (
+	"reflect"
 	"testing"
+	"time"
 )
 
 const (
@@ -15,6 +17,19 @@ const (
 	resGenInfoResCodeError   = "534023096805001507180D19130100000056435520762E3636342C2047454E202D2032303231"
 	resGenInfoOverflow       = "5340E0096805001507180D19130100000156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D203230323156435520762E3636342C2047454E202D2032303231"
 )
+
+func newFakeCommander(responses [][]byte) *commander {
+	vin := 354313
+	logging := false
+	broker := &fakeBroker{
+		responses: responses,
+		cmdChan:   make(chan []byte),
+		resChan:   make(chan struct{}),
+	}
+
+	cmder, _ := newCommander(vin, broker, &fakeSleeper{}, logging)
+	return cmder
+}
 
 func TestResponse(t *testing.T) {
 	t.Run("no packet", func(t *testing.T) {
@@ -190,15 +205,62 @@ func TestResponse(t *testing.T) {
 	})
 }
 
-func newFakeCommander(responses [][]byte) *commander {
-	vin := 354313
-	logging := false
-	broker := &fakeBroker{
-		responses: responses,
-		cmdChan:   make(chan []byte),
-		resChan:   make(chan struct{}),
+func TestCommands(t *testing.T) {
+	testCases := []struct {
+		cmd  string
+		args interface{}
+		res  string
+	}{
+		{
+			cmd:  "GenInfo",
+			args: nil,
+			res:  "5340230968050015071A0A15080100000156435520762E3636342C2047454E202D2032303231",
+		},
+		{
+			cmd:  "GenLed",
+			args: true,
+			res:  "53400E0968050015071A0A180D01000101",
+		},
+		{
+			cmd:  "GenRtc",
+			args: time.Now(),
+			res:  "53400E0968050015071A0A250301000201",
+		},
+		{
+			cmd:  "GenOdo",
+			args: uint16(4321),
+			res:  "53400E0968050015071A0A261801000301",
+		},
+		{
+			cmd:  "GenAntiTheaf",
+			args: nil,
+			res:  "53400E0968050015071A0A272201000401",
+		},
+		{
+			cmd:  "GenReportFlush",
+			args: nil,
+			res:  "53400E0968050015071A0A281C01000501",
+		},
 	}
 
-	cmder, _ := newCommander(vin, broker, &fakeSleeper{}, logging)
-	return cmder
+	for _, tC := range testCases {
+		t.Run(tC.cmd, func(t *testing.T) {
+			cmder := newFakeCommander([][]byte{
+				strToBytes(PREFIX_ACK),
+				hexToByte(tC.res),
+			})
+			defer cmder.Destroy()
+
+			meth := reflect.ValueOf(cmder).MethodByName(tC.cmd)
+			args := []reflect.Value{}
+			if tC.args != nil {
+				args = append(args, reflect.ValueOf(tC.args))
+			}
+			outs := meth.Call(args)
+
+			if err := outs[len(outs)-1]; !err.IsNil() {
+				t.Fatalf("want no error, got %s\n", err)
+			}
+		})
+	}
 }
