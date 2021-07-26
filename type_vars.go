@@ -28,8 +28,8 @@ func (e errInputOutOfRange) Error() string {
 	return fmt.Sprintf("input %s out of range", string(e))
 }
 
-// sleeper is building block for sleep function
-type sleeper interface {
+// Sleeper is building block for sleep function
+type Sleeper interface {
 	// Sleep pauses the current goroutine for at least the duration d.
 	// A negative or zero duration causes Sleep to return immediately.
 	Sleep(time.Duration)
