@@ -90,7 +90,7 @@ func main() {
 		// 	fmt.Printf("Odometer changed to %d km\n", km)
 		// }
 
-		// if err := dev354313.GenAntiTheaf(); err != nil {
+		// if err := dev354313.GenAntiThief(); err != nil {
 		// 	fmt.Println(err)
 		// } else {
 		// 	fmt.Println("Anti-theaf detector was toggled")

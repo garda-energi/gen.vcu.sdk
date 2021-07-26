@@ -67,8 +67,8 @@ func (c *commander) GenOdo(km uint16) error {
 	return err
 }
 
-// GenAntiTheaf toggle anti-thief motion detector.
-func (c *commander) GenAntiTheaf() error {
+// GenAntiThief toggle anti-thief motion detector.
+func (c *commander) GenAntiThief() error {
 	_, err := c.exec("GEN_ANTI_THIEF", nil)
 	return err
 }
