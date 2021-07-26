@@ -69,3 +69,23 @@ func (m *fakeMessage) Topic() string {
 func (m *fakeMessage) Payload() []byte {
 	return m.payload
 }
+
+type fakeSleeper struct{}
+
+func (s *fakeSleeper) Sleep(d time.Duration) {
+	time.Sleep(getMinFakeDuration(d))
+}
+
+func (s *fakeSleeper) After(d time.Duration) <-chan time.Time {
+	return time.After(getMinFakeDuration(d))
+}
+
+func getMinFakeDuration(d time.Duration) time.Duration {
+	const min = 100 * time.Millisecond
+
+	d /= time.Microsecond
+	if d < min {
+		d = min
+	}
+	return d
+}

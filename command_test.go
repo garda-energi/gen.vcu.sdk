@@ -194,6 +194,6 @@ func newFakeCommander(responses [][]byte) *commander {
 		resChan:   make(chan struct{}),
 	}
 
-	cmder, _ := newCommander(vin, broker, logging)
+	cmder, _ := newCommander(vin, broker, &fakeSleeper{}, logging)
 	return cmder
 }
