@@ -62,8 +62,8 @@ func (c *commander) GenRtc(time time.Time) error {
 
 // GenOdo set odometer value (in km).
 func (c *commander) GenOdo(km uint16) error {
-	payload := uintToBytes(reflect.Uint16, uint64(km))
-	_, err := c.exec("GEN_ODO", payload)
+	msg := uintToBytes(reflect.Uint16, uint64(km))
+	_, err := c.exec("GEN_ODO", msg)
 	return err
 }
 
@@ -92,8 +92,8 @@ func (c *commander) OvdState(state BikeState) error {
 		return errInputOutOfRange("state")
 	}
 
-	payload := []byte{byte(state)}
-	_, err := c.exec("OVD_STATE", payload)
+	msg := []byte{byte(state)}
+	_, err := c.exec("OVD_STATE", msg)
 	return err
 }
 
@@ -102,8 +102,8 @@ func (c *commander) OvdReportInterval(dur time.Duration) error {
 	if dur < REPORT_INTERVAL_MIN || dur > REPORT_INTERVAL_MAX {
 		return errInputOutOfRange("duration")
 	}
-	payload := uintToBytes(reflect.Uint16, uint64(dur.Seconds()))
-	_, err := c.exec("OVD_RPT_INTERVAL", payload)
+	msg := uintToBytes(reflect.Uint16, uint64(dur.Seconds()))
+	_, err := c.exec("OVD_RPT_INTERVAL", msg)
 	return err
 }
 
@@ -113,8 +113,8 @@ func (c *commander) OvdReportFrame(frame Frame) error {
 		return errInputOutOfRange("frame")
 	}
 
-	payload := []byte{byte(frame)}
-	_, err := c.exec("OVD_RPT_FRAME", payload)
+	msg := []byte{byte(frame)}
+	_, err := c.exec("OVD_RPT_FRAME", msg)
 	return err
 }
 
@@ -237,8 +237,8 @@ func (c *commander) HbarDrive(drive ModeDrive) error {
 		return errInputOutOfRange("drive-mode")
 	}
 
-	payload := []byte{byte(drive)}
-	_, err := c.exec("HBAR_DRIVE", payload)
+	msg := []byte{byte(drive)}
+	_, err := c.exec("HBAR_DRIVE", msg)
 	return err
 }
 
@@ -248,8 +248,8 @@ func (c *commander) HbarTrip(trip ModeTrip) error {
 		return errInputOutOfRange("trip-mode")
 	}
 
-	payload := []byte{byte(trip)}
-	_, err := c.exec("HBAR_TRIP", payload)
+	msg := []byte{byte(trip)}
+	_, err := c.exec("HBAR_TRIP", msg)
 	return err
 }
 
@@ -259,8 +259,8 @@ func (c *commander) HbarAvg(avg ModeAvg) error {
 		return errInputOutOfRange("avg-mode")
 	}
 
-	payload := []byte{byte(avg)}
-	_, err := c.exec("HBAR_AVG", payload)
+	msg := []byte{byte(avg)}
+	_, err := c.exec("HBAR_AVG", msg)
 	return err
 }
 
@@ -272,8 +272,8 @@ func (c *commander) HbarReverse(on bool) error {
 
 // McuSpeedMax set maximum MCU (Motor Control Unit) speed (in kph).
 func (c *commander) McuSpeedMax(kph uint8) error {
-	payload := uintToBytes(reflect.Uint8, uint64(kph))
-	_, err := c.exec("MCU_SPEED_MAX", payload)
+	msg := uintToBytes(reflect.Uint8, uint64(kph))
+	_, err := c.exec("MCU_SPEED_MAX", msg)
 	return err
 }
 

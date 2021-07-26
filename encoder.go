@@ -13,46 +13,30 @@ import (
 // header has length and length get after encode.
 // alternative solution : change bit #3 after encode as length of body
 
-// encode combine command and value to bytes packet.
+// encode combine command and message to bytes packet.
 // can it be replaced with encode() func bellow ?
-func encodeCommand(vin int, cmd *command, val message) ([]byte, error) {
-	if val.overflow() {
-		return nil, errInputOutOfRange("payload")
+func encodeCommand(vin int, cmd *command, msg message) ([]byte, error) {
+	if msg.overflow() {
+		return nil, errInputOutOfRange("message")
 	}
 
-	now := time.Now()
-	// var buf bytes.Buffer
-	// ed := binary.LittleEndian
-	// binary.Write(&buf, ed, reverseBytes(val))
-	// binary.Write(&buf, ed, cmd.subCode)
-	// binary.Write(&buf, ed, cmd.code)
-	// binary.Write(&buf, ed, reverseBytes(timeToBytes(now)))
-	// binary.Write(&buf, binary.BigEndian, uint32(vin))
-	// binary.Write(&buf, ed, byte(buf.Len()))
-	// binary.Write(&buf, ed, []byte(PREFIX_COMMAND))
-	// bytes := reverseBytes(buf.Bytes())
-
-	cp := &CommandPacket{
+	cp := &commandPacket{
 		Header: &HeaderCommand{
 			Header: Header{
 				Prefix:       PREFIX_COMMAND,
 				Size:         0,
 				Vin:          uint32(vin),
-				SendDatetime: now,
+				SendDatetime: time.Now(),
 			},
 			Code:    cmd.code,
 			SubCode: cmd.subCode,
 		},
-		Message: val,
+		Message: msg,
 	}
 
 	resBytes, _ := encode(&cp)
 	// change Header.Size
 	resBytes[2] = uint8(len(resBytes) - 3)
-
-	// compare
-	// fmt.Println(resBytes)
-	// fmt.Println(bytes)
 
 	return resBytes, nil
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"time"
 
 	sdk "github.com/pudjamansyurin/gen.vcu.sdk"
 )
@@ -35,16 +34,17 @@ func main() {
 		},
 		ReportFunc: func(vin int, report *sdk.ReportPacket) {
 			// fmt.Println(report)
+
 			// show-off all *ReportPacket methods available
-			if report.Vcu.RealtimeData() {
-				fmt.Println("Current report is realtime")
-			}
-			if report.Gps.ValidHorizontal() {
-				fmt.Println("GPS longitude, latitude & heading is valid")
-			}
-			if report.Bms.LowCapacity() {
-				fmt.Println("BMS need to be charged on Charging Station")
-			}
+			// if report.Vcu.RealtimeData() {
+			// 	fmt.Println("Current report is realtime")
+			// }
+			// if report.Gps.ValidHorizontal() {
+			// 	fmt.Println("GPS longitude, latitude & heading is valid")
+			// }
+			// if report.Bms.LowCapacity() {
+			// 	fmt.Println("BMS need to be charged on Charging Station")
+			// }
 		},
 	}
 
@@ -76,12 +76,12 @@ func main() {
 		// 	fmt.Println("Device led (on-board) was turned-off")
 		// }
 
-		rtc := time.Now()
-		if err := dev354313.GenRtc(rtc); err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Printf("RTC synced to %s\n", rtc)
-		}
+		// rtc := time.Now()
+		// if err := dev354313.GenRtc(rtc); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Printf("RTC synced to %s\n", rtc)
+		// }
 
 		// km := uint16(54321)
 		// if err := dev354313.GenOdo(km); err != nil {

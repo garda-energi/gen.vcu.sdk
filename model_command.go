@@ -11,7 +11,7 @@ type HeaderCommand struct {
 	SubCode uint8 `type:"uint8"`
 }
 
-type CommandPacket struct {
+type commandPacket struct {
 	Header  *HeaderCommand
 	Message message
 }
