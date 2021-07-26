@@ -32,8 +32,14 @@ func decodeReport(packet []byte) (*ReportPacket, error) {
 	if err := decode(reader, result); err != nil {
 		return nil, err
 	}
+	if !result.ValidPrefix() {
+		return nil, errInvalidPrefix
+	}
+	if !result.ValidSize() {
+		return nil, errInvalidSize
+	}
 	if reader.Len() != 0 {
-		return nil, errors.New("some buffer not read")
+		return nil, errInvalidSize
 	}
 	return result, nil
 }
@@ -73,7 +79,10 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 		// if data type is time.Time
 		if rv.Type() == typeOfTime {
 			b := make([]byte, tag.Len)
-			binary.Read(rdr, binary.LittleEndian, &b)
+			err := binary.Read(rdr, binary.LittleEndian, &b)
+			if err != nil {
+				return err
+			}
 			rv.Set(reflect.ValueOf(bytesToTime(b)))
 
 		} else {
@@ -98,28 +107,43 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 	case reflect.Slice:
 		if rv.Type() == typeOfMessage {
 			x := make(message, rdr.Len())
-			binary.Read(rdr, binary.LittleEndian, &x)
+			err := binary.Read(rdr, binary.LittleEndian, &x)
+			if err != nil {
+				return err
+			}
 			rv.Set(reflect.ValueOf(x))
 		}
 
 	case reflect.String:
 		x := make([]byte, tag.Len)
-		binary.Read(rdr, binary.LittleEndian, &x)
+		err := binary.Read(rdr, binary.LittleEndian, &x)
+		if err != nil {
+			return err
+		}
 		rv.SetString(bytesToStr(x))
 
 	case reflect.Bool:
 		var x bool
-		binary.Read(rdr, binary.LittleEndian, &x)
+		err := binary.Read(rdr, binary.LittleEndian, &x)
+		if err != nil {
+			return err
+		}
 		rv.SetBool(x)
 
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
-		x := readUint(rdr, tag.Len)
+		x, err := readUint(rdr, tag.Len)
+		if err != nil {
+			return err
+		}
 		if !rv.OverflowUint(x) {
 			rv.SetUint(x)
 		}
 
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-		x := readUint(rdr, tag.Len)
+		x, err := readUint(rdr, tag.Len)
+		if err != nil {
+			return err
+		}
 		x_int := int64(x)
 		if !rv.OverflowInt(x_int) {
 			rv.SetInt(x_int)
@@ -128,7 +152,10 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 	case reflect.Float32, reflect.Float64:
 		var x64 float64
 
-		x := readUint(rdr, tag.Len)
+		x, err := readUint(rdr, tag.Len)
+		if err != nil {
+			return err
+		}
 
 		if tag.Factor != 1 {
 			x64 = convertToFloat64(tag.Tipe, x)
@@ -156,16 +183,19 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 }
 
 // readUint read len(length) data as uint64
-func readUint(rdr io.Reader, len int) uint64 {
+func readUint(rdr io.Reader, len int) (uint64, error) {
 	// sometimes, data recived in length less than 8
 	b := make([]byte, len)
-	binary.Read(rdr, binary.BigEndian, &b)
+	err := binary.Read(rdr, binary.BigEndian, &b)
+	if err != nil {
+		return 0, err
+	}
 
 	newb := make([]byte, 8)
 	for i := 0; i < len; i++ {
 		newb[i] = b[i]
 	}
-	return binary.LittleEndian.Uint64(newb)
+	return binary.LittleEndian.Uint64(newb), nil
 }
 
 // convertToFloat64 convert bytes data to float64.
