@@ -206,7 +206,7 @@ func compareVar(v1 interface{}, v2 interface{}) (score int) {
 			// fmt.Printf(" = %d | avg = %d\n", totalScore, score)
 		}
 
-	case reflect.Array:
+	case reflect.Array, reflect.Slice:
 		if rv1.Len() != rv2.Len() {
 			return 0
 		}
