@@ -2,7 +2,9 @@ package sdk
 
 import (
 	"fmt"
+	"math"
 	"reflect"
+	"strings"
 	"time"
 )
 
@@ -39,34 +41,7 @@ func (r *ReportPacket) ValidPrefix() bool {
 
 // Size calculate total r's size, ignoring prefix & size field
 func (r *ReportPacket) Size() int {
-	packetSizes := []struct {
-		isNil bool // check is nil or not
-		size  int  // actual size per attribute
-	}{
-		{r.Header == nil, 15},
-		{r.Vcu == nil, 16},
-		{r.Eeprom == nil, 2},
-		{r.Gps == nil, 16},
-		{r.Hbar == nil, 12},
-		{r.Net == nil, 4},
-		{r.Mems == nil, 26},
-		{r.Remote == nil, 2},
-		{r.Finger == nil, 2},
-		{r.Audio == nil, 4},
-		{r.Hmi == nil, 1},
-		{r.Bms == nil, 31},
-		{r.Mcu == nil, 42},
-		{r.Task == nil, 32},
-	}
-
-	validSize := 0
-	for _, v := range packetSizes {
-		if !v.isNil {
-			validSize += v.size
-		}
-	}
-
-	validSize -= 3
+	validSize := getPacketSize(r) - 3
 	return validSize
 }
 
@@ -101,10 +76,36 @@ type Vcu struct {
 	Uptime      float32   `type:"uint32" unit:"hour" factor:"0.000277"`
 }
 
-// Events parse v's events
-// func (v *Vcu) Events() VcuEvents {
-// 	TODO: implement me
-// }
+// String converts VcuEvents type to string.
+func (ve VcuEvents) String() string {
+	strEvents := make([]string, 0)
+	for _, v := range ve {
+		strEvents = append(strEvents, v.String())
+	}
+	return "[" + strings.Join(strEvents, ", ") + "]"
+}
+
+// GetEvents parse v's events in an array
+func (v *Vcu) GetEvents() VcuEvents {
+	r := make(VcuEvents, 0, VCU_EVENTS_MAX)
+
+	tmpEvents := v.Events
+	for i := 0; i < int(VCU_EVENTS_MAX); i++ {
+		// check if first bit is 1
+		if tmpEvents&1 == 1 {
+			r = append(r, VcuEvent(i))
+		}
+
+		// shift bit to right (1 bit)
+		tmpEvents /= 2
+	}
+	return r
+}
+
+// IsEvent check if v's event is ev
+func (v *Vcu) IsEvent(ev VcuEvent) bool {
+	return v.Events&(uint16(math.Pow(2, float64(ev)))) != 0
+}
 
 // RealtimeData check if current report log is realtime
 func (v *Vcu) RealtimeData() bool {
@@ -248,7 +249,7 @@ type Bms struct {
 	Active bool   `type:"uint8"`
 	Run    bool   `type:"uint8"`
 	SOC    uint8  `type:"uint8" unit:"%"`
-	Fault  uint16 `type:"uint16"`
+	Faults uint16 `type:"uint16"`
 	Pack   [BMS_PACK_MAX]struct {
 		ID      uint32  `type:"uint32"`
 		Fault   uint16  `type:"uint16"`
@@ -259,10 +260,38 @@ type Bms struct {
 	}
 }
 
-// Faults parse b's fault field
-// func (b *Bms) Faults() BmsFault {
-// 	TODO: implement me
-// }
+// String converts BmsFaults type to string.
+func (bf BmsFaults) String() string {
+	strBmsFaults := make([]string, 0)
+	for _, v := range bf {
+		strBmsFaults = append(strBmsFaults, v.String())
+	}
+	return "[" + strings.Join(strBmsFaults, ", ") + "]"
+}
+
+// GetFaults parse b's fault field
+func (b *Bms) GetFaults() BmsFaults {
+	r := make(BmsFaults, 0, BMS_FAULTS_MAX)
+
+	tmpFaults := b.Faults
+	// see the pattern? it is redundant (with mcu.GetFaults)
+	for i := 0; i < int(BMS_FAULTS_MAX); i++ {
+		// check if first bit is 1
+		if tmpFaults&1 == 1 {
+			r = append(r, BmsFault(i))
+		}
+
+		// shift bit to right (1 bit)
+		tmpFaults /= 2
+	}
+
+	return r
+}
+
+// IsFault check if b's fault is bf
+func (b *Bms) IsFault(bf BmsFault) bool {
+	return b.Faults&(uint16(math.Pow(2, float64(bf)))) != 0
+}
 
 // LowCapacity check if b's SoC (State of Charge) is low
 func (b *Bms) LowCapacity() bool {
@@ -280,7 +309,7 @@ type Mcu struct {
 	Speed     uint8     `type:"uint8" unit:"Kph"`
 	RPM       int16     `type:"int16" unit:"rpm"`
 	Temp      float32   `type:"uint16" len:"2" unit:"Celcius" factor:"0.1"`
-	Fault     struct {
+	Faults    struct {
 		Post uint32 `type:"uint32"`
 		Run  uint32 `type:"uint32"`
 	}
@@ -307,10 +336,64 @@ type Mcu struct {
 	}
 }
 
-// Fault parse m's fault field
-// func (m *Mcu) Faults() McuFault {
-// 	TODO: implement me
-// }
+// String converts McuFaults type to string.
+func (mf McuFaults) String() string {
+	// see the pattern? it is redundant
+	strMcuPostFaults := make([]string, 0)
+	for _, v := range mf.Post {
+		strMcuPostFaults = append(strMcuPostFaults, v.String())
+	}
+	strPostFaults := "Post[" + strings.Join(strMcuPostFaults, ", ") + "]"
+
+	strMcuRunFaults := make([]string, 0)
+	for _, v := range mf.Run {
+		strMcuRunFaults = append(strMcuRunFaults, v.String())
+	}
+	strRunFaults := "Run[" + strings.Join(strMcuRunFaults, ", ") + "]"
+
+	return strPostFaults + "\n" + strRunFaults
+}
+
+// GetFaults parse mcu's fault field
+func (m *Mcu) GetFaults() McuFaults {
+	r := McuFaults{
+		Post: make([]McuFaultPost, 0, MCU_POST_FAULTS_MAX),
+		Run:  make([]McuFaultRun, 0, MCU_RUN_FAULTS_MAX),
+	}
+	var tmpFaults uint32
+
+	// see the pattern? it is redundant
+	tmpFaults = m.Faults.Post
+	for i := 0; i < int(MCU_POST_FAULTS_MAX); i++ {
+		// check if first bit is 1
+		if tmpFaults&1 == 1 {
+			r.Post = append(r.Post, McuFaultPost(i))
+		}
+
+		// shift bit to right (1 bit)
+		tmpFaults /= 2
+	}
+
+	// see the pattern? it is redundant
+	tmpFaults = m.Faults.Run
+	for i := 0; i < int(MCU_RUN_FAULTS_MAX); i++ {
+		// check if first bit is 1
+		if tmpFaults&1 == 1 {
+			r.Run = append(r.Run, McuFaultRun(i))
+		}
+
+		// shift bit to right (1 bit)
+		tmpFaults /= 2
+	}
+
+	return r
+}
+
+// IsFault check if mcu's fault is mf
+// usage m.IsFault(m.Faults.Post, McuFault(fault))
+func (m *Mcu) IsFault(faults uint32, mf McuFault) bool {
+	return (faults & (uint32(math.Pow(2, float64(mf))))) != 0
+}
 
 type Task struct {
 	Stack struct {
@@ -341,7 +424,7 @@ type Task struct {
 	}
 }
 
-// StackOverflow check if t's stack is near overflow fault
+// StackOverflow check if t's stack is near overflow
 func (t *Task) StackOverflow() bool {
 	if t == nil {
 		return false

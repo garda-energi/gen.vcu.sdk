@@ -1,19 +1,25 @@
 package sdk
 
+import (
+	"errors"
+	"log"
+)
+
 type Sdk struct {
-	logging bool
-	client  Client
+	logger *log.Logger
+	client Client
 }
 
 // New create new instance of Sdk for VCU (Vehicle Control Unit).
 func New(clientConfig ClientConfig, logging bool) Sdk {
+	logger := newLogger(logging, "SDK")
 	return Sdk{
-		logging: logging,
-		client:  newClient(&clientConfig, logging),
+		logger: logger,
+		client: newClient(&clientConfig, logger),
 	}
 }
 
-// Connect open connection to mqtt client.
+// Connect open connection to mqtt client
 func (s *Sdk) Connect() error {
 	token := s.client.Connect()
 	if token.Wait() && token.Error() != nil {
@@ -22,14 +28,14 @@ func (s *Sdk) Connect() error {
 	return nil
 }
 
-// Disconnect close connection to mqtt client.
+// Disconnect close connection to mqtt client
 func (s *Sdk) Disconnect() {
 	s.client.Disconnect(100)
 }
 
 // NewCommander create new instance of commander for specific VIN.
 func (s *Sdk) NewCommander(vin int) (*commander, error) {
-	return newCommander(vin, s.client, &realSleeper{}, s.logging)
+	return newCommander(vin, s.client, &realSleeper{}, s.logger)
 }
 
 // AddListener subscribe to Status & Report topic (if callback is specified) for spesific vin in range.
@@ -45,8 +51,17 @@ func (s *Sdk) NewCommander(vin int) (*commander, error) {
 // listen by range :
 // s.AddListener(listerner, sdk.VinRange(min, max)...)
 func (s *Sdk) AddListener(ls Listener, vins ...int) error {
-	ls.logger = newLogger(s.logging, "LISTENER")
+	if len(vins) == 0 {
+		return errors.New("at least 1 vin supplied")
+	}
+	if ls.StatusFunc == nil && ls.ReportFunc == nil {
+		return errors.New("at least 1 listener supplied")
+	}
+	if !s.client.IsConnected() {
+		return errClientDisconnected
+	}
 
+	ls.logger = s.logger
 	if ls.StatusFunc != nil {
 		topics := setTopicToVins(TOPIC_STATUS, vins)
 		if err := s.client.subMulti(topics, QOS_SUB_STATUS, ls.status()); err != nil {
@@ -73,7 +88,6 @@ func (s *Sdk) RemoveListener(vins ...int) error {
 }
 
 // VinRange generate array of integer from min to max.
-//
 // If min greater than max, it will be swapped.
 func VinRange(min int, max int) []int {
 	// swap them if min greater than max

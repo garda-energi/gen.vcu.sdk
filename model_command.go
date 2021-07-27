@@ -3,6 +3,7 @@ package sdk
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 type HeaderCommand struct {
@@ -16,6 +17,22 @@ type commandPacket struct {
 	Message message
 }
 
+func newCommandPacket(vin int, cmd *command, msg message) *commandPacket {
+	return &commandPacket{
+		Header: &HeaderCommand{
+			Header: Header{
+				Prefix:       PREFIX_COMMAND,
+				Size:         0,
+				Vin:          uint32(vin),
+				SendDatetime: time.Now(),
+			},
+			Code:    cmd.code,
+			SubCode: cmd.subCode,
+		},
+		Message: msg,
+	}
+}
+
 type headerResponse struct {
 	HeaderCommand
 	ResCode resCode `type:"uint8"`
@@ -24,6 +41,25 @@ type headerResponse struct {
 type responsePacket struct {
 	Header  *headerResponse
 	Message message `type:"slice"`
+}
+
+func newResponsePacket(vin int, cmd *command, msg message) *responsePacket {
+	return &responsePacket{
+		Header: &headerResponse{
+			HeaderCommand: HeaderCommand{
+				Header: Header{
+					Prefix:       PREFIX_RESPONSE,
+					Size:         0,
+					Vin:          uint32(vin),
+					SendDatetime: time.Now(),
+				},
+				Code:    cmd.code,
+				SubCode: cmd.subCode,
+			},
+			ResCode: resCodeOk,
+		},
+		Message: msg,
+	}
 }
 
 // validPrefix check if r's prefix is valid
@@ -39,7 +75,7 @@ func (r *responsePacket) size() int {
 	if r.Header == nil {
 		return 0
 	}
-	return 4 + 7 + 1 + 1 + 1 + len(r.Message)
+	return getPacketSize(r) - 3
 }
 
 // validSize check if r's size is valid
@@ -50,8 +86,8 @@ func (r *responsePacket) validSize() bool {
 	return int(r.Header.Size) == r.size()
 }
 
-// matchWith check if r is response for cmd
-func (r *responsePacket) matchWith(cmd *command) bool {
+// belongsTo check if r is response for cmd
+func (r *responsePacket) belongsTo(cmd *command) bool {
 	if r.Header == nil || cmd == nil {
 		return false
 	}
@@ -87,6 +123,10 @@ func (r *responsePacket) hasMessage() bool {
 
 // renderMessage subtitue BikeState to r's message
 func (r *responsePacket) renderMessage() {
+	if !r.hasMessage() {
+		return
+	}
+
 	str := string(r.Message)
 	for i := BikeStateUnknown; i < BikeStateLimit; i++ {
 		old := fmt.Sprintf("{%d}", i)

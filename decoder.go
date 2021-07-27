@@ -15,10 +15,10 @@ import (
 func decodeResponse(packet []byte) (*responsePacket, error) {
 	reader := bytes.NewReader(packet)
 	result := &responsePacket{}
-
 	if err := decode(reader, result); err != nil {
 		return nil, err
 	}
+
 	if !result.validPrefix() {
 		return nil, errInvalidPrefix
 	}
@@ -44,6 +44,7 @@ func decodeReport(packet []byte) (*ReportPacket, error) {
 	if err := decode(reader, result); err != nil {
 		return nil, err
 	}
+
 	if !result.ValidPrefix() {
 		return nil, errInvalidPrefix
 	}

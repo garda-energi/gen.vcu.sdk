@@ -30,10 +30,10 @@ func main() {
 				false: "OFFLINE",
 				true:  "ONLINE",
 			}[online]
-			fmt.Printf("%d => %s\n", vin, status)
+			fmt.Println(vin, " => ", status)
 		},
 		ReportFunc: func(vin int, report *sdk.ReportPacket) {
-			// fmt.Println(report)
+			fmt.Println(report)
 
 			// show-off all *ReportPacket methods available
 			// if report.Vcu.RealtimeData() {
@@ -80,14 +80,14 @@ func main() {
 		// if err := dev354313.GenRtc(rtc); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("RTC synced to %s\n", rtc)
+		// 	fmt.Println("RTC synced to ", rtc)
 		// }
 
 		// km := uint16(54321)
 		// if err := dev354313.GenOdo(km); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("Odometer changed to %d km\n", km)
+		// 	fmt.Println("Odometer changed to ", km, " km")
 		// }
 
 		// if err := dev354313.GenAntiThief(); err != nil {
@@ -112,21 +112,21 @@ func main() {
 		// if err := dev354313.OvdState(bikeState); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("Bike state is changed to %s\n", bikeState)
+		// 	fmt.Println("Bike state is changed to ", bikeState)
 		// }
 
 		// reportInterval := 5 * time.Second
 		// if err := dev354313.OvdReportInterval(reportInterval); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("Report interval changed to %s\n", reportInterval)
+		// 	fmt.Println("Report interval changed to ", reportInterval)
 		// }
 
 		// frame := sdk.FrameFull
 		// if err := dev354313.OvdReportFrame(frame); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("Report frame changed to %s\n", frame)
+		// 	fmt.Println("Report frame changed to ", frame)
 		// }
 
 		// if err := dev354313.OvdRemoteSeat(); err != nil {
@@ -150,20 +150,20 @@ func main() {
 		// if ids, err := dev354313.FingerFetch(); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("Registered driverID are : %v\n", ids)
+		// 	fmt.Println("Registered driverID are : ", ids)
 		// }
 
 		// if id, err := dev354313.FingerAdd(); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("New driverID registered as %d\n", id)
+		// 	fmt.Println("New driverID registered as ", id)
 		// }
 
 		// driverId := 1
 		// if err := dev354313.FingerDel(driverId); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("DriverID %d deleted\n", driverId)
+		// 	fmt.Println("DriverID deleted for ", driverId)
 		// }
 
 		// if err := dev354313.FingerRst(); err != nil {
@@ -181,13 +181,13 @@ func main() {
 		// if res, err := dev354313.FotaVcu(); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("VCU firmware is updgraded, %s\n", res)
+		// 	fmt.Println("VCU firmware is updgraded, ", res)
 		// }
 
 		// if res, err := dev354313.FotaHmi(); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("HMI firmware is updgraded, %s\n", res)
+		// 	fmt.Println("HMI firmware is updgraded, ", res)
 		// }
 
 		// if res, err := dev354313.NetSendUssd("*123*10*3#"); err != nil {
@@ -206,21 +206,21 @@ func main() {
 		// if err := dev354313.HbarDrive(driveMode); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("Drive mode changed to %s\n", driveMode)
+		// 	fmt.Println("Drive mode changed to ", driveMode)
 		// }
 
 		// tripMode := sdk.ModeTripOdo
 		// if err := dev354313.HbarTrip(tripMode); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("Trip mode changed to %s\n", tripMode)
+		// 	fmt.Println("Trip mode changed to ", tripMode)
 		// }
 
 		// avgMode := sdk.ModeAvgEfficiency
 		// if err := dev354313.HbarAvg(avgMode); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("Average mode changed to %s\n", avgMode)
+		// 	fmt.Println("Average mode changed to ", avgMode)
 		// }
 
 		// if err := dev354313.HbarReverse(true); err != nil {
@@ -233,7 +233,7 @@ func main() {
 		// if err := dev354313.McuSpeedMax(kph); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Printf("Motor speed is limited to %d kph\n", kph)
+		// 	fmt.Println("Motor speed is limited to ", kph, " kph")
 		// }
 
 		// templates := []sdk.McuTemplate{
@@ -245,7 +245,7 @@ func main() {
 		// 	fmt.Println(err)
 		// } else {
 		// 	for i, t := range templates {
-		// 		fmt.Printf("Motor template for %s changed to %+v\n", sdk.ModeDrive(i), t)
+		// 		fmt.Println("Motor template for ", sdk.ModeDrive(i), " changed to ", t)
 		// 	}
 		// }
 	}

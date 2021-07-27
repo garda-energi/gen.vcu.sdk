@@ -8,11 +8,15 @@ import (
 )
 
 // exec execute command and return the response.
-func (c *commander) exec(name string, msg message) ([]byte, error) {
+func (c *commander) exec(invoker string, msg message) ([]byte, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	cmd, err := getCmdByName(name)
+	if !c.client.IsConnected() {
+		return nil, errClientDisconnected
+	}
+
+	cmd, err := getCmdByInvoker(invoker)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +104,7 @@ func validateResponse(vin int, cmd *command, res *responsePacket) error {
 	if int(res.Header.Vin) != vin {
 		return errInvalidVin
 	}
-	if !res.matchWith(cmd) {
+	if !res.belongsTo(cmd) {
 		return errInvalidCmdCode
 	}
 	if res.Header.ResCode == resCodeOk {
@@ -111,7 +115,7 @@ func validateResponse(vin int, cmd *command, res *responsePacket) error {
 	// check if message is not empty
 	if res.hasMessage() {
 		res.renderMessage()
-		out += fmt.Sprintf(", %s", res.Message)
+		out += fmt.Sprint(" ", string(res.Message))
 	}
 	return errors.New(out)
 

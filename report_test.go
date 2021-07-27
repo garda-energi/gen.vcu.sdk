@@ -94,11 +94,11 @@ func TestReport(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 			if got, err := decodeReport(tt.args.b); err != nil {
-				t.Errorf("error : %s", err)
+				t.Error("error : ", err)
 			} else {
 				// Validator
 				if !got.ValidPrefix() {
-					t.Errorf("Prefix is Not Valid")
+					t.Error("Prefix is Not Valid")
 				}
 
 				if !got.ValidSize() {
@@ -110,14 +110,14 @@ func TestReport(t *testing.T) {
 				// ex : 8.6 / 0.1 != 86.0
 				encRes, err := encode(got)
 				if err != nil {
-					t.Errorf("encode error")
+					t.Error("encode error")
 				}
 
 				got2, _ := decodeReport(encRes)
 				score := compareVar(got, got2)
 
 				if score != 100 {
-					t.Errorf("Not match. Score %d", score)
+					t.Error("Not match. Score ", score)
 				}
 			}
 		})
@@ -206,7 +206,7 @@ func compareVar(v1 interface{}, v2 interface{}) (score int) {
 			// fmt.Printf(" = %d | avg = %d\n", totalScore, score)
 		}
 
-	case reflect.Array:
+	case reflect.Array, reflect.Slice:
 		if rv1.Len() != rv2.Len() {
 			return 0
 		}
