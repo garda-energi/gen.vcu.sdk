@@ -210,3 +210,12 @@ func (m resCode) String() string {
 		"INVALID",
 	}[m]
 }
+
+type component string
+
+// Component names for debug output
+const (
+	CMD component = "[command] "
+	RPT component = "[report]  "
+	CLI component = "[client]  "
+)

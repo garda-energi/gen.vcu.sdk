@@ -16,7 +16,7 @@ func (c *commander) Destroy() error {
 // listen subscribe to command & response topic for current VIN.
 func (c *commander) listen() error {
 	cFunc := func(client mqtt.Client, msg mqtt.Message) {
-		c.logger.Println(debugPacket(msg))
+		c.logger.Println(CMD, debugPacket(msg))
 	}
 	topic := setTopicToVin(TOPIC_COMMAND, c.vin)
 	if err := c.client.sub(topic, QOS_SUB_COMMAND, cFunc); err != nil {
@@ -24,7 +24,7 @@ func (c *commander) listen() error {
 	}
 
 	rFunc := func(client mqtt.Client, msg mqtt.Message) {
-		c.logger.Println(debugPacket(msg))
+		c.logger.Println(CMD, debugPacket(msg))
 		c.resChan <- msg.Payload()
 	}
 	topic = setTopicToVin(TOPIC_RESPONSE, c.vin)

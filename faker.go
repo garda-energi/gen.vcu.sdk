@@ -10,16 +10,20 @@ import (
 // fakeClient implements fake client stub
 type fakeClient struct {
 	Client
+	connected bool
 	responses [][]byte
 	cmdChan   chan []byte
 	resChan   chan struct{}
 }
 
 func (c *fakeClient) Connect() mqtt.Token {
+	c.connected = true
 	return &mqtt.DummyToken{}
 }
 
-func (c *fakeClient) Disconnect(quiesce uint) {}
+func (c *fakeClient) Disconnect(quiesce uint) {
+	c.connected = false
+}
 
 func (c *fakeClient) pub(topic string, qos byte, retained bool, payload []byte) error {
 	if flush := payload == nil; !flush {
@@ -58,19 +62,6 @@ func (c *fakeClient) sub(topic string, qos byte, handler mqtt.MessageHandler) er
 }
 
 func (c *fakeClient) subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
-	// topicFilters := make(map[string]byte, len(topics))
-	// for _, v := range topics {
-	// 	topicFilters[v] = qos
-	// }
-
-	// token := c.SubscribeMultiple(topicFilters, handler)
-	// if token.Wait() && token.Error() != nil {
-	// 	return token.Error()
-	// }
-
-	// for _, v := range topics {
-	// 	c.logger.Printf("Subscribed to: %s\n", v)
-	// }
 	return nil
 }
 

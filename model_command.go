@@ -50,8 +50,8 @@ func (r *responsePacket) validSize() bool {
 	return int(r.Header.Size) == r.size()
 }
 
-// matchWith check if r is response for cmd
-func (r *responsePacket) matchWith(cmd *command) bool {
+// belongsTo check if r is response for cmd
+func (r *responsePacket) belongsTo(cmd *command) bool {
 	if r.Header == nil || cmd == nil {
 		return false
 	}

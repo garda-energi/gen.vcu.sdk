@@ -28,24 +28,14 @@ func SetupGracefulShutdown() <-chan os.Signal {
 	return stopChan
 }
 
+// newLogger create new logger
 func newLogger(logging bool, prefix string) *log.Logger {
 	out := ioutil.Discard
 	if logging {
 		out = os.Stderr
 	}
-	return log.New(out, fmt.Sprintf("[%s] ", prefix), log.Ldate|log.Ltime)
+	return log.New(out, fmt.Sprint(prefix, " "), log.Ldate|log.Ltime)
 }
-
-// // randomSleep will sleep betwen random time specified
-// func randomSleep(min, max int, unit time.Duration) {
-// 	rng := rand.Intn(max-min) + min
-// 	time.Sleep(time.Duration(rng) * unit)
-// }
-
-// // dd print detailed variable information
-// func dd(data interface{}) {
-// 	fmt.Printf("%+v\n", data)
-// }
 
 // byteToHex convert bytes to hex string
 func byteToHex(b []byte) string {
@@ -60,7 +50,7 @@ func hexToByte(s string) []byte {
 
 // debugPacket format received mqtt message
 func debugPacket(msg mqtt.Message) string {
-	return fmt.Sprintf("%s => %s\n", msg.Topic(), byteToHex(msg.Payload()))
+	return fmt.Sprintln(msg.Topic(), " => ", byteToHex(msg.Payload()))
 }
 
 // reverseBytes swap bytes position
