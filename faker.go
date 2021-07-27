@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"log"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -83,7 +84,10 @@ func (s *fakeSleeper) After(d time.Duration) <-chan time.Time {
 }
 
 func newFakeResponse(vin int, invoker string) *responsePacket {
-	cmd, _ := getCmdByInvoker(invoker)
+	cmd, err := getCmdByInvoker(invoker)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return &responsePacket{
 		Header: &headerResponse{

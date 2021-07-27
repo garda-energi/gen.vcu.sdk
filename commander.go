@@ -272,6 +272,10 @@ func (c *commander) HbarReverse(on bool) error {
 
 // McuSpeedMax set maximum MCU (Motor Control Unit) speed (in kph).
 func (c *commander) McuSpeedMax(kph uint8) error {
+	if kph > SPEED_KPH_MAX {
+		return errInputOutOfRange("speed-max")
+	}
+
 	msg := uintToBytes(reflect.Uint8, uint64(kph))
 	_, err := c.exec("McuSpeedMax", msg)
 	return err
