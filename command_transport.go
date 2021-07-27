@@ -12,7 +12,7 @@ func (c *commander) exec(name string, msg message) ([]byte, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	cmd, err := getCommand(name)
+	cmd, err := getCmdByName(name)
 	if err != nil {
 		return nil, err
 	}
@@ -97,23 +97,12 @@ func validateAck(msg []byte) error {
 // validateResponse validate incomming response packet.
 // It also render message part (subtitutes BikeState).
 func validateResponse(vin int, cmd *command, res *responsePacket) error {
-	if !res.validPrefix() {
-		return errInvalidPrefix
-	}
-	if !res.validSize() {
-		return errInvalidSize
-	}
 	if int(res.Header.Vin) != vin {
 		return errInvalidVin
 	}
 	if !res.matchWith(cmd) {
-		return errInvalidCode
+		return errInvalidCmdCode
 	}
-	if !res.validResCode() {
-		return errInvalidResCode
-	}
-
-	// check resCode
 	if res.Header.ResCode == resCodeOk {
 		return nil
 	}

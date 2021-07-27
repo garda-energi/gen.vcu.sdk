@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"reflect"
-	"strconv"
 	"testing"
 	"time"
 )
@@ -79,7 +78,7 @@ func TestCommands(t *testing.T) {
 			cmd:  "FINGER_ADD",
 			args: nil,
 			want: 3,
-			msg:  message([]byte(strconv.Itoa(3))),
+			msg:  message([]byte("3")),
 		},
 		{
 			cmd:  "FINGER_DEL",
@@ -144,8 +143,8 @@ func TestCommands(t *testing.T) {
 	}
 
 	for _, tC := range testCases {
-		cmd, _ := getCommand(tC.cmd)
-		t.Run(cmd.method, func(t *testing.T) {
+		cmd, _ := getCmdByName(tC.cmd)
+		t.Run(cmd.invoker, func(t *testing.T) {
 			fakeRes := newFakeResponse(testVin, tC.cmd)
 			if tC.msg != nil {
 				fakeRes.Message = tC.msg
@@ -161,7 +160,7 @@ func TestCommands(t *testing.T) {
 			defer cmder.Destroy()
 
 			// call related method, pass in args, evaluate outs
-			meth := reflect.ValueOf(cmder).MethodByName(cmd.method)
+			meth := reflect.ValueOf(cmder).MethodByName(cmd.invoker)
 			args := []reflect.Value{}
 			if tC.args != nil {
 				args = append(args, reflect.ValueOf(tC.args))
@@ -170,8 +169,8 @@ func TestCommands(t *testing.T) {
 
 			// check output error
 			outError := outs[len(outs)-1]
-			if err := outError; !err.IsNil() {
-				t.Fatalf("want no error, got %s\n", err)
+			if !outError.IsNil() {
+				t.Fatalf("want no error, got %s\n", outError)
 			}
 
 			// check output response
@@ -194,7 +193,10 @@ func newFakeCommander(responses [][]byte) *commander {
 		cmdChan:   make(chan []byte),
 		resChan:   make(chan struct{}),
 	}
-
-	cmder, _ := newCommander(testVin, client, &fakeSleeper{}, logging)
+	sleeper := &fakeSleeper{
+		sleep: time.Millisecond,
+		after: 125 * time.Millisecond,
+	}
+	cmder, _ := newCommander(testVin, client, sleeper, logging)
 	return cmder
 }

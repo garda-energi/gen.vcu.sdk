@@ -9,7 +9,6 @@ import (
 // fakeClient implements fake client stub
 type fakeClient struct {
 	Client
-	client    mqtt.Client
 	responses [][]byte
 	cmdChan   chan []byte
 	resChan   chan struct{}
@@ -23,15 +22,15 @@ func (c *fakeClient) pub(topic string, qos byte, retained bool, payload []byte) 
 }
 
 func (c *fakeClient) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
+	var client mqtt.Client
+	msg := &fakeMessage{topic: topic}
+
 	switch toGlobalTopic(topic) {
 	case TOPIC_COMMAND:
 		go func() {
 			select {
-			case cmdPacket := <-c.cmdChan:
-				handler(c.client, &fakeMessage{
-					topic:   topic,
-					payload: cmdPacket,
-				})
+			case msg.payload = <-c.cmdChan:
+				handler(client, msg)
 				c.resChan <- struct{}{}
 			case <-time.After(time.Second):
 			}
@@ -40,12 +39,9 @@ func (c *fakeClient) sub(topic string, qos byte, handler mqtt.MessageHandler) er
 		go func() {
 			select {
 			case <-c.resChan:
-				for _, resPacket := range c.responses {
-					randomSleep(50, 100, time.Millisecond)
-					handler(c.client, &fakeMessage{
-						topic:   topic,
-						payload: resPacket,
-					})
+				for _, msg.payload = range c.responses {
+					time.Sleep(5 * time.Millisecond)
+					handler(client, msg)
 				}
 			case <-time.After(time.Second):
 			}
@@ -73,29 +69,21 @@ func (m *fakeMessage) Payload() []byte {
 }
 
 // fakeSleeper implement fake sleeper stub
-type fakeSleeper struct{}
+type fakeSleeper struct {
+	sleep time.Duration
+	after time.Duration
+}
 
 func (s *fakeSleeper) Sleep(d time.Duration) {
-	d = faster(d, time.Millisecond)
-	time.Sleep(d)
+	time.Sleep(s.sleep)
 }
 
 func (s *fakeSleeper) After(d time.Duration) <-chan time.Time {
-	d = faster(d, 125*time.Millisecond)
-	return time.After(d)
-}
-
-// faster reduce d for faster sleep stub with minimum duration
-func faster(d time.Duration, min time.Duration) time.Duration {
-	d /= time.Microsecond
-	if d < min {
-		d = min
-	}
-	return d
+	return time.After(s.after)
 }
 
 func newFakeResponse(vin int, cmdName string) *responsePacket {
-	cmd, _ := getCommand(cmdName)
+	cmd, _ := getCmdByName(cmdName)
 
 	return &responsePacket{
 		Header: &headerResponse{

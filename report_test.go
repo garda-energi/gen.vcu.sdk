@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -103,8 +102,7 @@ func TestReport(t *testing.T) {
 				}
 
 				if !got.ValidSize() {
-					errString := fmt.Sprintf("Size is Not Valid. Got %d. want %d", got.Header.Size, got.Size())
-					t.Errorf(errString)
+					t.Errorf("Size is Not Valid. Got %d. want %d", got.Header.Size, got.Size())
 				}
 
 				// Encode Test
@@ -119,8 +117,7 @@ func TestReport(t *testing.T) {
 				score := compareVar(got, got2)
 
 				if score != 100 {
-					errString := fmt.Sprintf("Not match. Score %d", score)
-					t.Errorf(errString)
+					t.Errorf("Not match. Score %d", score)
 				}
 			}
 		})
@@ -151,11 +148,9 @@ func TestReportErrorHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := decodeReport(tt.args.b)
 			if err == nil {
-				errString := fmt.Sprintf("Success?? Packet should be Error (%s)", tt.want)
-				t.Errorf(errString)
+				t.Errorf("Success?? Packet should be Error (%s)", tt.want)
 			} else if err != tt.want {
-				errString := fmt.Sprintf("Gor error: %s. Packet should be Error (%s)", err, tt.want)
-				t.Errorf(errString)
+				t.Errorf("Gor error: %s. Packet should be Error (%s)", err, tt.want)
 			}
 		})
 	}

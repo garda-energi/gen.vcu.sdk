@@ -58,6 +58,15 @@ func (r *responsePacket) matchWith(cmd *command) bool {
 	return r.Header.Code == cmd.code && r.Header.SubCode == cmd.subCode
 }
 
+// validCmdCode check if r's command code & subCode is valid
+func (r *responsePacket) validCmdCode() bool {
+	if r.Header == nil {
+		return false
+	}
+	_, err := getCmdByCode(int(r.Header.Code), int(r.Header.SubCode))
+	return err == nil
+}
+
 // validResCode check if r's response code is valid
 func (r *responsePacket) validResCode() bool {
 	if r.Header == nil {

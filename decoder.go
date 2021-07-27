@@ -12,17 +12,29 @@ import (
 )
 
 // decodeResponse extract header and message response from bytes packet.
-// can it be replaced with decode() func bellow, without separate message part ?
 func decodeResponse(packet []byte) (*responsePacket, error) {
 	reader := bytes.NewReader(packet)
-	r := &responsePacket{}
+	result := &responsePacket{}
 
-	// header
-	if err := decode(reader, r); err != nil {
+	if err := decode(reader, result); err != nil {
 		return nil, err
 	}
-
-	return r, nil
+	if !result.validPrefix() {
+		return nil, errInvalidPrefix
+	}
+	if !result.validSize() {
+		return nil, errInvalidSize
+	}
+	if !result.validCmdCode() {
+		return nil, errInvalidCmdCode
+	}
+	if !result.validResCode() {
+		return nil, errInvalidResCode
+	}
+	if reader.Len() != 0 {
+		return nil, errInvalidSize
+	}
+	return result, nil
 }
 
 // decodeReport extract report from bytes packet.
