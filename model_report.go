@@ -39,12 +39,9 @@ func (r *ReportPacket) ValidPrefix() bool {
 
 // Size calculate total r's size, ignoring prefix & size field
 func (r *ReportPacket) Size() int {
-	// TODO: implement me
 	packetSizes := []struct {
-		// check is nil or not
-		isNil bool
-		// actual size per attribute
-		size int
+		isNil bool // check is nil or not
+		size  int  // actual size per attribute
 	}{
 		{r.Header == nil, 15},
 		{r.Vcu == nil, 16},

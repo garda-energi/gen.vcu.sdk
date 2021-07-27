@@ -15,34 +15,34 @@ type fakeClient struct {
 	resChan   chan struct{}
 }
 
-func (b *fakeClient) pub(topic string, qos byte, retained bool, payload []byte) error {
+func (c *fakeClient) pub(topic string, qos byte, retained bool, payload []byte) error {
 	if flush := payload == nil; !flush {
-		b.cmdChan <- payload
+		c.cmdChan <- payload
 	}
 	return nil
 }
 
-func (b *fakeClient) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
+func (c *fakeClient) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
 	switch toGlobalTopic(topic) {
 	case TOPIC_COMMAND:
 		go func() {
 			select {
-			case cmdPacket := <-b.cmdChan:
-				handler(b.client, &fakeMessage{
+			case cmdPacket := <-c.cmdChan:
+				handler(c.client, &fakeMessage{
 					topic:   topic,
 					payload: cmdPacket,
 				})
-				b.resChan <- struct{}{}
+				c.resChan <- struct{}{}
 			case <-time.After(time.Second):
 			}
 		}()
 	case TOPIC_RESPONSE:
 		go func() {
 			select {
-			case <-b.resChan:
-				for _, resPacket := range b.responses {
+			case <-c.resChan:
+				for _, resPacket := range c.responses {
 					randomSleep(50, 100, time.Millisecond)
-					handler(b.client, &fakeMessage{
+					handler(c.client, &fakeMessage{
 						topic:   topic,
 						payload: resPacket,
 					})
@@ -54,7 +54,7 @@ func (b *fakeClient) sub(topic string, qos byte, handler mqtt.MessageHandler) er
 	return nil
 }
 
-func (b *fakeClient) unsub(topics []string) error {
+func (c *fakeClient) unsub(topics []string) error {
 	return nil
 }
 

@@ -168,15 +168,14 @@ func TestCommands(t *testing.T) {
 			}
 			outs := meth.Call(args)
 
-			outError := outs[len(outs)-1]
-
 			// check output error
+			outError := outs[len(outs)-1]
 			if err := outError; !err.IsNil() {
 				t.Fatalf("want no error, got %s\n", err)
 			}
 
 			// check output response
-			if len(outs) == 1 {
+			if len(outs) < 2 {
 				return
 			}
 
