@@ -13,28 +13,34 @@ type command struct {
 	timeout time.Duration
 }
 
+// cmdEvaluator is condition evaluator for findCmd func.
+type cmdEvaluator func(code, subCode int, cmd *command) bool
+
 // getCmdByName get related command by name
 func getCmdByName(name string) (*command, error) {
-	for code, subCodes := range commands {
-		for subCode, cmd := range subCodes {
-			if cmd.name == name {
-				cmd.code = uint8(code)
-				cmd.subCode = uint8(subCode)
-				if cmd.timeout == 0 {
-					cmd.timeout = DEFAULT_CMD_TIMEOUT
-				}
-				return &cmd, nil
-			}
-		}
-	}
-	return nil, errors.New("no command found")
+	return findCmd(func(code, subCode int, cmd *command) bool {
+		return cmd.name == name
+	})
+}
+
+// getCmdByInvoker get related command by invoker
+func getCmdByInvoker(invoker string) (*command, error) {
+	return findCmd(func(code, subCode int, cmd *command) bool {
+		return cmd.invoker == invoker
+	})
 }
 
 // getCmdByCode get related command by code
 func getCmdByCode(code, subCode int) (*command, error) {
-	for c, subCodes := range commands {
-		for sc, cmd := range subCodes {
-			if code == c && subCode == sc {
+	return findCmd(func(c, sc int, cmd *command) bool {
+		return code == c && subCode == sc
+	})
+}
+
+func findCmd(checker cmdEvaluator) (*command, error) {
+	for code, subCodes := range commands {
+		for subCode, cmd := range subCodes {
+			if checker(code, subCode, &cmd) {
 				cmd.code = uint8(code)
 				cmd.subCode = uint8(subCode)
 				if cmd.timeout == 0 {

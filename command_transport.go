@@ -8,11 +8,11 @@ import (
 )
 
 // exec execute command and return the response.
-func (c *commander) exec(name string, msg message) ([]byte, error) {
+func (c *commander) exec(invoker string, msg message) ([]byte, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	cmd, err := getCmdByName(name)
+	cmd, err := getCmdByInvoker(invoker)
 	if err != nil {
 		return nil, err
 	}

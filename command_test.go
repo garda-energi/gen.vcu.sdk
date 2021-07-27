@@ -91,8 +91,7 @@ func TestResponseError(t *testing.T) {
 			desc:    "message overflowed",
 			wantErr: errInvalidSize,
 			formatter: func(r *responsePacket) {
-				r.Message = message("'Google Go' redirects here. For the Android search app by Google, 'Google Go', for low-end Lollipop+ devices, see Android Go. For the computer program by Google to play the board game Go, see AlphaGo. For the 2003 agent-based programming language, see Go! (programming language).")
-				r.Header.Size = uint8(len(r.Message))
+				r.Message = message("Golang is very useful for writing light-weight microservices. We currently use it for generating APIs that interact with our front-end applications. If you want to build a small functional microservice quickly, then Golang is a great tool to use. It's an easy language for developers to learn quickly.")
 			},
 		},
 		{

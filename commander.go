@@ -41,7 +41,7 @@ func newCommander(vin int, client Client, sleeper Sleeper, logging bool) (*comma
 
 // GenInfo gather device information.
 func (c *commander) GenInfo() (string, error) {
-	msg, err := c.exec("GEN_INFO", nil)
+	msg, err := c.exec("GenInfo", nil)
 	if err != nil {
 		return "", err
 	}
@@ -50,38 +50,38 @@ func (c *commander) GenInfo() (string, error) {
 
 // GenLed set built-in led state on device.
 func (c *commander) GenLed(on bool) error {
-	_, err := c.exec("GEN_LED", boolToBytes(on))
+	_, err := c.exec("GenLed", boolToBytes(on))
 	return err
 }
 
 // GenRtc set real time clock on device.
 func (c *commander) GenRtc(time time.Time) error {
-	_, err := c.exec("GEN_RTC", timeToBytes(time))
+	_, err := c.exec("GenRtc", timeToBytes(time))
 	return err
 }
 
 // GenOdo set odometer value (in km).
 func (c *commander) GenOdo(km uint16) error {
 	msg := uintToBytes(reflect.Uint16, uint64(km))
-	_, err := c.exec("GEN_ODO", msg)
+	_, err := c.exec("GenOdo", msg)
 	return err
 }
 
 // GenAntiThief toggle anti-thief motion detector.
 func (c *commander) GenAntiThief() error {
-	_, err := c.exec("GEN_ANTI_THIEF", nil)
+	_, err := c.exec("GenAntiThief", nil)
 	return err
 }
 
 // GenReportFlush flush pending report in device buffer.
 func (c *commander) GenReportFlush() error {
-	_, err := c.exec("GEN_RPT_FLUSH", nil)
+	_, err := c.exec("GenReportFlush", nil)
 	return err
 }
 
 // GenReportBlock stop device reporting mode.
 func (c *commander) GenReportBlock(on bool) error {
-	_, err := c.exec("GEN_RPT_BLOCK", boolToBytes(on))
+	_, err := c.exec("GenReportBlock", boolToBytes(on))
 	return err
 }
 
@@ -93,7 +93,7 @@ func (c *commander) OvdState(state BikeState) error {
 	}
 
 	msg := []byte{byte(state)}
-	_, err := c.exec("OVD_STATE", msg)
+	_, err := c.exec("OvdState", msg)
 	return err
 }
 
@@ -103,7 +103,7 @@ func (c *commander) OvdReportInterval(dur time.Duration) error {
 		return errInputOutOfRange("duration")
 	}
 	msg := uintToBytes(reflect.Uint16, uint64(dur.Seconds()))
-	_, err := c.exec("OVD_RPT_INTERVAL", msg)
+	_, err := c.exec("OvdReportInterval", msg)
 	return err
 }
 
@@ -114,31 +114,31 @@ func (c *commander) OvdReportFrame(frame Frame) error {
 	}
 
 	msg := []byte{byte(frame)}
-	_, err := c.exec("OVD_RPT_FRAME", msg)
+	_, err := c.exec("OvdReportFrame", msg)
 	return err
 }
 
 // OvdRemoteSeat override seat button on remote/keyless.
 func (c *commander) OvdRemoteSeat() error {
-	_, err := c.exec("OVD_RMT_SEAT", nil)
+	_, err := c.exec("OvdRemoteSeat", nil)
 	return err
 }
 
 // OvdRemoteAlarm override alarm button on remote/keyless.
 func (c *commander) OvdRemoteAlarm() error {
-	_, err := c.exec("OVD_RMT_ALARM", nil)
+	_, err := c.exec("OvdRemoteAlarm", nil)
 	return err
 }
 
 // AudioBeep beep the digital audio module.
 func (c *commander) AudioBeep() error {
-	_, err := c.exec("AUDIO_BEEP", nil)
+	_, err := c.exec("AudioBeep", nil)
 	return err
 }
 
 // FingerFetch get all registered fingerprint ids.
 func (c *commander) FingerFetch() ([]int, error) {
-	msg, err := c.exec("FINGER_FETCH", nil)
+	msg, err := c.exec("FingerFetch", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +155,7 @@ func (c *commander) FingerFetch() ([]int, error) {
 
 // FingerAdd add a new fingerprint id.
 func (c *commander) FingerAdd() (int, error) {
-	msg, err := c.exec("FINGER_ADD", nil)
+	msg, err := c.exec("FingerAdd", nil)
 	if err != nil {
 		return 0, err
 	}
@@ -171,25 +171,25 @@ func (c *commander) FingerDel(id int) error {
 		return errInputOutOfRange("id")
 	}
 
-	_, err := c.exec("FINGER_DEL", nil)
+	_, err := c.exec("FingerDel", nil)
 	return err
 }
 
 // FingerRst reset all fingerprint ids.
 func (c *commander) FingerRst() error {
-	_, err := c.exec("FINGER_RST", nil)
+	_, err := c.exec("FingerRst", nil)
 	return err
 }
 
 // RemotePairing turn on keyless pairing mode.
 func (c *commander) RemotePairing() error {
-	_, err := c.exec("REMOTE_PAIRING", nil)
+	_, err := c.exec("RemotePairing", nil)
 	return err
 }
 
 // FotaVcu upgrade VCU (Vehicle Control Unit) firmware over the air.
 func (c *commander) FotaVcu() (string, error) {
-	msg, err := c.exec("FOTA_VCU", nil)
+	msg, err := c.exec("FotaVcu", nil)
 	if err != nil {
 		return "", err
 	}
@@ -198,7 +198,7 @@ func (c *commander) FotaVcu() (string, error) {
 
 // FotaHmi upgrade Dashboard/HMI (Human Machine Interface) firmware over the air.
 func (c *commander) FotaHmi() (string, error) {
-	msg, err := c.exec("FOTA_HMI", nil)
+	msg, err := c.exec("FotaHmi", nil)
 	if err != nil {
 		return "", err
 	}
@@ -215,7 +215,7 @@ func (c *commander) NetSendUssd(ussd string) (string, error) {
 		return "", errors.New("invalid ussd format")
 	}
 
-	msg, err := c.exec("NET_SEND_USSD", []byte(ussd))
+	msg, err := c.exec("NetSendUssd", []byte(ussd))
 	if err != nil {
 		return "", err
 	}
@@ -224,7 +224,7 @@ func (c *commander) NetSendUssd(ussd string) (string, error) {
 
 // NetReadSms read latest cellular SMS inbox.
 func (c *commander) NetReadSms() (string, error) {
-	msg, err := c.exec("NET_READ_SMS", nil)
+	msg, err := c.exec("NetReadSms", nil)
 	if err != nil {
 		return "", err
 	}
@@ -238,7 +238,7 @@ func (c *commander) HbarDrive(drive ModeDrive) error {
 	}
 
 	msg := []byte{byte(drive)}
-	_, err := c.exec("HBAR_DRIVE", msg)
+	_, err := c.exec("HbarDrive", msg)
 	return err
 }
 
@@ -249,7 +249,7 @@ func (c *commander) HbarTrip(trip ModeTrip) error {
 	}
 
 	msg := []byte{byte(trip)}
-	_, err := c.exec("HBAR_TRIP", msg)
+	_, err := c.exec("HbarTrip", msg)
 	return err
 }
 
@@ -260,20 +260,20 @@ func (c *commander) HbarAvg(avg ModeAvg) error {
 	}
 
 	msg := []byte{byte(avg)}
-	_, err := c.exec("HBAR_AVG", msg)
+	_, err := c.exec("HbarAvg", msg)
 	return err
 }
 
 // HbarReverse set MCU (Motor Control Unit) reverse state.
 func (c *commander) HbarReverse(on bool) error {
-	_, err := c.exec("HBAR_REVERSE", boolToBytes(on))
+	_, err := c.exec("HbarReverse", boolToBytes(on))
 	return err
 }
 
 // McuSpeedMax set maximum MCU (Motor Control Unit) speed (in kph).
 func (c *commander) McuSpeedMax(kph uint8) error {
 	msg := uintToBytes(reflect.Uint8, uint64(kph))
-	_, err := c.exec("MCU_SPEED_MAX", msg)
+	_, err := c.exec("McuSpeedMax", msg)
 	return err
 }
 
@@ -302,6 +302,6 @@ func (c *commander) McuTemplates(ts []McuTemplate) error {
 		binary.Write(&buf, binary.LittleEndian, t.Torque)
 	}
 
-	_, err := c.exec("MCU_TEMPLATES", buf.Bytes())
+	_, err := c.exec("McuTemplates", buf.Bytes())
 	return err
 }
