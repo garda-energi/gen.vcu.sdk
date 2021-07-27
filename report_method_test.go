@@ -47,7 +47,7 @@ func TestReportMethods(t *testing.T) {
 				vcuEventsString: "[BMS_ERROR, MCU_ERROR]",
 				bmsFaults:       BmsFaults{BMS_SHORT_CIRCUIT, BMS_UNDER_VOLTAGE, BMS_UNBALANCE},
 				bmsFaultsString: "[SHORT_CIRCUIT, UNDER_VOLTAGE, UNBALANCE]",
-				mcuFaults:       McuFaults{Post: []McuFault{MCU_POST_5V_LOW}, Run: []McuFault{MCU_RUN_RESERVER_1}},
+				mcuFaults:       McuFaults{Post: []McuFaultPost{MCU_POST_5V_LOW}, Run: []McuFaultRun{MCU_RUN_RESERVER_1}},
 				mcuFaultsString: "Post[5V_LOW]\nRun[RESERVER_1]",
 			},
 			dataChanger: []testDataChanger{
