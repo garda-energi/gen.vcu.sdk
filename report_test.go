@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-const TEST_LIMIT = 10
+const testReportLimit = 10
 
 var testDataNormal = getTestDataFromJson()
 
@@ -88,7 +88,7 @@ func TestReport(t *testing.T) {
 			continue
 		}
 
-		if i > TEST_LIMIT {
+		if i > testReportLimit {
 			break
 		}
 
