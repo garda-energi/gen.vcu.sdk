@@ -41,34 +41,7 @@ func (r *ReportPacket) ValidPrefix() bool {
 
 // Size calculate total r's size, ignoring prefix & size field
 func (r *ReportPacket) Size() int {
-	packetSizes := []struct {
-		isNil bool // check is nil or not
-		size  int  // actual size per attribute
-	}{
-		{r.Header == nil, 15},
-		{r.Vcu == nil, 16},
-		{r.Eeprom == nil, 2},
-		{r.Gps == nil, 16},
-		{r.Hbar == nil, 12},
-		{r.Net == nil, 4},
-		{r.Mems == nil, 26},
-		{r.Remote == nil, 2},
-		{r.Finger == nil, 2},
-		{r.Audio == nil, 4},
-		{r.Hmi == nil, 1},
-		{r.Bms == nil, 31},
-		{r.Mcu == nil, 42},
-		{r.Task == nil, 32},
-	}
-
-	validSize := 0
-	for _, v := range packetSizes {
-		if !v.isNil {
-			validSize += v.size
-		}
-	}
-
-	validSize -= 3
+	validSize := getPacketSize(r) - 3
 	return validSize
 }
 
