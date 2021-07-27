@@ -45,6 +45,7 @@ Todo Report:
     ☐ FingerValidId
     ☐ UnitGetter
     ☐ BMS & MCU Error Renderer
+  ☐ Size() in Report's Method, make to dynamic calculation based on struct field, not hardcoded.
   
 Todo Command:
   ✘ try to reverse command encoder @cancelled(21-07-21 11:22)
@@ -58,6 +59,8 @@ Todo Command:
   ✔ refactor unit test, implement DRY pattern. use t.Run() for parallel test @done(21-07-26 09:28)
   ✔ speed-up time (sleep) for test, mock sleeper with interface @done(21-07-26 08:28)
   ✔ add code-doc for all methods & functions @done(21-07-25 19:40)
+  ☐ Size() in Response's Method, make to dynamic calculation based on struct field, not hardcoded.
+
     
 Todo Client:  
   ☐ client TLS support ?

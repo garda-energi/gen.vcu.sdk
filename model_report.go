@@ -281,7 +281,7 @@ type Bms struct {
 	Active bool   `type:"uint8"`
 	Run    bool   `type:"uint8"`
 	SOC    uint8  `type:"uint8" unit:"%"`
-	Fault  uint16 `type:"uint16"`
+	Faults uint16 `type:"uint16"`
 	Pack   [BMS_PACK_MAX]struct {
 		ID      uint32  `type:"uint32"`
 		Fault   uint16  `type:"uint16"`
@@ -305,11 +305,11 @@ func (bf BmsFaults) String() string {
 	return "[" + strings.Join(strBmsFaults, ", ") + "]"
 }
 
-// Faults parse b's fault field
-func (b *Bms) Faults() BmsFaults {
+// GetFaults parse b's fault field
+func (b *Bms) GetFaults() BmsFaults {
 	r := make(BmsFaults, 0, BMS_FAULTS_MAX)
 
-	tmpFaults := b.Fault
+	tmpFaults := b.Faults
 	for i := 0; i < BMS_FAULTS_MAX; i++ {
 		// check if first bit is 1
 		if tmpFaults&1 == 1 {
@@ -325,7 +325,7 @@ func (b *Bms) Faults() BmsFaults {
 
 // IsFault check if b's fault is bf
 func (b *Bms) IsFault(bf BmsFault) bool {
-	return b.Fault&(uint16(math.Pow(2, float64(bf)))) != 0
+	return b.Faults&(uint16(math.Pow(2, float64(bf)))) != 0
 }
 
 // LowCapacity check if b's SoC (State of Charge) is low
@@ -344,7 +344,7 @@ type Mcu struct {
 	Speed     uint8     `type:"uint8" unit:"Kph"`
 	RPM       int16     `type:"int16" unit:"rpm"`
 	Temp      float32   `type:"uint16" len:"2" unit:"Celcius" factor:"0.1"`
-	Fault     struct {
+	Faults    struct {
 		Post uint32 `type:"uint32"`
 		Run  uint32 `type:"uint32"`
 	}
@@ -391,15 +391,15 @@ func (mf McuFaults) String() string {
 	return "Post[" + strings.Join(strMcuPostFaults, ", ") + "]\nRun[" + strings.Join(strMcuRunFaults, ", ") + "]"
 }
 
-// Faults parse mcu's fault field
-func (m *Mcu) Faults() McuFaults {
+// GetFaults parse mcu's fault field
+func (m *Mcu) GetFaults() McuFaults {
 	r := McuFaults{
 		Post: make([]McuFault, 0, MCU_POST_FAULTS_MAX),
 		Run:  make([]McuFault, 0, MCU_RUN_FAULTS_MAX),
 	}
 	var tmpFaults uint32
 
-	tmpFaults = m.Fault.Post
+	tmpFaults = m.Faults.Post
 	for i := 0; i < MCU_POST_FAULTS_MAX; i++ {
 		// check if first bit is 1
 		if tmpFaults&1 == 1 {
@@ -410,7 +410,7 @@ func (m *Mcu) Faults() McuFaults {
 		tmpFaults /= 2
 	}
 
-	tmpFaults = m.Fault.Run
+	tmpFaults = m.Faults.Run
 	for i := MCU_POST_FAULTS_MAX; i < MCU_POST_FAULTS_MAX+MCU_RUN_FAULTS_MAX; i++ {
 		// check if first bit is 1
 		if tmpFaults&1 == 1 {
@@ -424,19 +424,14 @@ func (m *Mcu) Faults() McuFaults {
 	return r
 }
 
-// IsFault check if mcu's failt is mf
+// IsFault check if mcu's fault is mf
 func (m *Mcu) IsFault(mf McuFault) bool {
 	if mf < MCU_POST_FAULTS_MAX {
-		return m.Fault.Post&(uint32(math.Pow(2, float64(mf)))) != 0
+		return m.Faults.Post&(uint32(math.Pow(2, float64(mf)))) != 0
 	} else {
-		return m.Fault.Run&(uint32(math.Pow(2, float64(mf)))) != 0
+		return m.Faults.Run&(uint32(math.Pow(2, float64(mf)))) != 0
 	}
 }
-
-// Fault parse m's fault field
-// func (m *Mcu) Faults() McuFault {
-// 	TODO: implement me
-// }
 
 type Task struct {
 	Stack struct {
@@ -467,7 +462,7 @@ type Task struct {
 	}
 }
 
-// StackOverflow check if t's stack is near overflow fault
+// StackOverflow check if t's stack is near overflow
 func (t *Task) StackOverflow() bool {
 	if t == nil {
 		return false
