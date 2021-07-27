@@ -87,6 +87,10 @@ func (r *responsePacket) hasMessage() bool {
 
 // renderMessage subtitue BikeState to r's message
 func (r *responsePacket) renderMessage() {
+	if !r.hasMessage() {
+		return
+	}
+
 	str := string(r.Message)
 	for i := BikeStateUnknown; i < BikeStateLimit; i++ {
 		old := fmt.Sprintf("{%d}", i)
