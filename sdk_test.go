@@ -59,7 +59,9 @@ func TestSdk(t *testing.T) {
 
 func TestSdkAddListener(t *testing.T) {
 	api := Sdk{
-		client: &fakeClient{},
+		client: &fakeClient{
+			connected: true,
+		},
 	}
 
 	t.Run("without listener", func(t *testing.T) {
@@ -92,15 +94,15 @@ func TestSdkAddListener(t *testing.T) {
 	t.Run("use VinRange()", func(t *testing.T) {
 		got := api.AddListener(Listener{
 			StatusFunc: func(vin int, online bool) {},
-		}, VinRange(100, 50)...)
+		}, VinRange(1, 20)...)
 		if got != nil {
 			t.Fatal("want no error, got ", got)
 		}
 	})
 
 	t.Run("VinRange() output", func(t *testing.T) {
-		want := []int{1, 2, 3}
-		got := VinRange(3, 1)
+		want := []int{1, 2, 3, 4}
+		got := VinRange(4, 1)
 		if !reflect.DeepEqual(want, got) {
 			t.Fatalf("want %v, got %v", want, got)
 		}

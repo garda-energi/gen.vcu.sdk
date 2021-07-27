@@ -15,6 +15,10 @@ func (c *commander) Destroy() error {
 
 // listen subscribe to command & response topic for current VIN.
 func (c *commander) listen() error {
+	if !c.client.IsConnected() {
+		return errClientDisconnected
+	}
+
 	cFunc := func(client mqtt.Client, msg mqtt.Message) {
 		c.logger.Println(CMD, debugPacket(msg))
 	}
@@ -34,10 +38,10 @@ func (c *commander) listen() error {
 	return nil
 }
 
-// flush clear command & response topic on client.
+// flush clear command & response topic on client
 // It indicates that command is done or cancelled.
 func (c *commander) flush() {
 	for _, t := range []string{TOPIC_COMMAND, TOPIC_RESPONSE} {
-		c.client.pub(setTopicToVin(t, c.vin), QOS_CMD_FLUSH, true, nil)
+		_ = c.client.pub(setTopicToVin(t, c.vin), QOS_CMD_FLUSH, true, nil)
 	}
 }

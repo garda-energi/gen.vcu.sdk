@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"fmt"
+	"log"
 	"testing"
 	"time"
 )
@@ -10,15 +11,21 @@ const testVin = 354313
 
 func fakeCommander(responses [][]byte) *commander {
 	client := &fakeClient{
+		connected: true,
 		responses: responses,
 		cmdChan:   make(chan []byte),
 		resChan:   make(chan struct{}),
 	}
+
 	sleeper := &fakeSleeper{
 		sleep: time.Millisecond,
 		after: 125 * time.Millisecond,
 	}
-	cmder, _ := newCommander(testVin, client, sleeper, newLogger(false, "TEST"))
+
+	cmder, err := newCommander(testVin, client, sleeper, newLogger(false, "TEST"))
+	if err != nil {
+		log.Fatal(err)
+	}
 	return cmder
 }
 func TestResponsePacket(t *testing.T) {

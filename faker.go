@@ -10,6 +10,8 @@ import (
 // fakeClient implements fake client stub
 type fakeClient struct {
 	Client
+	// published map[string][]int[]byte
+	// subscribed map[string][]int
 	connected bool
 	responses [][]byte
 	cmdChan   chan []byte
@@ -23,6 +25,10 @@ func (c *fakeClient) Connect() mqtt.Token {
 
 func (c *fakeClient) Disconnect(quiesce uint) {
 	c.connected = false
+}
+
+func (c *fakeClient) IsConnected() bool {
+	return c.connected
 }
 
 func (c *fakeClient) pub(topic string, qos byte, retained bool, payload []byte) error {
@@ -102,23 +108,7 @@ func fakeResponse(vin int, invoker string) *responsePacket {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	return &responsePacket{
-		Header: &headerResponse{
-			HeaderCommand: HeaderCommand{
-				Header: Header{
-					Prefix:       PREFIX_RESPONSE,
-					Size:         0,
-					Vin:          uint32(vin),
-					SendDatetime: time.Now(),
-				},
-				Code:    cmd.code,
-				SubCode: cmd.subCode,
-			},
-			ResCode: resCodeOk,
-		},
-		Message: nil,
-	}
+	return newResponsePacket(vin, cmd, nil)
 }
 
 // mockResponse combine response and message to bytes packet.

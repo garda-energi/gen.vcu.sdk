@@ -12,6 +12,10 @@ func (c *commander) exec(invoker string, msg message) ([]byte, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
+	if !c.client.IsConnected() {
+		return nil, errClientDisconnected
+	}
+
 	cmd, err := getCmdByInvoker(invoker)
 	if err != nil {
 		return nil, err

@@ -14,13 +14,14 @@ var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 var typeOfMessage reflect.Type = reflect.ValueOf(message{}).Type()
 
 var (
-	errCmdNotFound      = errors.New("command not found")
-	errPacketAckCorrupt = errors.New("packet ack corrupt")
-	errInvalidPrefix    = errors.New("prefix invalid")
-	errInvalidSize      = errors.New("size invalid")
-	errInvalidVin       = errors.New("vin invalid")
-	errInvalidCmdCode   = errors.New("cmd code invalid")
-	errInvalidResCode   = errors.New("resCode invalid")
+	errClientDisconnected = errors.New("client disconnected")
+	errCmdNotFound        = errors.New("command not found")
+	errPacketAckCorrupt   = errors.New("packet ack corrupt")
+	errInvalidPrefix      = errors.New("prefix invalid")
+	errInvalidSize        = errors.New("size invalid")
+	errInvalidVin         = errors.New("vin invalid")
+	errInvalidCmdCode     = errors.New("cmd code invalid")
+	errInvalidResCode     = errors.New("resCode invalid")
 )
 
 type errPacketTimeout string

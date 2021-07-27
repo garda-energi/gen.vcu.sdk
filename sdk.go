@@ -19,7 +19,7 @@ func New(clientConfig ClientConfig, logging bool) Sdk {
 	}
 }
 
-// Connect open connection to mqtt client.
+// Connect open connection to mqtt client
 func (s *Sdk) Connect() error {
 	token := s.client.Connect()
 	if token.Wait() && token.Error() != nil {
@@ -28,7 +28,7 @@ func (s *Sdk) Connect() error {
 	return nil
 }
 
-// Disconnect close connection to mqtt client.
+// Disconnect close connection to mqtt client
 func (s *Sdk) Disconnect() {
 	s.client.Disconnect(100)
 }
@@ -57,6 +57,9 @@ func (s *Sdk) AddListener(ls Listener, vins ...int) error {
 	if ls.StatusFunc == nil && ls.ReportFunc == nil {
 		return errors.New("at least 1 listener supplied")
 	}
+	if !s.client.IsConnected() {
+		return errClientDisconnected
+	}
 
 	if ls.StatusFunc != nil {
 		topics := setTopicToVins(TOPIC_STATUS, vins)
@@ -84,7 +87,6 @@ func (s *Sdk) RemoveListener(vins ...int) error {
 }
 
 // VinRange generate array of integer from min to max.
-//
 // If min greater than max, it will be swapped.
 func VinRange(min int, max int) []int {
 	// swap them if min greater than max
