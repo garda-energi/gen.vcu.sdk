@@ -323,7 +323,7 @@ func (b *Bms) Faults() BmsFaults {
 	return r
 }
 
-// IsEvent check if b's failt is bf
+// IsFault check if b's failt is bf
 func (b *Bms) IsFault(bf BmsFault) bool {
 	return b.Fault&(uint16(math.Pow(2, float64(bf)))) != 0
 }
@@ -368,6 +368,68 @@ type Mcu struct {
 			Discur uint16  `type:"uint16" unit:"A"`
 			Torque float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
 		}
+	}
+}
+
+type McuFault uint8
+
+type McuFaults struct {
+	Post []McuFault
+	Run  []McuFault
+}
+
+// String converts McuFaults type to string.
+func (mf McuFaults) String() string {
+	strMcuPostFaults := make([]string, 0)
+	strMcuRunFaults := make([]string, 0)
+	for _, v := range mf.Post {
+		strMcuPostFaults = append(strMcuPostFaults, mcuStringFaults[v])
+	}
+	for _, v := range mf.Run {
+		strMcuRunFaults = append(strMcuRunFaults, mcuStringFaults[v])
+	}
+	return "Post[" + strings.Join(strMcuPostFaults, ", ") + "]\nRun[" + strings.Join(strMcuRunFaults, ", ") + "]"
+}
+
+// Faults parse mcu's fault field
+func (m *Mcu) Faults() McuFaults {
+	r := McuFaults{
+		Post: make([]McuFault, 0, MCU_POST_FAULTS_MAX),
+		Run:  make([]McuFault, 0, MCU_RUN_FAULTS_MAX),
+	}
+	var tmpFaults uint32
+
+	tmpFaults = m.Fault.Post
+	for i := 0; i < MCU_POST_FAULTS_MAX; i++ {
+		// check if first bit is 1
+		if tmpFaults&1 == 1 {
+			r.Post = append(r.Post, McuFault(i))
+		}
+
+		// shift bit to right (1 bit)
+		tmpFaults /= 2
+	}
+
+	tmpFaults = m.Fault.Run
+	for i := MCU_POST_FAULTS_MAX; i < MCU_POST_FAULTS_MAX+MCU_RUN_FAULTS_MAX; i++ {
+		// check if first bit is 1
+		if tmpFaults&1 == 1 {
+			r.Run = append(r.Run, McuFault(i))
+		}
+
+		// shift bit to right (1 bit)
+		tmpFaults /= 2
+	}
+
+	return r
+}
+
+// IsFault check if mcu's failt is mf
+func (m *Mcu) IsFault(mf McuFault) bool {
+	if mf < MCU_POST_FAULTS_MAX {
+		return m.Fault.Post&(uint32(math.Pow(2, float64(mf)))) != 0
+	} else {
+		return m.Fault.Run&(uint32(math.Pow(2, float64(mf)))) != 0
 	}
 }
 
