@@ -292,10 +292,41 @@ type Bms struct {
 	}
 }
 
+type BmsFault uint8
+
+type BmsFaults []BmsFault
+
+// String converts BmsFaults type to string.
+func (bf BmsFaults) String() string {
+	strBmsFaults := make([]string, 0)
+	for _, v := range bf {
+		strBmsFaults = append(strBmsFaults, bmsStringFaults[v])
+	}
+	return "[" + strings.Join(strBmsFaults, ", ") + "]"
+}
+
 // Faults parse b's fault field
-// func (b *Bms) Faults() BmsFault {
-// 	TODO: implement me
-// }
+func (b *Bms) Faults() BmsFaults {
+	r := make(BmsFaults, 0, BMS_FAULTS_MAX)
+
+	tmpFaults := b.Fault
+	for i := 0; i < BMS_FAULTS_MAX; i++ {
+		// check if first bit is 1
+		if tmpFaults&1 == 1 {
+			r = append(r, BmsFault(i))
+		}
+
+		// shift bit to right (1 bit)
+		tmpFaults /= 2
+	}
+
+	return r
+}
+
+// IsEvent check if b's failt is bf
+func (b *Bms) IsFault(bf BmsFault) bool {
+	return b.Fault&(uint16(math.Pow(2, float64(bf)))) != 0
+}
 
 // LowCapacity check if b's SoC (State of Charge) is low
 func (b *Bms) LowCapacity() bool {
