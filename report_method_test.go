@@ -5,20 +5,6 @@ import (
 	"testing"
 )
 
-type testDataChanger struct {
-	byteIdx int    // byte index
-	newByte []byte // byte which replace to
-}
-
-// change byte for test
-func (dc testDataChanger) changeByte(b []byte) {
-	i := dc.byteIdx
-	for _, v := range dc.newByte {
-		b[i] = v
-		i++
-	}
-}
-
 func TestReportMethods(t *testing.T) {
 	type expectedData struct {
 		vcuEvents       VcuEvents
@@ -39,7 +25,7 @@ func TestReportMethods(t *testing.T) {
 
 	var resetDataTo = []struct {
 		want        expectedData
-		dataChanger []testDataChanger
+		dataChanger map[string]interface{}
 	}{
 		{
 			want: expectedData{
@@ -50,25 +36,55 @@ func TestReportMethods(t *testing.T) {
 				mcuFaults:       McuFaults{Post: []McuFaultPost{MCU_POST_5V_LOW}, Run: []McuFaultRun{MCU_RUN_RESERVER_1}},
 				mcuFaultsString: "Post[5V_LOW]\nRun[RESERVER_1]",
 			},
-			dataChanger: []testDataChanger{
-				// dont use byteIdx, because the report struct field is dynamic (not stable)
-				// how about this: reportStruct (modified) -> encode (hexstring) -> decode reportStruct (validate)
-				{byteIdx: 23, newByte: []byte{0x60, 0x00}},              // change vcu event data (byte index 23)
-				{byteIdx: 101, newByte: []byte{0x84, 0x04}},             // change bms fault data (byte index 101)
-				{byteIdx: 138, newByte: []byte{0x00, 0x10, 0x00, 0x00}}, // change mcu post fault data (byte index 138)
-				{byteIdx: 142, newByte: []byte{0x00, 0x20, 0x00, 0x00}}, // change mcu run fault data (byte index 142)
+			dataChanger: map[string]interface{}{
+				"vcuEvents":     96,
+				"bmsFaults":     1156,
+				"mcuFaultsPost": 4096,
+				"mcuFaultsRun":  8192,
 			},
 		},
 	}
 
 	for i := range testdata {
-		testdata[i].name = "data #" + strconv.Itoa(i)
-		testdata[i].args.b = hexToByte(testDataNormal[3])
-		testdata[i].want = resetDataTo[i].want
+		// set data
+		// 1. decode from hex than return report
+		// 2. change report data
+		// 3. encode
+		// 3. save to testdata. it will be tested
 
-		for _, dc := range resetDataTo[i].dataChanger {
-			dc.changeByte(testdata[i].args.b)
+		// 1
+		report, err := decodeReport(hexToByte(testDataNormal[3]))
+		if err != nil {
+			t.Errorf("Create Dataset error: %s", err)
 		}
+
+		// 2
+		vcuEvents, isFound := resetDataTo[i].dataChanger["vcuEvents"]
+		if isFound {
+			report.Vcu.Events = uint16(vcuEvents.(int))
+		}
+		bmsFaults, isFound := resetDataTo[i].dataChanger["bmsFaults"]
+		if isFound {
+			report.Bms.Faults = uint16(bmsFaults.(int))
+		}
+		mcuFaultsPost, isFound := resetDataTo[i].dataChanger["mcuFaultsPost"]
+		if isFound {
+			report.Mcu.Faults.Post = uint32(mcuFaultsPost.(int))
+		}
+		mcuFaultsRun, isFound := resetDataTo[i].dataChanger["mcuFaultsRun"]
+		if isFound {
+			report.Mcu.Faults.Run = uint32(mcuFaultsRun.(int))
+		}
+
+		// 3
+		b, err := encode(report)
+		if err != nil {
+			t.Errorf("Create Dataset error: %s", err)
+		}
+
+		testdata[i].name = "data #" + strconv.Itoa(i)
+		testdata[i].args.b = b
+		testdata[i].want = resetDataTo[i].want
 	}
 
 	for _, tt := range testdata {
