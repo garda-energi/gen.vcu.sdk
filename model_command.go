@@ -39,6 +39,7 @@ func (r *responsePacket) size() int {
 	if r.Header == nil {
 		return 0
 	}
+	// can it by dynamic according to field struct, not hardcoded?
 	return 4 + 7 + 1 + 1 + 1 + len(r.Message)
 }
 

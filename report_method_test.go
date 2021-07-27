@@ -51,6 +51,8 @@ func TestReportMethods(t *testing.T) {
 				mcuFaultsString: "Post[5V_LOW]\nRun[RESERVER_1]",
 			},
 			dataChanger: []testDataChanger{
+				// dont use byteIdx, because the report struct field is dynamic (not stable)
+				// how about this: reportStruct (modified) -> encode (hexstring) -> decode reportStruct (validate)
 				{byteIdx: 23, newByte: []byte{0x60, 0x00}},              // change vcu event data (byte index 23)
 				{byteIdx: 101, newByte: []byte{0x84, 0x04}},             // change bms fault data (byte index 101)
 				{byteIdx: 138, newByte: []byte{0x00, 0x10, 0x00, 0x00}}, // change mcu post fault data (byte index 138)

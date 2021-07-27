@@ -45,6 +45,7 @@ func (r *ReportPacket) Size() int {
 		isNil bool // check is nil or not
 		size  int  // actual size per attribute
 	}{
+		// can it by dynamic according to field struct, not hardcoded?
 		{r.Header == nil, 15},
 		{r.Vcu == nil, 16},
 		{r.Eeprom == nil, 2},
@@ -301,6 +302,7 @@ func (b *Bms) GetFaults() BmsFaults {
 	r := make(BmsFaults, 0, BMS_FAULTS_MAX)
 
 	tmpFaults := b.Faults
+	// see the pattern? it is redundant (with mcu.GetFaults)
 	for i := 0; i < int(BMS_FAULTS_MAX); i++ {
 		// check if first bit is 1
 		if tmpFaults&1 == 1 {
@@ -364,6 +366,7 @@ type Mcu struct {
 
 // String converts McuFaults type to string.
 func (mf McuFaults) String() string {
+	// see the pattern? it is redundant
 	strMcuPostFaults := make([]string, 0)
 	for _, v := range mf.Post {
 		strMcuPostFaults = append(strMcuPostFaults, v.String())
@@ -387,6 +390,7 @@ func (m *Mcu) GetFaults() McuFaults {
 	}
 	var tmpFaults uint32
 
+	// see the pattern? it is redundant
 	tmpFaults = m.Faults.Post
 	for i := 0; i < int(MCU_POST_FAULTS_MAX); i++ {
 		// check if first bit is 1
@@ -398,6 +402,7 @@ func (m *Mcu) GetFaults() McuFaults {
 		tmpFaults /= 2
 	}
 
+	// see the pattern? it is redundant
 	tmpFaults = m.Faults.Run
 	for i := 0; i < int(MCU_RUN_FAULTS_MAX); i++ {
 		// check if first bit is 1
