@@ -1,5 +1,7 @@
 package sdk
 
+import "errors"
+
 type Sdk struct {
 	logging bool
 	client  Client
@@ -45,6 +47,12 @@ func (s *Sdk) NewCommander(vin int) (*commander, error) {
 // listen by range :
 // s.AddListener(listerner, sdk.VinRange(min, max)...)
 func (s *Sdk) AddListener(ls Listener, vins ...int) error {
+	if len(vins) == 0 {
+		return errors.New("at least 1 vin supplied")
+	}
+	if ls.StatusFunc == nil && ls.ReportFunc == nil {
+		return errors.New("at least 1 listener supplied")
+	}
 	ls.logger = newLogger(s.logging, "LISTENER")
 
 	if ls.StatusFunc != nil {

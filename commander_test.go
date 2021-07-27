@@ -146,7 +146,7 @@ func TestCommander(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.invoker, func(t *testing.T) {
 			// generate fake response
-			fakeRes := newFakeResponse(testVin, tC.invoker)
+			fakeRes := fakeResponse(testVin, tC.invoker)
 			if tC.resMsg != nil {
 				fakeRes.Message = tC.resMsg
 				if tC.wantOut == nil {
@@ -275,7 +275,7 @@ func TestCommanderInvalidInput(t *testing.T) {
 			// initialize fake commander
 			cmder := newFakeCommander([][]byte{
 				strToBytes(PREFIX_ACK),
-				mockResponse(newFakeResponse(testVin, tC.invoker)),
+				mockResponse(fakeResponse(testVin, tC.invoker)),
 			})
 			defer cmder.Destroy()
 

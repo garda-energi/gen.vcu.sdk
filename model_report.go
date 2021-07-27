@@ -323,7 +323,7 @@ func (b *Bms) Faults() BmsFaults {
 	return r
 }
 
-// IsFault check if b's failt is bf
+// IsFault check if b's fault is bf
 func (b *Bms) IsFault(bf BmsFault) bool {
 	return b.Fault&(uint16(math.Pow(2, float64(bf)))) != 0
 }

@@ -15,6 +15,12 @@ type fakeClient struct {
 	resChan   chan struct{}
 }
 
+func (c *fakeClient) Connect() mqtt.Token {
+	return &mqtt.DummyToken{}
+}
+
+func (c *fakeClient) Disconnect(quiesce uint) {}
+
 func (c *fakeClient) pub(topic string, qos byte, retained bool, payload []byte) error {
 	if flush := payload == nil; !flush {
 		c.cmdChan <- payload
@@ -51,6 +57,23 @@ func (c *fakeClient) sub(topic string, qos byte, handler mqtt.MessageHandler) er
 	return nil
 }
 
+func (c *fakeClient) subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
+	// topicFilters := make(map[string]byte, len(topics))
+	// for _, v := range topics {
+	// 	topicFilters[v] = qos
+	// }
+
+	// token := c.SubscribeMultiple(topicFilters, handler)
+	// if token.Wait() && token.Error() != nil {
+	// 	return token.Error()
+	// }
+
+	// for _, v := range topics {
+	// 	c.logger.Printf("Subscribed to: %s\n", v)
+	// }
+	return nil
+}
+
 func (c *fakeClient) unsub(topics []string) error {
 	return nil
 }
@@ -83,7 +106,7 @@ func (s *fakeSleeper) After(d time.Duration) <-chan time.Time {
 	return time.After(s.after)
 }
 
-func newFakeResponse(vin int, invoker string) *responsePacket {
+func fakeResponse(vin int, invoker string) *responsePacket {
 	cmd, err := getCmdByInvoker(invoker)
 	if err != nil {
 		log.Fatal(err)

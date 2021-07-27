@@ -133,7 +133,7 @@ func TestResponseError(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			res := newFakeResponse(testVin, "GenInfo")
+			res := fakeResponse(testVin, "GenInfo")
 			tC.formatter(res)
 
 			cmder := newFakeCommander([][]byte{
