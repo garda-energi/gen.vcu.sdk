@@ -2,7 +2,9 @@ package sdk
 
 import (
 	"fmt"
+	"math"
 	"reflect"
+	"strings"
 	"time"
 )
 
@@ -101,10 +103,41 @@ type Vcu struct {
 	Uptime      float32   `type:"uint32" unit:"hour" factor:"0.000277"`
 }
 
-// Events parse v's events
-// func (v *Vcu) Events() VcuEvents {
-// 	TODO: implement me
-// }
+type VcuEvent uint8
+
+type VcuEvents []VcuEvent
+
+// String converts VcuEvents type to string.
+func (ve VcuEvents) String() string {
+	strEvents := make([]string, 0)
+	for _, v := range ve {
+		strEvents = append(strEvents, vcuStringEvents[v])
+	}
+	return "[" + strings.Join(strEvents, ", ") + "]"
+}
+
+// GetEvents parse v's events in an array
+func (v *Vcu) GetEvents() VcuEvents {
+	r := make(VcuEvents, 0, VCU_EVENTS_MAX)
+
+	tmpEvents := v.Events
+	for i := 0; i < VCU_EVENTS_MAX; i++ {
+		// check if first bit is 1
+		if tmpEvents&1 == 1 {
+			r = append(r, VcuEvent(i))
+		}
+
+		// shift bit to right (1 bit)
+		tmpEvents /= 2
+	}
+
+	return r
+}
+
+// IsEvent check if v's event is ev
+func (v *Vcu) IsEvent(ev VcuEvent) bool {
+	return v.Events&(uint16(math.Pow(2, float64(ev)))) != 0
+}
 
 // RealtimeData check if current report log is realtime
 func (v *Vcu) RealtimeData() bool {
@@ -259,10 +292,41 @@ type Bms struct {
 	}
 }
 
+type BmsFault uint8
+
+type BmsFaults []BmsFault
+
+// String converts BmsFaults type to string.
+func (bf BmsFaults) String() string {
+	strBmsFaults := make([]string, 0)
+	for _, v := range bf {
+		strBmsFaults = append(strBmsFaults, bmsStringFaults[v])
+	}
+	return "[" + strings.Join(strBmsFaults, ", ") + "]"
+}
+
 // Faults parse b's fault field
-// func (b *Bms) Faults() BmsFault {
-// 	TODO: implement me
-// }
+func (b *Bms) Faults() BmsFaults {
+	r := make(BmsFaults, 0, BMS_FAULTS_MAX)
+
+	tmpFaults := b.Fault
+	for i := 0; i < BMS_FAULTS_MAX; i++ {
+		// check if first bit is 1
+		if tmpFaults&1 == 1 {
+			r = append(r, BmsFault(i))
+		}
+
+		// shift bit to right (1 bit)
+		tmpFaults /= 2
+	}
+
+	return r
+}
+
+// IsFault check if b's failt is bf
+func (b *Bms) IsFault(bf BmsFault) bool {
+	return b.Fault&(uint16(math.Pow(2, float64(bf)))) != 0
+}
 
 // LowCapacity check if b's SoC (State of Charge) is low
 func (b *Bms) LowCapacity() bool {
@@ -304,6 +368,68 @@ type Mcu struct {
 			Discur uint16  `type:"uint16" unit:"A"`
 			Torque float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
 		}
+	}
+}
+
+type McuFault uint8
+
+type McuFaults struct {
+	Post []McuFault
+	Run  []McuFault
+}
+
+// String converts McuFaults type to string.
+func (mf McuFaults) String() string {
+	strMcuPostFaults := make([]string, 0)
+	strMcuRunFaults := make([]string, 0)
+	for _, v := range mf.Post {
+		strMcuPostFaults = append(strMcuPostFaults, mcuStringFaults[v])
+	}
+	for _, v := range mf.Run {
+		strMcuRunFaults = append(strMcuRunFaults, mcuStringFaults[v])
+	}
+	return "Post[" + strings.Join(strMcuPostFaults, ", ") + "]\nRun[" + strings.Join(strMcuRunFaults, ", ") + "]"
+}
+
+// Faults parse mcu's fault field
+func (m *Mcu) Faults() McuFaults {
+	r := McuFaults{
+		Post: make([]McuFault, 0, MCU_POST_FAULTS_MAX),
+		Run:  make([]McuFault, 0, MCU_RUN_FAULTS_MAX),
+	}
+	var tmpFaults uint32
+
+	tmpFaults = m.Fault.Post
+	for i := 0; i < MCU_POST_FAULTS_MAX; i++ {
+		// check if first bit is 1
+		if tmpFaults&1 == 1 {
+			r.Post = append(r.Post, McuFault(i))
+		}
+
+		// shift bit to right (1 bit)
+		tmpFaults /= 2
+	}
+
+	tmpFaults = m.Fault.Run
+	for i := MCU_POST_FAULTS_MAX; i < MCU_POST_FAULTS_MAX+MCU_RUN_FAULTS_MAX; i++ {
+		// check if first bit is 1
+		if tmpFaults&1 == 1 {
+			r.Run = append(r.Run, McuFault(i))
+		}
+
+		// shift bit to right (1 bit)
+		tmpFaults /= 2
+	}
+
+	return r
+}
+
+// IsFault check if mcu's failt is mf
+func (m *Mcu) IsFault(mf McuFault) bool {
+	if mf < MCU_POST_FAULTS_MAX {
+		return m.Fault.Post&(uint32(math.Pow(2, float64(mf)))) != 0
+	} else {
+		return m.Fault.Run&(uint32(math.Pow(2, float64(mf)))) != 0
 	}
 }
 
