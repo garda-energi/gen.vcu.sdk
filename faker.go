@@ -82,8 +82,8 @@ func (s *fakeSleeper) After(d time.Duration) <-chan time.Time {
 	return time.After(s.after)
 }
 
-func newFakeResponse(vin int, cmdName string) *responsePacket {
-	cmd, _ := getCmdByName(cmdName)
+func newFakeResponse(vin int, invoker string) *responsePacket {
+	cmd, _ := getCmdByInvoker(invoker)
 
 	return &responsePacket{
 		Header: &headerResponse{

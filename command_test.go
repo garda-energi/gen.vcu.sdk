@@ -104,7 +104,7 @@ func TestResponseError(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			res := newFakeResponse(testVin, "GEN_INFO")
+			res := newFakeResponse(testVin, "GenInfo")
 			tC.formatter(res)
 
 			cmder := newFakeCommander([][]byte{
@@ -123,130 +123,130 @@ func TestResponseError(t *testing.T) {
 
 func TestCommands(t *testing.T) {
 	testCases := []struct {
-		cmd  string
-		want interface{}
-		args interface{}
-		msg  message
+		invoker string
+		want    interface{}
+		args    interface{}
+		resMsg  message
 	}{
 		{
-			cmd:  "GEN_INFO",
-			args: nil,
-			msg:  message("VCU v.664, GEN - 2021"),
+			invoker: "GenInfo",
+			args:    nil,
+			resMsg:  message("VCU v.664, GEN - 2021"),
 		},
 		{
-			cmd:  "GEN_LED",
-			args: true,
+			invoker: "GenLed",
+			args:    true,
 		},
 		{
-			cmd:  "GEN_RTC",
-			args: time.Now(),
+			invoker: "GenRtc",
+			args:    time.Now(),
 		},
 		{
-			cmd:  "GEN_ODO",
-			args: uint16(4321),
+			invoker: "GenOdo",
+			args:    uint16(4321),
 		},
 		{
-			cmd:  "GEN_ANTI_THIEF",
-			args: nil,
+			invoker: "GenAntiThief",
+			args:    nil,
 		},
 		{
-			cmd:  "GEN_RPT_FLUSH",
-			args: nil,
+			invoker: "GenReportFlush",
+			args:    nil,
 		},
 		{
-			cmd:  "GEN_RPT_BLOCK",
-			args: false,
+			invoker: "GenReportBlock",
+			args:    false,
 		},
 		{
-			cmd:  "OVD_STATE",
-			args: BikeStateNormal,
+			invoker: "OvdState",
+			args:    BikeStateNormal,
 		},
 		{
-			cmd:  "OVD_RPT_INTERVAL",
-			args: 5 * time.Second,
+			invoker: "OvdReportInterval",
+			args:    5 * time.Second,
 		},
 		{
-			cmd:  "OVD_RPT_FRAME",
-			args: FrameFull,
+			invoker: "OvdReportFrame",
+			args:    FrameFull,
 		},
 		{
-			cmd:  "OVD_RMT_SEAT",
-			args: nil,
+			invoker: "OvdRemoteSeat",
+			args:    nil,
 		},
 		{
-			cmd:  "OVD_RMT_ALARM",
-			args: nil,
+			invoker: "OvdRemoteAlarm",
+			args:    nil,
 		},
 		{
-			cmd:  "AUDIO_BEEP",
-			args: nil,
+			invoker: "AudioBeep",
+			args:    nil,
 		},
 		{
-			cmd:  "FINGER_FETCH",
-			args: nil,
-			want: []int{1, 2, 3, 4, 5},
-			msg:  message([]byte("12345")),
+			invoker: "FingerFetch",
+			args:    nil,
+			want:    []int{1, 2, 3, 4, 5},
+			resMsg:  message([]byte("12345")),
 		},
 		{
-			cmd:  "FINGER_ADD",
-			args: nil,
-			want: 3,
-			msg:  message([]byte("3")),
+			invoker: "FingerAdd",
+			args:    nil,
+			want:    3,
+			resMsg:  message([]byte("3")),
 		},
 		{
-			cmd:  "FINGER_DEL",
-			args: 3,
+			invoker: "FingerDel",
+			args:    3,
 		},
 		{
-			cmd:  "FINGER_RST",
-			args: nil,
+			invoker: "FingerRst",
+			args:    nil,
 		},
 		{
-			cmd:  "REMOTE_PAIRING",
-			args: nil,
+			invoker: "RemotePairing",
+			args:    nil,
 		},
 		{
-			cmd:  "FOTA_VCU",
-			args: nil,
-			msg:  message("VCU upgraded v.664 -> v.665"),
+			invoker: "FotaVcu",
+			args:    nil,
+			resMsg:  message("VCU upgraded v.664 -> v.665"),
 		},
 		{
-			cmd:  "FOTA_HMI",
-			args: nil,
-			msg:  message("HMI upgraded v.123 -> v.124"),
+			invoker: "FotaHmi",
+			args:    nil,
+			resMsg:  message("HMI upgraded v.123 -> v.124"),
 		},
 		{
-			cmd:  "NET_SEND_USSD",
-			args: "*123*10*3#",
-			msg:  message("Terima kasih, permintaan kamu akan diproses,cek SMS untuk info lengkap. Dapatkan informasi seputar kartu Tri mu di aplikasi BimaTri, download di bima.tri.co.id"),
+			invoker: "NetSendUssd",
+			args:    "*123*10*3#",
+			resMsg:  message("Terima kasih, permintaan kamu akan diproses,cek SMS untuk info lengkap. Dapatkan informasi seputar kartu Tri mu di aplikasi BimaTri, download di bima.tri.co.id"),
 		},
 		{
-			cmd:  "NET_READ_SMS",
-			args: nil,
-			msg:  message("Poin Bonstri kamu: 20 Sisa Kuota kamu : Kuota ++ 372 MB s.d 03/01/2031 13:30:18 Temukan beragam paket lain di bima+ https://goo.gl/RQ1DBA"),
+			invoker: "NetReadSms",
+			args:    nil,
+			resMsg:  message("Poin Bonstri kamu: 20 Sisa Kuota kamu : Kuota ++ 372 MB s.d 03/01/2031 13:30:18 Temukan beragam paket lain di bima+ https://goo.gl/RQ1DBA"),
 		},
 		{
-			cmd:  "HBAR_DRIVE",
-			args: ModeDriveEconomy,
+			invoker: "HbarDrive",
+			args:    ModeDriveEconomy,
 		},
 		{
-			cmd:  "HBAR_TRIP",
-			args: ModeTripB,
+			invoker: "HbarTrip",
+			args:    ModeTripB,
 		},
 		{
-			cmd:  "HBAR_AVG",
-			args: ModeAvgEfficiency,
+			invoker: "HbarAvg",
+			args:    ModeAvgEfficiency,
 		},
 		{
-			cmd:  "HBAR_REVERSE",
-			args: false,
+			invoker: "HbarReverse",
+			args:    false,
 		},
 		{
-			cmd:  "MCU_SPEED_MAX",
-			args: uint8(90),
+			invoker: "McuSpeedMax",
+			args:    uint8(90),
 		},
 		{
-			cmd: "MCU_TEMPLATES",
+			invoker: "McuTemplates",
 			args: []McuTemplate{
 				{DisCur: 50, Torque: 10}, // economy
 				{DisCur: 50, Torque: 20}, // standard
@@ -256,13 +256,12 @@ func TestCommands(t *testing.T) {
 	}
 
 	for _, tC := range testCases {
-		cmd, _ := getCmdByName(tC.cmd)
-		t.Run(cmd.invoker, func(t *testing.T) {
-			fakeRes := newFakeResponse(testVin, tC.cmd)
-			if tC.msg != nil {
-				fakeRes.Message = tC.msg
+		t.Run(tC.invoker, func(t *testing.T) {
+			fakeRes := newFakeResponse(testVin, tC.invoker)
+			if tC.resMsg != nil {
+				fakeRes.Message = tC.resMsg
 				if tC.want == nil {
-					tC.want = string(tC.msg)
+					tC.want = string(tC.resMsg)
 				}
 			}
 
@@ -273,7 +272,7 @@ func TestCommands(t *testing.T) {
 			defer cmder.Destroy()
 
 			// call related method, pass in args, evaluate outs
-			meth := reflect.ValueOf(cmder).MethodByName(cmd.invoker)
+			meth := reflect.ValueOf(cmder).MethodByName(tC.invoker)
 			args := []reflect.Value{}
 			if tC.args != nil {
 				args = append(args, reflect.ValueOf(tC.args))
@@ -312,4 +311,19 @@ func newFakeCommander(responses [][]byte) *commander {
 	}
 	cmder, _ := newCommander(testVin, client, sleeper, logging)
 	return cmder
+}
+
+func TestCommandError(t *testing.T) {
+	testCases := []struct {
+		desc string
+	}{
+		{
+			desc: "",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+
+		})
+	}
 }

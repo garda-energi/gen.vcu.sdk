@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// command store essential command informations
 type command struct {
 	name    string
 	invoker string
@@ -13,7 +14,7 @@ type command struct {
 	timeout time.Duration
 }
 
-// cmdEvaluator is condition evaluator for findCmd func.
+// cmdEvaluator is boolean evaluator for findCmd().
 type cmdEvaluator func(code, subCode int, cmd *command) bool
 
 // getCmdByName get related command by name
@@ -37,6 +38,7 @@ func getCmdByCode(code, subCode int) (*command, error) {
 	})
 }
 
+// findCmd find related cmd according to boolean evaluator
 func findCmd(checker cmdEvaluator) (*command, error) {
 	for code, subCodes := range commands {
 		for subCode, cmd := range subCodes {
@@ -53,6 +55,7 @@ func findCmd(checker cmdEvaluator) (*command, error) {
 	return nil, errors.New("no command found")
 }
 
+// commands store command name by its code & subCode as index
 var commands = [][]command{
 	{
 		command{
