@@ -8,8 +8,8 @@ import (
 
 func TestSdk(t *testing.T) {
 	api := Sdk{
-		logging: false,
-		client:  &fakeClient{
+		logger: newLogger(false, "TEST"),
+		client: &fakeClient{
 			// responses: responses,
 			// cmdChan:   make(chan []byte),
 			// resChan:   make(chan struct{}),
@@ -85,7 +85,7 @@ func TestSdkAddListener(t *testing.T) {
 			StatusFunc: func(vin int, online bool) {},
 		}, 123)
 		if got != nil {
-			t.Fatalf("want no error, got %s", got)
+			t.Fatal("want no error, got ", got)
 		}
 	})
 
@@ -94,7 +94,7 @@ func TestSdkAddListener(t *testing.T) {
 			StatusFunc: func(vin int, online bool) {},
 		}, VinRange(100, 50)...)
 		if got != nil {
-			t.Fatalf("want no error, got %s", got)
+			t.Fatal("want no error, got ", got)
 		}
 	})
 

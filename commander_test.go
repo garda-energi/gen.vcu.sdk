@@ -155,7 +155,7 @@ func TestCommander(t *testing.T) {
 			}
 
 			// initialize fake commander
-			cmder := newFakeCommander([][]byte{
+			cmder := fakeCommander([][]byte{
 				strToBytes(PREFIX_ACK),
 				mockResponse(fakeRes),
 			})
@@ -167,7 +167,7 @@ func TestCommander(t *testing.T) {
 			// check output error
 			if errOut != nil {
 				if err := errOut.(error); err != nil {
-					t.Fatalf("want no error, got %s", err)
+					t.Fatal("want no error, got", err)
 				}
 			}
 
@@ -248,7 +248,7 @@ func TestCommanderInvalidInput(t *testing.T) {
 				{DisCur: MCU_DISCUR_MIN - 1, Torque: 20}, // standard
 				{DisCur: 50, Torque: 25},                 // sport
 			},
-			wantErr: errInputOutOfRange(fmt.Sprintf("%s:dischare-current", ModeDriveStandard)).Error(),
+			wantErr: errInputOutOfRange(fmt.Sprint(ModeDriveStandard, ":dischare-current")).Error(),
 		},
 		{
 			invoker: "McuTemplates",
@@ -257,7 +257,7 @@ func TestCommanderInvalidInput(t *testing.T) {
 				{DisCur: 50, Torque: 20},                 // standard
 				{DisCur: 50, Torque: MCU_TORQUE_MAX + 1}, // sport
 			},
-			wantErr: errInputOutOfRange(fmt.Sprintf("%s:torque", ModeDriveSport)).Error(),
+			wantErr: errInputOutOfRange(fmt.Sprint(ModeDriveSport, ":torque")).Error(),
 		},
 		{
 			invoker: "McuTemplates",
@@ -270,10 +270,10 @@ func TestCommanderInvalidInput(t *testing.T) {
 	}
 
 	for _, tC := range testCases {
-		testName := fmt.Sprintf("%s, error %s", tC.invoker, tC.wantErr)
+		testName := fmt.Sprint(tC.invoker, ", error ", tC.wantErr)
 		t.Run(testName, func(t *testing.T) {
 			// initialize fake commander
-			cmder := newFakeCommander([][]byte{
+			cmder := fakeCommander([][]byte{
 				strToBytes(PREFIX_ACK),
 				mockResponse(fakeResponse(testVin, tC.invoker)),
 			})

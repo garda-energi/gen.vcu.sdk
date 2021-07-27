@@ -61,7 +61,7 @@ func (r *ReportPacket) String() string {
 		rvField := rv.Field(i)
 		if !rvField.IsNil() {
 			rvElem := rvField.Elem()
-			out += fmt.Sprintf("%s => %+v\n", rvElem.Type().Name(), rvElem)
+			out += fmt.Sprintln(rvElem.Type().Name(), " => ", rvElem)
 		}
 	}
 	return out
@@ -76,15 +76,11 @@ type Vcu struct {
 	Uptime      float32   `type:"uint32" unit:"hour" factor:"0.000277"`
 }
 
-type VcuEvent uint8
-
-type VcuEvents []VcuEvent
-
 // String converts VcuEvents type to string.
 func (ve VcuEvents) String() string {
 	strEvents := make([]string, 0)
 	for _, v := range ve {
-		strEvents = append(strEvents, vcuStringEvents[v])
+		strEvents = append(strEvents, v.String())
 	}
 	return "[" + strings.Join(strEvents, ", ") + "]"
 }
@@ -94,7 +90,7 @@ func (v *Vcu) GetEvents() VcuEvents {
 	r := make(VcuEvents, 0, VCU_EVENTS_MAX)
 
 	tmpEvents := v.Events
-	for i := 0; i < VCU_EVENTS_MAX; i++ {
+	for i := 0; i < int(VCU_EVENTS_MAX); i++ {
 		// check if first bit is 1
 		if tmpEvents&1 == 1 {
 			r = append(r, VcuEvent(i))
@@ -103,7 +99,6 @@ func (v *Vcu) GetEvents() VcuEvents {
 		// shift bit to right (1 bit)
 		tmpEvents /= 2
 	}
-
 	return r
 }
 
@@ -265,15 +260,11 @@ type Bms struct {
 	}
 }
 
-type BmsFault uint8
-
-type BmsFaults []BmsFault
-
 // String converts BmsFaults type to string.
 func (bf BmsFaults) String() string {
 	strBmsFaults := make([]string, 0)
 	for _, v := range bf {
-		strBmsFaults = append(strBmsFaults, bmsStringFaults[v])
+		strBmsFaults = append(strBmsFaults, v.String())
 	}
 	return "[" + strings.Join(strBmsFaults, ", ") + "]"
 }
@@ -283,7 +274,8 @@ func (b *Bms) GetFaults() BmsFaults {
 	r := make(BmsFaults, 0, BMS_FAULTS_MAX)
 
 	tmpFaults := b.Faults
-	for i := 0; i < BMS_FAULTS_MAX; i++ {
+	// see the pattern? it is redundant (with mcu.GetFaults)
+	for i := 0; i < int(BMS_FAULTS_MAX); i++ {
 		// check if first bit is 1
 		if tmpFaults&1 == 1 {
 			r = append(r, BmsFault(i))
@@ -344,50 +336,50 @@ type Mcu struct {
 	}
 }
 
-type McuFault uint8
-
-type McuFaults struct {
-	Post []McuFault
-	Run  []McuFault
-}
-
 // String converts McuFaults type to string.
 func (mf McuFaults) String() string {
+	// see the pattern? it is redundant
 	strMcuPostFaults := make([]string, 0)
-	strMcuRunFaults := make([]string, 0)
 	for _, v := range mf.Post {
-		strMcuPostFaults = append(strMcuPostFaults, mcuStringFaults[v])
+		strMcuPostFaults = append(strMcuPostFaults, v.String())
 	}
+	strPostFaults := "Post[" + strings.Join(strMcuPostFaults, ", ") + "]"
+
+	strMcuRunFaults := make([]string, 0)
 	for _, v := range mf.Run {
-		strMcuRunFaults = append(strMcuRunFaults, mcuStringFaults[v])
+		strMcuRunFaults = append(strMcuRunFaults, v.String())
 	}
-	return "Post[" + strings.Join(strMcuPostFaults, ", ") + "]\nRun[" + strings.Join(strMcuRunFaults, ", ") + "]"
+	strRunFaults := "Run[" + strings.Join(strMcuRunFaults, ", ") + "]"
+
+	return strPostFaults + "\n" + strRunFaults
 }
 
 // GetFaults parse mcu's fault field
 func (m *Mcu) GetFaults() McuFaults {
 	r := McuFaults{
-		Post: make([]McuFault, 0, MCU_POST_FAULTS_MAX),
-		Run:  make([]McuFault, 0, MCU_RUN_FAULTS_MAX),
+		Post: make([]McuFaultPost, 0, MCU_POST_FAULTS_MAX),
+		Run:  make([]McuFaultRun, 0, MCU_RUN_FAULTS_MAX),
 	}
 	var tmpFaults uint32
 
+	// see the pattern? it is redundant
 	tmpFaults = m.Faults.Post
-	for i := 0; i < MCU_POST_FAULTS_MAX; i++ {
+	for i := 0; i < int(MCU_POST_FAULTS_MAX); i++ {
 		// check if first bit is 1
 		if tmpFaults&1 == 1 {
-			r.Post = append(r.Post, McuFault(i))
+			r.Post = append(r.Post, McuFaultPost(i))
 		}
 
 		// shift bit to right (1 bit)
 		tmpFaults /= 2
 	}
 
+	// see the pattern? it is redundant
 	tmpFaults = m.Faults.Run
-	for i := MCU_POST_FAULTS_MAX; i < MCU_POST_FAULTS_MAX+MCU_RUN_FAULTS_MAX; i++ {
+	for i := 0; i < int(MCU_RUN_FAULTS_MAX); i++ {
 		// check if first bit is 1
 		if tmpFaults&1 == 1 {
-			r.Run = append(r.Run, McuFault(i))
+			r.Run = append(r.Run, McuFaultRun(i))
 		}
 
 		// shift bit to right (1 bit)
@@ -398,12 +390,9 @@ func (m *Mcu) GetFaults() McuFaults {
 }
 
 // IsFault check if mcu's fault is mf
-func (m *Mcu) IsFault(mf McuFault) bool {
-	if mf < MCU_POST_FAULTS_MAX {
-		return m.Faults.Post&(uint32(math.Pow(2, float64(mf)))) != 0
-	} else {
-		return m.Faults.Run&(uint32(math.Pow(2, float64(mf)))) != 0
-	}
+// usage m.IsFault(m.Faults.Post, McuFault(fault))
+func (m *Mcu) IsFault(faults uint32, mf McuFault) bool {
+	return (faults & (uint32(math.Pow(2, float64(mf))))) != 0
 }
 
 type Task struct {

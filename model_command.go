@@ -39,6 +39,7 @@ func (r *responsePacket) size() int {
 	if r.Header == nil {
 		return 0
 	}
+	// can it by dynamic according to field struct, not hardcoded?
 	return 4 + 7 + 1 + 1 + 1 + len(r.Message)
 }
 
@@ -50,8 +51,8 @@ func (r *responsePacket) validSize() bool {
 	return int(r.Header.Size) == r.size()
 }
 
-// matchWith check if r is response for cmd
-func (r *responsePacket) matchWith(cmd *command) bool {
+// belongsTo check if r is response for cmd
+func (r *responsePacket) belongsTo(cmd *command) bool {
 	if r.Header == nil || cmd == nil {
 		return false
 	}

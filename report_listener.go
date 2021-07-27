@@ -19,7 +19,7 @@ type Listener struct {
 // status is executed when received new packet on status topic.
 func (ls *Listener) status() mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
-		ls.logger.Println(debugPacket(msg))
+		ls.logger.Println(RPT, debugPacket(msg))
 		vin := getTopicVin(msg.Topic())
 		online := online(msg.Payload())
 
@@ -30,13 +30,13 @@ func (ls *Listener) status() mqtt.MessageHandler {
 // report is executed when received new packet on report topic.
 func (ls *Listener) report() mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
-		ls.logger.Println(debugPacket(msg))
+		ls.logger.Println(RPT, debugPacket(msg))
 
 		vin := getTopicVin(msg.Topic())
 
 		result, err := decodeReport(msg.Payload())
 		if err != nil {
-			log.Fatalf("cant decode, %v\n", err)
+			log.Fatal("cant decode, ", err)
 		}
 
 		ls.ReportFunc(vin, result)

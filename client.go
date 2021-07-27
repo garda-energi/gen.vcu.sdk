@@ -35,8 +35,7 @@ type client struct {
 }
 
 // newClient create instance of mqtt client.
-func newClient(config *ClientConfig, logging bool) Client {
-	logger := newLogger(logging, "CLIENT")
+func newClient(config *ClientConfig, logger *log.Logger) Client {
 	return &client{
 		Client: mqtt.NewClient(newClientOptions(config, logger)),
 		logger: logger,
@@ -48,7 +47,7 @@ func (c *client) pub(topic string, qos byte, retained bool, payload []byte) erro
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
-	c.logger.Printf("Published to: %s\n", topic)
+	c.logger.Println(CLI, "Published to: ", topic)
 	return nil
 }
 
@@ -57,7 +56,7 @@ func (c *client) sub(topic string, qos byte, handler mqtt.MessageHandler) error 
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
-	c.logger.Printf("Subscribed to: %s\n", topic)
+	c.logger.Println(CLI, "Subscribed to: ", topic)
 	return nil
 }
 
@@ -73,7 +72,7 @@ func (c *client) subMulti(topics []string, qos byte, handler mqtt.MessageHandler
 	}
 
 	for _, v := range topics {
-		c.logger.Printf("Subscribed to: %s\n", v)
+		c.logger.Println(CLI, "Subscribed to: ", v)
 	}
 	return nil
 }
@@ -85,7 +84,7 @@ func (c *client) unsub(topics []string) error {
 	}
 
 	for _, v := range topics {
-		c.logger.Printf("Un-subscribed from: %s\n", v)
+		c.logger.Println(CLI, "Un-subscribed from: ", v)
 	}
 	return nil
 }
@@ -99,13 +98,13 @@ func newClientOptions(c *ClientConfig, logger *log.Logger) *mqtt.ClientOptions {
 	opts.SetClientID("go_mqtt_client")
 
 	opts.DefaultPublishHandler = func(client mqtt.Client, msg mqtt.Message) {
-		logger.Println(debugPacket(msg))
+		logger.Println(CLI, debugPacket(msg))
 	}
 	opts.OnConnect = func(client mqtt.Client) {
-		logger.Println("Connected")
+		logger.Println(CLI, "Connected")
 	}
 	opts.OnConnectionLost = func(client mqtt.Client, err error) {
-		logger.Printf("Disconnected, %v\n", err)
+		logger.Println(CLI, "Disconnected, ", err)
 	}
 	return opts
 }

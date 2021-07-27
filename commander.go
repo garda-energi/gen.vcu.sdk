@@ -23,14 +23,14 @@ type commander struct {
 }
 
 // newCommander create new *commander instance and listen to command & response topic.
-func newCommander(vin int, client Client, sleeper Sleeper, logging bool) (*commander, error) {
+func newCommander(vin int, c Client, s Sleeper, l *log.Logger) (*commander, error) {
 	cmder := &commander{
 		vin:     vin,
-		logger:  newLogger(logging, "COMMAND"),
+		logger:  l,
 		mutex:   &sync.Mutex{},
 		resChan: make(chan []byte, 1),
-		client:  client,
-		sleeper: sleeper,
+		client:  c,
+		sleeper: s,
 	}
 
 	if err := cmder.listen(); err != nil {
@@ -296,10 +296,10 @@ func (c *commander) McuTemplates(ts []McuTemplate) error {
 	for i, t := range ts {
 		driveMode := ModeDrive(i)
 		if t.DisCur < MCU_DISCUR_MIN || t.DisCur > MCU_DISCUR_MAX {
-			return errInputOutOfRange(fmt.Sprintf("%s:dischare-current", driveMode))
+			return errInputOutOfRange(fmt.Sprint(driveMode, ":dischare-current"))
 		}
 		if t.Torque < MCU_TORQUE_MIN || t.Torque > MCU_TORQUE_MAX {
-			return errInputOutOfRange(fmt.Sprintf("%s:torque", driveMode))
+			return errInputOutOfRange(fmt.Sprint(driveMode, ":torque"))
 		}
 
 		binary.Write(&buf, binary.LittleEndian, t.DisCur)
