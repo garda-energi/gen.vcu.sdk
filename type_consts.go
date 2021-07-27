@@ -77,3 +77,14 @@ const (
 	GPS_LAT_MIN = -11.107187
 	GPS_LAT_MAX = 5.90713
 )
+
+const VCU_EVENTS_MAX = 7
+const (
+	VCU_NET_SOFT_RESET VcuEvent = 0
+	VCU_NET_HARD_RESET VcuEvent = 1
+	VCU_REMOTE_MISSING VcuEvent = 2
+	VCU_BIKE_FALLEN    VcuEvent = 3
+	VCU_BIKE_MOVED     VcuEvent = 4
+	VCU_BMS_ERROR      VcuEvent = 5
+	VCU_MCU_ERROR      VcuEvent = 6
+)

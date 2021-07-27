@@ -2,7 +2,9 @@ package sdk
 
 import (
 	"fmt"
+	"math"
 	"reflect"
+	"strings"
 	"time"
 )
 
@@ -101,10 +103,41 @@ type Vcu struct {
 	Uptime      float32   `type:"uint32" unit:"hour" factor:"0.000277"`
 }
 
-// Events parse v's events
-// func (v *Vcu) Events() VcuEvents {
-// 	TODO: implement me
-// }
+type VcuEvent uint8
+
+type VcuEvents []VcuEvent
+
+// String converts VcuEvents type to string.
+func (ve VcuEvents) String() string {
+	strEvents := make([]string, 0)
+	for _, v := range ve {
+		strEvents = append(strEvents, vcuStringEvents[v])
+	}
+	return "[" + strings.Join(strEvents, ", ") + "]"
+}
+
+// GetEvents parse v's events in an array
+func (v *Vcu) GetEvents() VcuEvents {
+	r := make(VcuEvents, 0, VCU_EVENTS_MAX)
+
+	tmpEvents := v.Events
+	for i := 0; i < VCU_EVENTS_MAX; i++ {
+		// check if first bit is 1
+		if tmpEvents&1 == 1 {
+			r = append(r, VcuEvent(i))
+		}
+
+		// shift bit to right (1 bit)
+		tmpEvents /= 2
+	}
+
+	return r
+}
+
+// IsEvent check if v's event is ev
+func (v *Vcu) IsEvent(ev VcuEvent) bool {
+	return v.Events&(uint16(math.Pow(2, float64(ev)))) != 0
+}
 
 // RealtimeData check if current report log is realtime
 func (v *Vcu) RealtimeData() bool {

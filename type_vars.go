@@ -53,3 +53,13 @@ func (*realSleeper) Sleep(d time.Duration) {
 func (*realSleeper) After(d time.Duration) <-chan time.Time {
 	return time.After(d)
 }
+
+var vcuStringEvents = []string{
+	"NET_SOFT_RESET",
+	"NET_HARD_RESET",
+	"REMOTE_MISSING",
+	"BIKE_FALLEN",
+	"BIKE_MOVED",
+	"BMS_ERROR",
+	"MCU_ERROR",
+}
