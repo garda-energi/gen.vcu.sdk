@@ -42,6 +42,10 @@ func newClient(config *ClientConfig, logger *log.Logger) Client {
 	}
 }
 
+// func (c *client) IsConnected() bool {
+// 	return c.Client.IsConnected()
+// }
+
 func (c *client) pub(topic string, qos byte, retained bool, payload []byte) error {
 	token := c.Publish(topic, qos, retained, payload)
 	if token.Wait() && token.Error() != nil {

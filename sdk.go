@@ -61,6 +61,7 @@ func (s *Sdk) AddListener(ls Listener, vins ...int) error {
 		return errClientDisconnected
 	}
 
+	ls.logger = s.logger
 	if ls.StatusFunc != nil {
 		topics := setTopicToVins(TOPIC_STATUS, vins)
 		if err := s.client.subMulti(topics, QOS_SUB_STATUS, ls.status()); err != nil {

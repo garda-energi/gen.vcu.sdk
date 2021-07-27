@@ -61,7 +61,7 @@ func (r *ReportPacket) String() string {
 		rvField := rv.Field(i)
 		if !rvField.IsNil() {
 			rvElem := rvField.Elem()
-			out += fmt.Sprintln(rvElem.Type().Name(), " => ", rvElem)
+			out += fmt.Sprintf("%s => %+v\n", rvElem.Type().Name(), rvElem)
 		}
 	}
 	return out

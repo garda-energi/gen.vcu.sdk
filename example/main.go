@@ -33,7 +33,7 @@ func main() {
 			fmt.Println(vin, " => ", status)
 		},
 		ReportFunc: func(vin int, report *sdk.ReportPacket) {
-			// fmt.Println(report)
+			fmt.Println(report)
 
 			// show-off all *ReportPacket methods available
 			// if report.Vcu.RealtimeData() {
