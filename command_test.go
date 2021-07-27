@@ -1,12 +1,126 @@
 package sdk
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 	"time"
 )
 
 const testVin = 354313
+
+func TestResponsePacket(t *testing.T) {
+	testCases := []struct {
+		desc      string
+		wantErr   error
+		responses [][]byte
+	}{
+		{
+			desc:      "no packet",
+			wantErr:   errPacketTimeout("ack"),
+			responses: nil,
+		},
+		{
+			desc:      "invalid ack packet",
+			wantErr:   errPacketAckCorrupt,
+			responses: [][]byte{strToBytes(PREFIX_REPORT)},
+		},
+		{
+			desc:      "only valid ack packet",
+			wantErr:   errPacketTimeout("response"),
+			responses: [][]byte{strToBytes(PREFIX_ACK)},
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			cmder := newFakeCommander(tC.responses)
+			defer cmder.Destroy()
+
+			_, err := cmder.GenInfo()
+
+			if err != tC.wantErr {
+				t.Fatalf("want %s, got %s", tC.wantErr, err)
+			}
+		})
+	}
+}
+
+func TestResponseError(t *testing.T) {
+	testCases := []struct {
+		desc      string
+		wantErr   error
+		formatter func(r *responsePacket)
+	}{
+		{
+			desc:    "invalid prefix",
+			wantErr: errInvalidPrefix,
+			formatter: func(r *responsePacket) {
+				r.Header.Prefix = PREFIX_REPORT
+			},
+		},
+		{
+			desc:    "invalid size",
+			wantErr: errInvalidSize,
+			formatter: func(r *responsePacket) {
+				r.Header.Size = 55
+			},
+		},
+		{
+			desc:    "invalid VIN",
+			wantErr: errInvalidVin,
+			formatter: func(r *responsePacket) {
+				r.Header.Vin = 12345
+			},
+		},
+		{
+			desc:    "invalid cmd code",
+			wantErr: errInvalidCmdCode,
+			formatter: func(r *responsePacket) {
+				r.Header.Code = 9
+				r.Header.SubCode = 5
+			},
+		},
+		{
+			desc:    "invalid resCode",
+			wantErr: errInvalidResCode,
+			formatter: func(r *responsePacket) {
+				r.Header.ResCode = 99
+			},
+		},
+		{
+			desc:    "message overflowed",
+			wantErr: errInvalidSize,
+			formatter: func(r *responsePacket) {
+				r.Message = message("'Google Go' redirects here. For the Android search app by Google, 'Google Go', for low-end Lollipop+ devices, see Android Go. For the computer program by Google to play the board game Go, see AlphaGo. For the 2003 agent-based programming language, see Go! (programming language).")
+				r.Header.Size = uint8(len(r.Message))
+			},
+		},
+		{
+			desc:    "simulate code error",
+			wantErr: errors.New(resCodeError.String()),
+			formatter: func(r *responsePacket) {
+				r.Header.ResCode = resCodeError
+			},
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			res := newFakeResponse(testVin, "GEN_INFO")
+			tC.formatter(res)
+
+			cmder := newFakeCommander([][]byte{
+				strToBytes(PREFIX_ACK),
+				mockResponse(res),
+			})
+			defer cmder.Destroy()
+
+			_, err := cmder.GenInfo()
+			if err.Error() != tC.wantErr.Error() {
+				t.Fatalf("want %s, got %s", tC.wantErr, err)
+			}
+		})
+	}
+}
 
 func TestCommands(t *testing.T) {
 	testCases := []struct {
@@ -167,15 +281,14 @@ func TestCommands(t *testing.T) {
 			}
 			outs := meth.Call(args)
 
-			outError := outs[len(outs)-1]
-
 			// check output error
+			outError := outs[len(outs)-1]
 			if !outError.IsNil() {
 				t.Fatalf("want no error, got %s\n", outError)
 			}
 
 			// check output response
-			if len(outs) == 1 {
+			if len(outs) < 2 {
 				return
 			}
 

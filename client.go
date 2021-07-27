@@ -7,7 +7,7 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-// Client is building block for client client (with extra things).
+// Client is building block for mqtt client (with extra methods).
 type Client interface {
 	mqtt.Client
 	// pub publish to mqtt topic.
@@ -20,19 +20,21 @@ type Client interface {
 	unsub(topics []string) error
 }
 
-// ClientConfig store connection string for client client
+// ClientConfig store connection string for mqtt client
 type ClientConfig struct {
 	Host string
 	Port int
 	User string
 	Pass string
 }
+
+// client implements mqtt client
 type client struct {
 	mqtt.Client
 	logger *log.Logger
 }
 
-// newClient create instance of Client client.
+// newClient create instance of mqtt client.
 func newClient(config *ClientConfig, logging bool) Client {
 	logger := newLogger(logging, "CLIENT")
 	return &client{
@@ -41,49 +43,49 @@ func newClient(config *ClientConfig, logging bool) Client {
 	}
 }
 
-func (b *client) pub(topic string, qos byte, retained bool, payload []byte) error {
-	token := b.Publish(topic, qos, retained, payload)
+func (c *client) pub(topic string, qos byte, retained bool, payload []byte) error {
+	token := c.Publish(topic, qos, retained, payload)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
-	b.logger.Printf("Published to: %s\n", topic)
+	c.logger.Printf("Published to: %s\n", topic)
 	return nil
 }
 
-func (b *client) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
-	token := b.Subscribe(topic, qos, handler)
+func (c *client) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
+	token := c.Subscribe(topic, qos, handler)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
-	b.logger.Printf("Subscribed to: %s\n", topic)
+	c.logger.Printf("Subscribed to: %s\n", topic)
 	return nil
 }
 
-func (b *client) subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
-	topicFilters := map[string]byte{}
+func (c *client) subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
+	topicFilters := make(map[string]byte, len(topics))
 	for _, v := range topics {
 		topicFilters[v] = qos
 	}
 
-	token := b.SubscribeMultiple(topicFilters, handler)
+	token := c.SubscribeMultiple(topicFilters, handler)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 
 	for _, v := range topics {
-		b.logger.Printf("Subscribed to: %s\n", v)
+		c.logger.Printf("Subscribed to: %s\n", v)
 	}
 	return nil
 }
 
-func (b *client) unsub(topics []string) error {
-	token := b.Unsubscribe(topics...)
+func (c *client) unsub(topics []string) error {
+	token := c.Unsubscribe(topics...)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 
 	for _, v := range topics {
-		b.logger.Printf("Un-subscribed from: %s\n", v)
+		c.logger.Printf("Un-subscribed from: %s\n", v)
 	}
 	return nil
 }
