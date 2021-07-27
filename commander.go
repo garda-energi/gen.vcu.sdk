@@ -18,12 +18,12 @@ type commander struct {
 	logger  *log.Logger
 	mutex   *sync.Mutex
 	resChan chan []byte
-	client  Client
+	client  *client
 	sleeper Sleeper
 }
 
 // newCommander create new *commander instance and listen to command & response topic.
-func newCommander(vin int, c Client, s Sleeper, l *log.Logger) (*commander, error) {
+func newCommander(vin int, c *client, s Sleeper, l *log.Logger) (*commander, error) {
 	cmder := &commander{
 		vin:     vin,
 		logger:  l,

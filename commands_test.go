@@ -8,7 +8,7 @@ func TestCommandsHelper(t *testing.T) {
 
 		wantErr := errCmdNotFound
 		if err != wantErr {
-			t.Fatalf("want %s, got %s", wantErr, err)
+			t.Errorf("want %s, got %s", wantErr, err)
 		}
 	})
 }

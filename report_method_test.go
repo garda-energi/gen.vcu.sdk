@@ -55,24 +55,20 @@ func TestReportMethods(t *testing.T) {
 		// 1
 		report, err := decodeReport(hexToByte(testDataNormal[3]))
 		if err != nil {
-			t.Errorf("Create Dataset error: %s", err)
+			t.Error("Create Dataset error: ", err)
 		}
 
 		// 2
-		vcuEvents, isFound := resetDataTo[i].dataChanger["vcuEvents"]
-		if isFound {
+		if vcuEvents, ok := resetDataTo[i].dataChanger["vcuEvents"]; ok {
 			report.Vcu.Events = uint16(vcuEvents.(int))
 		}
-		bmsFaults, isFound := resetDataTo[i].dataChanger["bmsFaults"]
-		if isFound {
+		if bmsFaults, ok := resetDataTo[i].dataChanger["bmsFaults"]; ok {
 			report.Bms.Faults = uint16(bmsFaults.(int))
 		}
-		mcuFaultsPost, isFound := resetDataTo[i].dataChanger["mcuFaultsPost"]
-		if isFound {
+		if mcuFaultsPost, ok := resetDataTo[i].dataChanger["mcuFaultsPost"]; ok {
 			report.Mcu.Faults.Post = uint32(mcuFaultsPost.(int))
 		}
-		mcuFaultsRun, isFound := resetDataTo[i].dataChanger["mcuFaultsRun"]
-		if isFound {
+		if mcuFaultsRun, ok := resetDataTo[i].dataChanger["mcuFaultsRun"]; ok {
 			report.Mcu.Faults.Run = uint32(mcuFaultsRun.(int))
 		}
 
@@ -88,13 +84,10 @@ func TestReportMethods(t *testing.T) {
 	}
 
 	for _, tt := range testdata {
-		if tt.name == "" {
-			continue
-		}
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := decodeReport(tt.args.b)
 			if err != nil {
-				t.Errorf("Error Decode: %s", err)
+				t.Error("Error Decode: ", err)
 			} else {
 				gotVcuEvent := got.Vcu.GetEvents()
 				gotBmsFault := got.Bms.GetFaults()
