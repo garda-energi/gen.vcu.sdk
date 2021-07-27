@@ -10,12 +10,7 @@ import (
 const testVin = 354313
 
 func fakeCommander(responses [][]byte) *commander {
-	client := &fakeClient{
-		connected: true,
-		responses: responses,
-		cmdChan:   make(chan []byte),
-		resChan:   make(chan struct{}),
-	}
+	client := newFakeClient(true, responses)
 
 	sleeper := &fakeSleeper{
 		sleep: time.Millisecond,

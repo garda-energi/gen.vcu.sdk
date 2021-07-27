@@ -1,7 +1,7 @@
 package sdk
 
 import (
-	"log"
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -9,59 +9,60 @@ import (
 func TestSdk(t *testing.T) {
 	api := Sdk{
 		logger: newLogger(false, "TEST"),
-		client: &fakeClient{
-			// responses: responses,
-			// cmdChan:   make(chan []byte),
-			// resChan:   make(chan struct{}),
+		client: newFakeClient(false, nil),
+	}
+
+	// prepare the status & report listener
+	listener := Listener{
+		StatusFunc: func(vin int, online bool) {
+			fmt.Println(vin, " => ", online)
+		},
+		ReportFunc: func(vin int, report *ReportPacket) {
+			fmt.Println(report)
 		},
 	}
 
+	t.Run("with disconnected client", func(t *testing.T) {
+		want := errClientDisconnected
+		got := api.AddListener(listener, 100)
+		if want != got {
+			t.Fatalf("want %s, got %s", want, got)
+		}
+	})
+
 	// connect to client
-	if err := api.Connect(); err != nil {
-		log.Fatal(err)
-	}
+	api.Connect()
 	defer api.Disconnect()
 
-	// // prepare the status & report listener
-	// listener := Listener{
-	// 	StatusFunc: func(vin int, online bool) {
-	// 		status := map[bool]string{
-	// 			false: "OFFLINE",
-	// 			true:  "ONLINE",
-	// 		}[online]
-	// 		fmt.Printf("%d => %s\n", vin, status)
-	// 	},
-	// 	ReportFunc: func(vin int, report *ReportPacket) {
-	// 		// fmt.Println(report)
+	t.Run("with connected client, check the subscribed & unsubscribed vins", func(t *testing.T) {
+		vins := VinRange(5, 10)
+		got := api.AddListener(listener, vins...)
 
-	// 		// show-off all *ReportPacket methods available
-	// 		// if report.Vcu.RealtimeData() {
-	// 		// 	fmt.Println("Current report is realtime")
-	// 		// }
-	// 		// if report.Gps.ValidHorizontal() {
-	// 		// 	fmt.Println("GPS longitude, latitude & heading is valid")
-	// 		// }
-	// 		// if report.Bms.LowCapacity() {
-	// 		// 	fmt.Println("BMS need to be charged on Charging Station")
-	// 		// }
-	// 	},
-	// }
+		if got != nil {
+			t.Fatal("want no error, got ", got)
+		}
 
-	// // listen to report
-	// // see api.Addlistener doc for usage
-	// vins := VinRange(354309, 354323)
-	// if err := api.AddListener(listener, vins...); err != nil {
-	// 	fmt.Println(err)
-	// } else {
-	// 	defer api.RemoveListener(vins...)
-	// }
+		subscribed := api.client.(*fakeClient).subscribed
+		for _, topic := range []string{TOPIC_STATUS, TOPIC_REPORT} {
+			gotVins := subscribed[topic]
+			if !reflect.DeepEqual(vins, gotVins) {
+				t.Fatalf("%s want %v, got %v", topic, vins, gotVins)
+			}
+		}
+
+		api.RemoveListener(vins...)
+		for _, topic := range []string{TOPIC_STATUS, TOPIC_REPORT} {
+			gotLen := len(subscribed[topic])
+			if gotLen > 0 {
+				t.Fatalf("want 0 vins, got %d", gotLen)
+			}
+		}
+	})
 }
 
 func TestSdkAddListener(t *testing.T) {
 	api := Sdk{
-		client: &fakeClient{
-			connected: true,
-		},
+		client: newFakeClient(true, nil),
 	}
 
 	t.Run("without listener", func(t *testing.T) {
@@ -91,7 +92,17 @@ func TestSdkAddListener(t *testing.T) {
 		}
 	})
 
-	t.Run("use VinRange()", func(t *testing.T) {
+	t.Run("with only 2 listener", func(t *testing.T) {
+		got := api.AddListener(Listener{
+			StatusFunc: func(vin int, online bool) {},
+			ReportFunc: func(vin int, report *ReportPacket) {},
+		}, 123)
+		if got != nil {
+			t.Fatal("want no error, got ", got)
+		}
+	})
+
+	t.Run("use VinRange() as input", func(t *testing.T) {
 		got := api.AddListener(Listener{
 			StatusFunc: func(vin int, online bool) {},
 		}, VinRange(1, 20)...)
@@ -100,7 +111,7 @@ func TestSdkAddListener(t *testing.T) {
 		}
 	})
 
-	t.Run("VinRange() output", func(t *testing.T) {
+	t.Run("check VinRange() output", func(t *testing.T) {
 		want := []int{1, 2, 3, 4}
 		got := VinRange(4, 1)
 		if !reflect.DeepEqual(want, got) {
