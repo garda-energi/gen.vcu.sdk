@@ -6,16 +6,18 @@ import (
 )
 
 type Sdk struct {
-	logger *log.Logger
-	client Client
+	logger  *log.Logger
+	sleeper Sleeper
+	client  *client
 }
 
 // New create new instance of Sdk for VCU (Vehicle Control Unit).
 func New(clientConfig ClientConfig, logging bool) Sdk {
 	logger := newLogger(logging, "SDK")
 	return Sdk{
-		logger: logger,
-		client: newClient(&clientConfig, logger),
+		logger:  logger,
+		sleeper: &realSleeper{},
+		client:  newClient(&clientConfig, logger),
 	}
 }
 
@@ -35,7 +37,7 @@ func (s *Sdk) Disconnect() {
 
 // NewCommander create new instance of commander for specific VIN.
 func (s *Sdk) NewCommander(vin int) (*commander, error) {
-	return newCommander(vin, s.client, &realSleeper{}, s.logger)
+	return newCommander(vin, s.client, s.sleeper, s.logger)
 }
 
 // AddListener subscribe to Status & Report topic (if callback is specified) for spesific vin in range.

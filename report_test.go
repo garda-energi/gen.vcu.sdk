@@ -76,22 +76,15 @@ func TestReport(t *testing.T) {
 		want string
 	}
 
-	tests := make([]tester, len(testDataNormal))
-	for i, d := range testDataNormal {
+	tests := make([]tester, testReportLimit)
+	for i := range tests {
+		d := testDataNormal[i]
 		tests[i].name = "data #" + strconv.Itoa(i)
 		tests[i].args.b = hexToByte(d)
 		tests[i].want = d
 	}
 
-	for i, tt := range tests {
-		if tt.name == "" {
-			continue
-		}
-
-		if i > testReportLimit {
-			break
-		}
-
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got, err := decodeReport(tt.args.b); err != nil {
 				t.Error("error : ", err)
@@ -142,9 +135,6 @@ func TestReportErrorHandler(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if tt.name == "" {
-			continue
-		}
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := decodeReport(tt.args.b)
 			if err == nil {

@@ -51,7 +51,7 @@ func hexToByte(s string) []byte {
 
 // debugPacket format received mqtt message
 func debugPacket(msg mqtt.Message) string {
-	return fmt.Sprintln(msg.Topic(), " => ", byteToHex(msg.Payload()))
+	return fmt.Sprintln(msg.Topic(), "=>", byteToHex(msg.Payload()))
 }
 
 // reverseBytes swap bytes position
