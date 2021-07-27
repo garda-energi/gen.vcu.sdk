@@ -14,6 +14,7 @@ var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 var typeOfMessage reflect.Type = reflect.ValueOf(message{}).Type()
 
 var (
+	errCmdNotFound      = errors.New("command not found")
 	errPacketAckCorrupt = errors.New("packet ack corrupt")
 	errInvalidPrefix    = errors.New("prefix invalid")
 	errInvalidSize      = errors.New("size invalid")

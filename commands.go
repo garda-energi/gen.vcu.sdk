@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"errors"
 	"time"
 )
 
@@ -17,12 +16,12 @@ type command struct {
 // cmdEvaluator is boolean evaluator for findCmd().
 type cmdEvaluator func(code, subCode int, cmd *command) bool
 
-// getCmdByName get related command by name
-func getCmdByName(name string) (*command, error) {
-	return findCmd(func(code, subCode int, cmd *command) bool {
-		return cmd.name == name
-	})
-}
+// // getCmdByName get related command by name
+// func getCmdByName(name string) (*command, error) {
+// 	return findCmd(func(code, subCode int, cmd *command) bool {
+// 		return cmd.name == name
+// 	})
+// }
 
 // getCmdByInvoker get related command by invoker
 func getCmdByInvoker(invoker string) (*command, error) {
@@ -52,7 +51,7 @@ func findCmd(checker cmdEvaluator) (*command, error) {
 			}
 		}
 	}
-	return nil, errors.New("no command found")
+	return nil, errCmdNotFound
 }
 
 // commands store command name by its code & subCode as index
