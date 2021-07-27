@@ -413,15 +413,9 @@ func (m *Mcu) GetFaults() McuFaults {
 }
 
 // IsFault check if mcu's fault is mf
-func (m *Mcu) IsFault(t McuFaultType, mf McuFault) bool {
-	var faults *uint32
-	switch t {
-	case MCU_FAULT_POST:
-		faults = &m.Faults.Post
-	case MCU_FAULT_RUN:
-		faults = &m.Faults.Run
-	}
-	return ((*faults) & (uint32(math.Pow(2, float64(mf))))) != 0
+// usage m.IsFault(m.Faults.Post, McuFault(fault))
+func (m *Mcu) IsFault(faults uint32, mf McuFault) bool {
+	return (faults & (uint32(math.Pow(2, float64(mf))))) != 0
 }
 
 type Task struct {

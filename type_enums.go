@@ -282,13 +282,6 @@ func (m BmsFault) String() string {
 	}[m]
 }
 
-type McuFaultType uint8
-
-const (
-	MCU_FAULT_POST McuFaultType = iota
-	MCU_FAULT_RUN
-)
-
 type McuFault uint8
 type McuFaultPost McuFault
 type McuFaultRun McuFault
