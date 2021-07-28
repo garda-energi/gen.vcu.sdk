@@ -94,16 +94,9 @@ func (c *fakeMqttClient) Unsubscribe(topics ...string) mqtt.Token {
 		gTopic := toGlobalTopic(topic)
 		vin := getTopicVin(topic)
 
-		// find the idx inside dictionary
-		var idx int
-		for i, v := range c.subscribed[gTopic] {
-			if v == vin {
-				idx = i
-				break
-			}
+		if idx := findVinIn(c.subscribed[gTopic], vin); idx != -1 {
+			c.subscribed[gTopic] = append(c.subscribed[gTopic][:idx], c.subscribed[gTopic][idx+1:]...)
 		}
-		// remove that from dictionary
-		c.subscribed[gTopic] = append(c.subscribed[gTopic][:idx], c.subscribed[gTopic][idx+1:]...)
 	}
 
 	return &mqtt.DummyToken{}
@@ -113,7 +106,10 @@ func (c *fakeMqttClient) mockSub(filters map[string]byte) {
 	for topic := range filters {
 		gTopic := toGlobalTopic(topic)
 		vin := getTopicVin(topic)
-		c.subscribed[gTopic] = append(c.subscribed[gTopic], vin)
+
+		if idx := findVinIn(c.subscribed[gTopic], vin); idx == -1 {
+			c.subscribed[gTopic] = append(c.subscribed[gTopic], vin)
+		}
 	}
 }
 
@@ -170,18 +166,4 @@ func newFakeResponse(vin int, invoker string, modifier func(*responsePacket)) []
 		strToBytes(PREFIX_ACK),
 		resBytes,
 	}
-}
-
-// mockResponse combine response and message to bytes packet.
-func mockResponse(r *responsePacket) []byte {
-	resBytes, err := encode(&r)
-	if err != nil {
-		return nil
-	}
-
-	// change Header.Size
-	if r.Header.Size == 0 {
-		resBytes[2] = uint8(len(resBytes) - 3)
-	}
-	return resBytes
 }

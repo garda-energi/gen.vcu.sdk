@@ -6,13 +6,13 @@ import (
 	"time"
 )
 
-func hasVin(vins []int, vin int) bool {
-	for _, v := range vins {
+func findVinIn(vins []int, vin int) int {
+	for i, v := range vins {
 		if v == vin {
-			return true
+			return i
 		}
 	}
-	return false
+	return -1
 }
 
 func newFakeCommander(vin int, responses [][]byte) *commander {
