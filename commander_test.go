@@ -167,14 +167,14 @@ func TestCommander(t *testing.T) {
 			// check output error
 			if errOut != nil {
 				if err := errOut.(error); err != nil {
-					t.Fatal("want no error, got", err)
+					t.Error("want no error, got ", err)
 				}
 			}
 
 			// check output response
 			if resOut != nil {
 				if !reflect.DeepEqual(resOut, tC.wantOut) {
-					t.Fatalf("want %s, got %s", tC.wantOut, resOut)
+					t.Errorf("want %s, got %s", tC.wantOut, resOut)
 				}
 			}
 		})
@@ -270,7 +270,7 @@ func TestCommanderInvalidInput(t *testing.T) {
 	}
 
 	for _, tC := range testCases {
-		testName := fmt.Sprint(tC.invoker, ", error ", tC.wantErr)
+		testName := fmt.Sprint(tC.invoker, " for ", tC.wantErr)
 		t.Run(testName, func(t *testing.T) {
 			// initialize fake commander
 			cmder := fakeCommander([][]byte{
@@ -284,7 +284,7 @@ func TestCommanderInvalidInput(t *testing.T) {
 
 			// check output error
 			if err := errOut.(error).Error(); err != tC.wantErr {
-				t.Fatalf("want %s, got %s", tC.wantErr, err)
+				t.Errorf("want %s, got %s", tC.wantErr, err)
 			}
 		})
 	}

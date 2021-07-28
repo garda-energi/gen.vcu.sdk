@@ -10,6 +10,7 @@ Notes:
   ☐ watch-out from goroutine:
     ☐ leakage
     ☐ race-condition 
+  ☐ t.Run() is parallel, watch out for race-condition
   
 Todo Package:
   ✔ remove main.go, change as a package @done(21-07-14 12:32)

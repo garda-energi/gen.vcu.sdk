@@ -3,19 +3,22 @@ package sdk
 import (
 	"fmt"
 	"reflect"
+	"sort"
 	"testing"
 )
 
+var logger = newLogger(false, "TEST")
+
 func TestSdk(t *testing.T) {
 	api := Sdk{
-		logger: newLogger(false, "TEST"),
-		client: newFakeClient(false, nil),
+		logger: logger,
+		client: newFakeClient(logger, false, nil),
 	}
 
 	// prepare the status & report listener
 	listener := Listener{
 		StatusFunc: func(vin int, online bool) {
-			fmt.Println(vin, " => ", online)
+			fmt.Println(vin, "=>", online)
 		},
 		ReportFunc: func(vin int, report *ReportPacket) {
 			fmt.Println(report)
@@ -23,38 +26,38 @@ func TestSdk(t *testing.T) {
 	}
 
 	t.Run("with disconnected client", func(t *testing.T) {
+		api.Disconnect()
 		want := errClientDisconnected
 		got := api.AddListener(listener, 100)
 		if want != got {
-			t.Fatalf("want %s, got %s", want, got)
+			t.Errorf("want %s, got %s", want, got)
 		}
 	})
 
-	// connect to client
-	api.Connect()
-	defer api.Disconnect()
-
 	t.Run("with connected client, check the subscribed & unsubscribed vins", func(t *testing.T) {
+		api.Connect()
 		vins := VinRange(5, 10)
 		got := api.AddListener(listener, vins...)
 
 		if got != nil {
-			t.Fatal("want no error, got ", got)
+			t.Error("want no error, got ", got)
 		}
 
-		subscribed := api.client.(*fakeClient).subscribed
+		subscribed := api.client.Client.(*fakeMqttClient).subscribed
 		for _, topic := range []string{TOPIC_STATUS, TOPIC_REPORT} {
 			gotVins := subscribed[topic]
+			sort.Ints(gotVins)
 			if !reflect.DeepEqual(vins, gotVins) {
-				t.Fatalf("%s want %v, got %v", topic, vins, gotVins)
+				t.Errorf("%s want %v, got %v", topic, vins, gotVins)
 			}
 		}
 
 		api.RemoveListener(vins...)
 		for _, topic := range []string{TOPIC_STATUS, TOPIC_REPORT} {
-			gotLen := len(subscribed[topic])
-			if gotLen > 0 {
-				t.Fatalf("want 0 vins, got %d", gotLen)
+			want := 0
+			got := len(subscribed[topic])
+			if want != got {
+				t.Errorf("want %d vins, got %d", want, got)
 			}
 		}
 	})
@@ -62,14 +65,14 @@ func TestSdk(t *testing.T) {
 
 func TestSdkAddListener(t *testing.T) {
 	api := Sdk{
-		client: newFakeClient(true, nil),
+		client: newFakeClient(logger, true, nil),
 	}
 
 	t.Run("without listener", func(t *testing.T) {
 		want := "at least 1 listener supplied"
 		got := api.AddListener(Listener{}, 123)
 		if want != got.Error() {
-			t.Fatalf("want %s, got %s", want, got)
+			t.Errorf("want %s, got %s", want, got)
 		}
 	})
 
@@ -79,7 +82,7 @@ func TestSdkAddListener(t *testing.T) {
 			StatusFunc: func(vin int, online bool) {},
 		})
 		if want != got.Error() {
-			t.Fatalf("want %s, got %s", want, got)
+			t.Errorf("want %s, got %s", want, got)
 		}
 	})
 
@@ -88,7 +91,7 @@ func TestSdkAddListener(t *testing.T) {
 			StatusFunc: func(vin int, online bool) {},
 		}, 123)
 		if got != nil {
-			t.Fatal("want no error, got ", got)
+			t.Error("want no error, got ", got)
 		}
 	})
 
@@ -98,7 +101,7 @@ func TestSdkAddListener(t *testing.T) {
 			ReportFunc: func(vin int, report *ReportPacket) {},
 		}, 123)
 		if got != nil {
-			t.Fatal("want no error, got ", got)
+			t.Error("want no error, got ", got)
 		}
 	})
 
@@ -107,7 +110,7 @@ func TestSdkAddListener(t *testing.T) {
 			StatusFunc: func(vin int, online bool) {},
 		}, VinRange(1, 20)...)
 		if got != nil {
-			t.Fatal("want no error, got ", got)
+			t.Error("want no error, got ", got)
 		}
 	})
 
@@ -115,7 +118,7 @@ func TestSdkAddListener(t *testing.T) {
 		want := []int{1, 2, 3, 4}
 		got := VinRange(4, 1)
 		if !reflect.DeepEqual(want, got) {
-			t.Fatalf("want %v, got %v", want, got)
+			t.Errorf("want %v, got %v", want, got)
 		}
 	})
 }

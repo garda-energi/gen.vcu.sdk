@@ -7,9 +7,23 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-// fakeClient implements fake client stub
-type fakeClient struct {
-	Client
+func newFakeClient(l *log.Logger, connected bool, responses [][]byte) *client {
+	_ = newClientOptions(&ClientConfig{}, l)
+	return &client{
+		Client: &fakeMqttClient{
+			connected:  connected,
+			responses:  responses,
+			cmdChan:    make(chan []byte),
+			resChan:    make(chan struct{}),
+			subscribed: make(map[string][]int),
+		},
+		logger: l,
+	}
+}
+
+// fakeMqttClient implements fake mqtt client stub
+type fakeMqttClient struct {
+	mqtt.Client
 	connected bool
 	responses [][]byte
 	cmdChan   chan []byte
@@ -18,48 +32,39 @@ type fakeClient struct {
 	subscribed map[string][]int
 }
 
-func newFakeClient(connected bool, responses [][]byte) *fakeClient {
-	return &fakeClient{
-		connected:  connected,
-		responses:  responses,
-		cmdChan:    make(chan []byte),
-		resChan:    make(chan struct{}),
-		subscribed: make(map[string][]int),
-	}
-}
-
-func (c *fakeClient) Connect() mqtt.Token {
+func (c *fakeMqttClient) Connect() mqtt.Token {
 	c.connected = true
 	return &mqtt.DummyToken{}
 }
 
-func (c *fakeClient) Disconnect(quiesce uint) {
+func (c *fakeMqttClient) Disconnect(quiesce uint) {
 	c.connected = false
 }
 
-func (c *fakeClient) IsConnected() bool {
+func (c *fakeMqttClient) IsConnected() bool {
 	return c.connected
 }
 
-func (c *fakeClient) pub(topic string, qos byte, retained bool, payload []byte) error {
-	if flush := payload == nil; !flush {
-		c.cmdChan <- payload
+func (c *fakeMqttClient) Publish(topic string, qos byte, retained bool, payload interface{}) mqtt.Token {
+	bytes := payload.([]byte)
+	if flush := bytes == nil; !flush {
+		c.cmdChan <- bytes
 	}
-	return nil
+	return &mqtt.DummyToken{}
 }
 
-func (c *fakeClient) sub(topic string, qos byte, handler mqtt.MessageHandler) error {
+func (c *fakeMqttClient) Subscribe(topic string, qos byte, callback mqtt.MessageHandler) mqtt.Token {
 	var client mqtt.Client
 	msg := &fakeMessage{topic: topic}
 
-	c.mockSub(topic)
+	c.mockSub(map[string]byte{topic: qos})
 
 	switch toGlobalTopic(topic) {
 	case TOPIC_COMMAND:
 		go func() {
 			select {
 			case msg.payload = <-c.cmdChan:
-				handler(client, msg)
+				callback(client, msg)
 				c.resChan <- struct{}{}
 			case <-time.After(time.Second):
 			}
@@ -70,34 +75,21 @@ func (c *fakeClient) sub(topic string, qos byte, handler mqtt.MessageHandler) er
 			case <-c.resChan:
 				for _, msg.payload = range c.responses {
 					time.Sleep(5 * time.Millisecond)
-					handler(client, msg)
+					callback(client, msg)
 				}
 			case <-time.After(time.Second):
 			}
 		}()
 	}
-	return nil
+	return &mqtt.DummyToken{}
 }
 
-func (c *fakeClient) subMulti(topics []string, qos byte, handler mqtt.MessageHandler) error {
-	c.mockSub(topics...)
-	return nil
+func (c *fakeMqttClient) SubscribeMultiple(filters map[string]byte, callback mqtt.MessageHandler) mqtt.Token {
+	c.mockSub(filters)
+	return &mqtt.DummyToken{}
 }
 
-func (c *fakeClient) unsub(topics []string) error {
-	c.mockUnsub(topics...)
-	return nil
-}
-
-func (c *fakeClient) mockSub(topics ...string) {
-	for _, topic := range topics {
-		gTopic := toGlobalTopic(topic)
-		vin := getTopicVin(topic)
-		c.subscribed[gTopic] = append(c.subscribed[gTopic], vin)
-	}
-}
-
-func (c *fakeClient) mockUnsub(topics ...string) {
+func (c *fakeMqttClient) Unsubscribe(topics ...string) mqtt.Token {
 	for _, topic := range topics {
 		gTopic := toGlobalTopic(topic)
 		vin := getTopicVin(topic)
@@ -112,6 +104,16 @@ func (c *fakeClient) mockUnsub(topics ...string) {
 		}
 		// remove that from dictionary
 		c.subscribed[gTopic] = append(c.subscribed[gTopic][:idx], c.subscribed[gTopic][idx+1:]...)
+	}
+
+	return &mqtt.DummyToken{}
+}
+
+func (c *fakeMqttClient) mockSub(filters map[string]byte) {
+	for topic := range filters {
+		gTopic := toGlobalTopic(topic)
+		vin := getTopicVin(topic)
+		c.subscribed[gTopic] = append(c.subscribed[gTopic], vin)
 	}
 }
 

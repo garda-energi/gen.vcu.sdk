@@ -10,7 +10,8 @@ import (
 const testVin = 354313
 
 func fakeCommander(responses [][]byte) *commander {
-	client := newFakeClient(true, responses)
+	logger := newLogger(false, "TEST")
+	client := newFakeClient(logger, true, responses)
 
 	sleeper := &fakeSleeper{
 		sleep: time.Millisecond,
@@ -53,7 +54,7 @@ func TestResponsePacket(t *testing.T) {
 			_, err := cmder.GenInfo()
 
 			if err != tC.wantErr {
-				t.Fatalf("want %s, got %s", tC.wantErr, err)
+				t.Errorf("want %s, got %s", tC.wantErr, err)
 			}
 		})
 	}
@@ -145,7 +146,7 @@ func TestResponseError(t *testing.T) {
 
 			_, err := cmder.GenInfo()
 			if err.Error() != tC.wantErr {
-				t.Fatalf("want %s, got %s", tC.wantErr, err)
+				t.Errorf("want %s, got %s", tC.wantErr, err)
 			}
 		})
 	}
