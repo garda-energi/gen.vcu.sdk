@@ -12,12 +12,12 @@ type Sdk struct {
 }
 
 // New create new instance of Sdk for VCU (Vehicle Control Unit).
-func New(clientConfig ClientConfig, logging bool) Sdk {
+func New(cc ClientConfig, logging bool) Sdk {
 	logger := newLogger(logging, "SDK")
 	return Sdk{
 		logger:  logger,
 		sleeper: &realSleeper{},
-		client:  newClient(&clientConfig, logger),
+		client:  newClient(&cc, logger),
 	}
 }
 

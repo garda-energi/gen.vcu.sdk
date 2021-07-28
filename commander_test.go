@@ -130,15 +130,18 @@ func TestCommander(t *testing.T) {
 
 	for _, tC := range testCases {
 		t.Run(tC.invoker, func(t *testing.T) {
-			response := newFakeResponse(testVin, tC.invoker, func(rp *responsePacket) {
-				if tC.resMsg != nil {
-					rp.Message = tC.resMsg
-				}
-			})
-			cmder := newFakeCommander(testVin, response)
+			cmder := newFakeCommander(testVin)
+			defer cmder.Destroy()
+
+			cmderFakeClient(cmder).
+				mockResponse(testVin, tC.invoker, func(rp *responsePacket) {
+					if tC.resMsg != nil {
+						rp.Message = tC.resMsg
+					}
+				})
 
 			// call related method, pass in arg, evaluate outs
-			resOut, errOut := callFakeCmd(cmder, tC.invoker, tC.arg)
+			resOut, errOut := callCommand(cmder, tC.invoker, tC.arg)
 
 			// check output error
 			if errOut != nil {
@@ -252,12 +255,14 @@ func TestCommanderInvalidInput(t *testing.T) {
 	for _, tC := range testCases {
 		testName := fmt.Sprint(tC.invoker, " for ", tC.wantErr)
 		t.Run(testName, func(t *testing.T) {
-			// initialize fake commander
-			response := newFakeResponse(testVin, tC.invoker, nil)
-			cmder := newFakeCommander(testVin, response)
+			cmder := newFakeCommander(testVin)
+			defer cmder.Destroy()
+
+			cmderFakeClient(cmder).
+				mockResponse(testVin, tC.invoker, nil)
 
 			// call related method, pass in arg, evaluate outs
-			_, errOut := callFakeCmd(cmder, tC.invoker, tC.arg)
+			_, errOut := callCommand(cmder, tC.invoker, tC.arg)
 
 			// check output error
 			if err := errOut.(error).Error(); err != tC.wantErr {

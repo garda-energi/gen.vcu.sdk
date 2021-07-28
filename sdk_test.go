@@ -7,7 +7,6 @@ import (
 )
 
 func TestSdk(t *testing.T) {
-	// prepare the status & report listener
 	listener := Listener{
 		StatusFunc: func(vin int, online bool) {
 			fmt.Println(vin, "=>", online)
@@ -18,7 +17,8 @@ func TestSdk(t *testing.T) {
 	}
 
 	t.Run("with dis/connected client", func(t *testing.T) {
-		api := newApi()
+		api := newFakeApi()
+
 		vin := 100
 
 		got := api.AddListener(listener, vin)
@@ -35,8 +35,9 @@ func TestSdk(t *testing.T) {
 	})
 
 	t.Run("check the un/subscribed vins", func(t *testing.T) {
-		api := newApi()
+		api := newFakeApi()
 		api.Connect()
+
 		vins := VinRange(5, 10)
 
 		_ = api.AddListener(listener, vins...)
@@ -44,26 +45,26 @@ func TestSdk(t *testing.T) {
 		assertSubscribed(t, api, true, TOPIC_REPORT, vins)
 
 		addVins := []int{13, 15}
-		wantVins := append(vins, addVins...)
+		curVins := append(vins, addVins...)
 		_ = api.AddListener(listener, addVins...)
-		assertSubscribed(t, api, true, TOPIC_STATUS, wantVins)
-		assertSubscribed(t, api, true, TOPIC_REPORT, wantVins)
+		assertSubscribed(t, api, true, TOPIC_STATUS, curVins)
+		assertSubscribed(t, api, true, TOPIC_REPORT, curVins)
 
 		delVins := []int{4, 5, 6, 15}
-		wantVins = []int{7, 8, 9, 10, 13}
+		curVins = []int{7, 8, 9, 10, 13}
 		api.RemoveListener(delVins...)
 		assertSubscribed(t, api, false, TOPIC_STATUS, delVins)
 		assertSubscribed(t, api, false, TOPIC_REPORT, delVins)
-		assertSubscribed(t, api, true, TOPIC_STATUS, wantVins)
-		assertSubscribed(t, api, true, TOPIC_REPORT, wantVins)
+		assertSubscribed(t, api, true, TOPIC_STATUS, curVins)
+		assertSubscribed(t, api, true, TOPIC_REPORT, curVins)
 	})
 }
 
 func TestSdkAddListener(t *testing.T) {
-	api := newApi()
-	api.Connect()
-
 	t.Run("without listener", func(t *testing.T) {
+		api := newFakeApi()
+		api.Connect()
+
 		want := "at least 1 listener supplied"
 		got := api.AddListener(Listener{}, 123)
 		if want != got.Error() {
@@ -72,6 +73,9 @@ func TestSdkAddListener(t *testing.T) {
 	})
 
 	t.Run("without vin args", func(t *testing.T) {
+		api := newFakeApi()
+		api.Connect()
+
 		want := "at least 1 vin supplied"
 		got := api.AddListener(Listener{
 			StatusFunc: func(vin int, online bool) {},
@@ -82,6 +86,9 @@ func TestSdkAddListener(t *testing.T) {
 	})
 
 	t.Run("with only 1 listener, 1 vins", func(t *testing.T) {
+		api := newFakeApi()
+		api.Connect()
+
 		got := api.AddListener(Listener{
 			StatusFunc: func(vin int, online bool) {},
 		}, 123)
@@ -91,6 +98,9 @@ func TestSdkAddListener(t *testing.T) {
 	})
 
 	t.Run("with 2 listener, 1 vins", func(t *testing.T) {
+		api := newFakeApi()
+		api.Connect()
+
 		got := api.AddListener(Listener{
 			StatusFunc: func(vin int, online bool) {},
 			ReportFunc: func(vin int, report *ReportPacket) {},
@@ -101,6 +111,9 @@ func TestSdkAddListener(t *testing.T) {
 	})
 
 	t.Run("use VinRange() as input", func(t *testing.T) {
+		api := newFakeApi()
+		api.Connect()
+
 		got := api.AddListener(Listener{
 			StatusFunc: func(vin int, online bool) {},
 		}, VinRange(1, 20)...)
@@ -110,6 +123,9 @@ func TestSdkAddListener(t *testing.T) {
 	})
 
 	t.Run("check VinRange() output", func(t *testing.T) {
+		api := newFakeApi()
+		api.Connect()
+
 		want := []int{1, 2, 3, 4}
 		got := VinRange(4, 1)
 		if !reflect.DeepEqual(want, got) {
@@ -121,16 +137,17 @@ func TestSdkAddListener(t *testing.T) {
 func assertSubscribed(t *testing.T, api *Sdk, subscribed bool, topic string, vins []int) {
 	t.Helper()
 
-	gotVins := api.client.Client.(*fakeMqttClient).subscribed[topic]
+	fc := sdkFakeClient(api)
 	for _, vin := range vins {
-		var err bool
-		if idx := findVinIn(gotVins, vin); subscribed {
-			err = idx == -1
+		_, found := fc.vins[vin][topic]
+		if subscribed {
+			if !found {
+				t.Fatalf("%s want %v, got none", topic, vin)
+			}
 		} else {
-			err = idx != -1
-		}
-		if err {
-			t.Fatalf("%s want %v, got %v", topic, vins, gotVins)
+			if found {
+				t.Fatalf("%s want no %v, got one", topic, vin)
+			}
 		}
 	}
 }

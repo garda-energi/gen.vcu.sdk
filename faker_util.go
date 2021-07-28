@@ -2,49 +2,23 @@ package sdk
 
 import (
 	"log"
+	"math/rand"
 	"reflect"
 	"time"
 )
 
-func newApi() *Sdk {
+func newFakeApi() *Sdk {
 	logger := newLogger(false, "TEST")
 
 	return &Sdk{
 		logger: logger,
-		client: newFakeClient(logger, false, nil),
+		client: newFakeClient(logger, false),
 	}
 }
 
-func newFakeResponse(vin int, invoker string, modifier func(*responsePacket)) [][]byte {
-	cmd, err := getCmdByInvoker(invoker)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// get default rp, and modify it
-	rp := newResponsePacket(vin, cmd, nil)
-	if modifier != nil {
-		modifier(rp)
-	}
-
-	// encode
-	resBytes, err := encode(rp)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if rp.Header.Size == 0 {
-		resBytes[2] = uint8(len(resBytes) - 3)
-	}
-
-	return [][]byte{
-		strToBytes(PREFIX_ACK),
-		resBytes,
-	}
-}
-
-func newFakeCommander(vin int, responses [][]byte) *commander {
+func newFakeCommander(vin int) *commander {
 	logger := newLogger(false, "TEST")
-	client := newFakeClient(logger, true, responses)
+	client := newFakeClient(logger, true)
 
 	sleeper := &fakeSleeper{
 		sleep: time.Millisecond,
@@ -58,7 +32,37 @@ func newFakeCommander(vin int, responses [][]byte) *commander {
 	return cmder
 }
 
-func callFakeCmd(cmder *commander, invoker string, arg interface{}) (res, err interface{}) {
+func newFakeReport(vin int) *ReportPacket {
+	return &ReportPacket{
+		Header: &HeaderReport{
+			Header: Header{
+				Prefix:       TOPIC_REPORT,
+				Size:         0,
+				Vin:          uint32(vin),
+				SendDatetime: time.Now(),
+			},
+			Frame: [...]Frame{
+				FrameSimple,
+				FrameFull,
+			}[rand.Intn(2)],
+		},
+		Vcu: &Vcu{
+			LogDatetime: time.Now().Add(-2 * time.Second),
+			State: [...]BikeState{
+				BikeStateNormal,
+				BikeStateReady,
+				BikeStateRun,
+				BikeStateStandby,
+			}[rand.Intn(4)],
+			Events:      uint16(rand.Uint32()),
+			LogBuffered: uint8(rand.Uint32()),
+			BatVoltage:  rand.Float32(),
+			Uptime:      rand.Float32(),
+		},
+	}
+}
+
+func callCommand(cmder *commander, invoker string, arg interface{}) (res, err interface{}) {
 	method := reflect.ValueOf(cmder).MethodByName(invoker)
 	ins := []reflect.Value{}
 	if arg != nil {
@@ -73,11 +77,10 @@ func callFakeCmd(cmder *commander, invoker string, arg interface{}) (res, err in
 	return
 }
 
-func findVinIn(vins []int, vin int) int {
-	for i, v := range vins {
-		if v == vin {
-			return i
-		}
-	}
-	return -1
+func sdkFakeClient(api *Sdk) *fakeMqttClient {
+	return api.client.Client.(*fakeMqttClient)
+}
+
+func cmderFakeClient(cmder *commander) *fakeMqttClient {
+	return cmder.client.Client.(*fakeMqttClient)
 }

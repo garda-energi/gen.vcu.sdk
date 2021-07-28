@@ -2,20 +2,24 @@ package sdk
 
 import (
 	"log"
+	"sync"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-func newFakeClient(l *log.Logger, connected bool, responses [][]byte) *client {
+type responses [][]byte
+
+func newFakeClient(l *log.Logger, connected bool) *client {
 	_ = newClientOptions(&ClientConfig{}, l)
 	return &client{
 		Client: &fakeMqttClient{
-			connected:  connected,
-			responses:  responses,
-			cmdChan:    make(chan []byte),
-			resChan:    make(chan struct{}),
-			subscribed: make(map[string][]int),
+			connected: connected,
+			cmdChan:   make(chan []byte),
+			resChan:   make(chan struct{}),
+			stopChan:  make(chan struct{}, 2),
+			vins:      make(map[int]map[string]responses),
+			vinsMutex: &sync.RWMutex{},
 		},
 		logger: l,
 	}
@@ -25,11 +29,13 @@ func newFakeClient(l *log.Logger, connected bool, responses [][]byte) *client {
 type fakeMqttClient struct {
 	mqtt.Client
 	connected bool
-	responses [][]byte
 	cmdChan   chan []byte
 	resChan   chan struct{}
+	stopChan  chan struct{}
+	vins      map[int]map[string]responses
+	vinsMutex *sync.RWMutex
+	// res       responses
 	// published map[string][]int[]byte
-	subscribed map[string][]int
 }
 
 func (c *fakeMqttClient) Connect() mqtt.Token {
@@ -54,30 +60,41 @@ func (c *fakeMqttClient) Publish(topic string, qos byte, retained bool, payload 
 }
 
 func (c *fakeMqttClient) Subscribe(topic string, qos byte, callback mqtt.MessageHandler) mqtt.Token {
-	var client mqtt.Client
-	msg := &fakeMessage{topic: topic}
-
 	c.mockSub(map[string]byte{topic: qos})
+
+	gTopic := toGlobalTopic(topic)
+	vin := getTopicVin(topic)
+	msg := &fakeMessage{topic: topic}
 
 	switch toGlobalTopic(topic) {
 	case TOPIC_COMMAND:
 		go func() {
-			select {
-			case msg.payload = <-c.cmdChan:
-				callback(client, msg)
-				c.resChan <- struct{}{}
-			case <-time.After(time.Second):
+			for {
+				select {
+				case msg.payload = <-c.cmdChan:
+					callback(c.Client, msg)
+					c.resChan <- struct{}{}
+				case <-c.stopChan:
+					return
+				}
 			}
 		}()
 	case TOPIC_RESPONSE:
 		go func() {
-			select {
-			case <-c.resChan:
-				for _, msg.payload = range c.responses {
-					time.Sleep(5 * time.Millisecond)
-					callback(client, msg)
+			for {
+				select {
+				case <-c.resChan:
+					c.vinsMutex.RLock()
+					responses := c.vins[vin][gTopic]
+					c.vinsMutex.RUnlock()
+
+					for _, msg.payload = range responses {
+						time.Sleep(5 * time.Millisecond)
+						callback(c.Client, msg)
+					}
+				case <-c.stopChan:
+					return
 				}
-			case <-time.After(time.Second):
 			}
 		}()
 	}
@@ -94,8 +111,20 @@ func (c *fakeMqttClient) Unsubscribe(topics ...string) mqtt.Token {
 		gTopic := toGlobalTopic(topic)
 		vin := getTopicVin(topic)
 
-		if idx := findVinIn(c.subscribed[gTopic], vin); idx != -1 {
-			c.subscribed[gTopic] = append(c.subscribed[gTopic][:idx], c.subscribed[gTopic][idx+1:]...)
+		c.vinsMutex.RLock()
+		_, ok := c.vins[vin]
+		c.vinsMutex.RUnlock()
+
+		if ok {
+			switch gTopic {
+			case TOPIC_COMMAND, TOPIC_RESPONSE:
+				c.stopChan <- struct{}{}
+				c.stopChan <- struct{}{}
+			}
+
+			c.vinsMutex.Lock()
+			delete(c.vins[vin], gTopic)
+			c.vinsMutex.Unlock()
 		}
 	}
 
@@ -107,10 +136,68 @@ func (c *fakeMqttClient) mockSub(filters map[string]byte) {
 		gTopic := toGlobalTopic(topic)
 		vin := getTopicVin(topic)
 
-		if idx := findVinIn(c.subscribed[gTopic], vin); idx == -1 {
-			c.subscribed[gTopic] = append(c.subscribed[gTopic], vin)
+		c.vinsMutex.RLock()
+		_, ok := c.vins[vin]
+		c.vinsMutex.RUnlock()
+
+		c.vinsMutex.Lock()
+		if !ok {
+			c.vins[vin] = make(map[string]responses)
 		}
+		c.vins[vin][gTopic] = nil
+		c.vinsMutex.Unlock()
 	}
+}
+
+func (c *fakeMqttClient) mockAck(vin int, ack []byte) {
+	if ack == nil {
+		return
+	}
+	c.vinsMutex.Lock()
+	c.vins[vin][TOPIC_RESPONSE] = responses{ack}
+	c.vinsMutex.Unlock()
+}
+
+func (c *fakeMqttClient) mockResponse(vin int, invoker string, modifier func(*responsePacket)) {
+	cmd, err := getCmdByInvoker(invoker)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rp := newResponsePacket(vin, cmd, nil)
+	if modifier != nil {
+		modifier(rp)
+	}
+
+	resBytes, err := encode(rp)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if rp.Header.Size == 0 {
+		resBytes[2] = uint8(len(resBytes) - 3)
+	}
+
+	c.vinsMutex.Lock()
+	c.vins[vin][TOPIC_RESPONSE] = responses{
+		strToBytes(PREFIX_ACK),
+		resBytes,
+	}
+	c.vinsMutex.Unlock()
+}
+
+func (c *fakeMqttClient) mockReport(vin int, rps []*ReportPacket) {
+	var res = responses{}
+	for _, rp := range rps {
+		resBytes, err := encode(rp)
+		if err != nil {
+			log.Fatal(err)
+		}
+		res = append(res, resBytes)
+	}
+
+	c.vinsMutex.Lock()
+	c.vins[vin][TOPIC_REPORT] = res
+	c.vinsMutex.Unlock()
 }
 
 // fakeMessage implements fake message stub
