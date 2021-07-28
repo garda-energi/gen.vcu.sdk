@@ -6,13 +6,40 @@ import (
 	"time"
 )
 
-func findVinIn(vins []int, vin int) int {
-	for i, v := range vins {
-		if v == vin {
-			return i
-		}
+func newApi() *Sdk {
+	logger := newLogger(false, "TEST")
+
+	return &Sdk{
+		logger: logger,
+		client: newFakeClient(logger, false, nil),
 	}
-	return -1
+}
+
+func newFakeResponse(vin int, invoker string, modifier func(*responsePacket)) [][]byte {
+	cmd, err := getCmdByInvoker(invoker)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// get default rp, and modify it
+	rp := newResponsePacket(vin, cmd, nil)
+	if modifier != nil {
+		modifier(rp)
+	}
+
+	// encode
+	resBytes, err := encode(rp)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if rp.Header.Size == 0 {
+		resBytes[2] = uint8(len(resBytes) - 3)
+	}
+
+	return [][]byte{
+		strToBytes(PREFIX_ACK),
+		resBytes,
+	}
 }
 
 func newFakeCommander(vin int, responses [][]byte) *commander {
@@ -44,4 +71,13 @@ func callFakeCmd(cmder *commander, invoker string, arg interface{}) (res, err in
 		res = outs[0].Interface()
 	}
 	return
+}
+
+func findVinIn(vins []int, vin int) int {
+	for i, v := range vins {
+		if v == vin {
+			return i
+		}
+	}
+	return -1
 }

@@ -140,30 +140,3 @@ func (s *fakeSleeper) Sleep(d time.Duration) {
 func (s *fakeSleeper) After(d time.Duration) <-chan time.Time {
 	return time.After(s.after)
 }
-
-func newFakeResponse(vin int, invoker string, modifier func(*responsePacket)) [][]byte {
-	cmd, err := getCmdByInvoker(invoker)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// get default rp, and modify it
-	rp := newResponsePacket(vin, cmd, nil)
-	if modifier != nil {
-		modifier(rp)
-	}
-
-	// encode
-	resBytes, err := encode(rp)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if rp.Header.Size == 0 {
-		resBytes[2] = uint8(len(resBytes) - 3)
-	}
-
-	return [][]byte{
-		strToBytes(PREFIX_ACK),
-		resBytes,
-	}
-}

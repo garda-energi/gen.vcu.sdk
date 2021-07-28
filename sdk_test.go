@@ -6,19 +6,6 @@ import (
 	"testing"
 )
 
-var logger = newLogger(false, "TEST")
-
-func newApi(connected bool) *Sdk {
-	api := &Sdk{
-		logger: logger,
-		client: newFakeClient(logger, false, nil),
-	}
-	if connected {
-		api.Connect()
-	}
-	return api
-}
-
 func TestSdk(t *testing.T) {
 	// prepare the status & report listener
 	listener := Listener{
@@ -30,28 +17,26 @@ func TestSdk(t *testing.T) {
 		},
 	}
 
-	t.Run("with disconnected client", func(t *testing.T) {
-		api := newApi(false)
-		want := errClientDisconnected
+	t.Run("with dis/connected client", func(t *testing.T) {
+		api := newApi()
+		vin := 100
 
-		got := api.AddListener(listener, 100)
+		got := api.AddListener(listener, vin)
+		want := errClientDisconnected
 		if want != got {
 			t.Errorf("want %s, got %s", want, got)
 		}
-	})
 
-	t.Run("with connected client", func(t *testing.T) {
-		api := newApi(true)
-		vins := VinRange(5, 10)
-
-		got := api.AddListener(listener, vins...)
+		api.Connect()
+		got = api.AddListener(listener, vin)
 		if got != nil {
 			t.Error("want no error, got ", got)
 		}
 	})
 
-	t.Run("check the subscribed vins", func(t *testing.T) {
-		api := newApi(true)
+	t.Run("check the un/subscribed vins", func(t *testing.T) {
+		api := newApi()
+		api.Connect()
 		vins := VinRange(5, 10)
 
 		_ = api.AddListener(listener, vins...)
@@ -63,16 +48,9 @@ func TestSdk(t *testing.T) {
 		_ = api.AddListener(listener, addVins...)
 		assertSubscribed(t, api, true, TOPIC_STATUS, wantVins)
 		assertSubscribed(t, api, true, TOPIC_REPORT, wantVins)
-	})
 
-	t.Run("check unsubscribed vins", func(t *testing.T) {
-		api := newApi(true)
-		vins := VinRange(5, 10)
-
-		_ = api.AddListener(listener, vins...)
-
-		delVins := []int{4, 5, 6, 7}
-		wantVins := []int{8, 9, 10}
+		delVins := []int{4, 5, 6, 15}
+		wantVins = []int{7, 8, 9, 10, 13}
 		api.RemoveListener(delVins...)
 		assertSubscribed(t, api, false, TOPIC_STATUS, delVins)
 		assertSubscribed(t, api, false, TOPIC_REPORT, delVins)
@@ -82,9 +60,8 @@ func TestSdk(t *testing.T) {
 }
 
 func TestSdkAddListener(t *testing.T) {
-	api := Sdk{
-		client: newFakeClient(logger, true, nil),
-	}
+	api := newApi()
+	api.Connect()
 
 	t.Run("without listener", func(t *testing.T) {
 		want := "at least 1 listener supplied"
