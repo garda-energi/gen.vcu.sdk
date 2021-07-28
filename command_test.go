@@ -2,28 +2,11 @@ package sdk
 
 import (
 	"fmt"
-	"log"
 	"testing"
-	"time"
 )
 
-const testVin = 354313
+const testVin = 353313
 
-func fakeCommander(responses [][]byte) *commander {
-	logger := newLogger(false, "TEST")
-	client := newFakeClient(logger, true, responses)
-
-	sleeper := &fakeSleeper{
-		sleep: time.Millisecond,
-		after: 125 * time.Millisecond,
-	}
-
-	cmder, err := newCommander(testVin, client, sleeper, newLogger(false, "TEST"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	return cmder
-}
 func TestResponsePacket(t *testing.T) {
 	testCases := []struct {
 		desc      string
@@ -48,7 +31,7 @@ func TestResponsePacket(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			cmder := fakeCommander(tC.responses)
+			cmder := newFakeCommander(testVin, tC.responses)
 			defer cmder.Destroy()
 
 			_, err := cmder.GenInfo()
@@ -135,14 +118,8 @@ func TestResponseError(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			res := fakeResponse(testVin, "GenInfo")
-			tC.resModifier(res)
-
-			cmder := fakeCommander([][]byte{
-				strToBytes(PREFIX_ACK),
-				mockResponse(res),
-			})
-			defer cmder.Destroy()
+			response := newFakeResponse(testVin, "GenInfo", tC.resModifier)
+			cmder := newFakeCommander(testVin, response)
 
 			_, err := cmder.GenInfo()
 			if err.Error() != tC.wantErr {

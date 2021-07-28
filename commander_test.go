@@ -7,21 +7,6 @@ import (
 	"time"
 )
 
-func callCmd(cmder *commander, invoker string, arg interface{}) (res, err interface{}) {
-	method := reflect.ValueOf(cmder).MethodByName(invoker)
-	ins := []reflect.Value{}
-	if arg != nil {
-		ins = append(ins, reflect.ValueOf(arg))
-	}
-	outs := method.Call(ins)
-
-	err = outs[len(outs)-1].Interface()
-	if len(outs) > 1 {
-		res = outs[0].Interface()
-	}
-	return
-}
-
 func TestCommander(t *testing.T) {
 	testCases := []struct {
 		invoker string
@@ -145,24 +130,15 @@ func TestCommander(t *testing.T) {
 
 	for _, tC := range testCases {
 		t.Run(tC.invoker, func(t *testing.T) {
-			// generate fake response
-			fakeRes := fakeResponse(testVin, tC.invoker)
-			if tC.resMsg != nil {
-				fakeRes.Message = tC.resMsg
-				if tC.wantOut == nil {
-					tC.wantOut = string(tC.resMsg)
+			response := newFakeResponse(testVin, tC.invoker, func(rp *responsePacket) {
+				if tC.resMsg != nil {
+					rp.Message = tC.resMsg
 				}
-			}
-
-			// initialize fake commander
-			cmder := fakeCommander([][]byte{
-				strToBytes(PREFIX_ACK),
-				mockResponse(fakeRes),
 			})
-			defer cmder.Destroy()
+			cmder := newFakeCommander(testVin, response)
 
 			// call related method, pass in arg, evaluate outs
-			resOut, errOut := callCmd(cmder, tC.invoker, tC.arg)
+			resOut, errOut := callFakeCmd(cmder, tC.invoker, tC.arg)
 
 			// check output error
 			if errOut != nil {
@@ -172,6 +148,10 @@ func TestCommander(t *testing.T) {
 			}
 
 			// check output response
+			if tC.resMsg != nil && tC.wantOut == nil {
+				tC.wantOut = string(tC.resMsg)
+			}
+
 			if resOut != nil {
 				if !reflect.DeepEqual(resOut, tC.wantOut) {
 					t.Errorf("want %s, got %s", tC.wantOut, resOut)
@@ -273,14 +253,11 @@ func TestCommanderInvalidInput(t *testing.T) {
 		testName := fmt.Sprint(tC.invoker, " for ", tC.wantErr)
 		t.Run(testName, func(t *testing.T) {
 			// initialize fake commander
-			cmder := fakeCommander([][]byte{
-				strToBytes(PREFIX_ACK),
-				mockResponse(fakeResponse(testVin, tC.invoker)),
-			})
-			defer cmder.Destroy()
+			response := newFakeResponse(testVin, tC.invoker, nil)
+			cmder := newFakeCommander(testVin, response)
 
 			// call related method, pass in arg, evaluate outs
-			_, errOut := callCmd(cmder, tC.invoker, tC.arg)
+			_, errOut := callFakeCmd(cmder, tC.invoker, tC.arg)
 
 			// check output error
 			if err := errOut.(error).Error(); err != tC.wantErr {

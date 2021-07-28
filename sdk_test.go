@@ -3,7 +3,6 @@ package sdk
 import (
 	"fmt"
 	"reflect"
-	"sort"
 	"testing"
 )
 
@@ -28,39 +27,61 @@ func TestSdk(t *testing.T) {
 	t.Run("with disconnected client", func(t *testing.T) {
 		api.Disconnect()
 		want := errClientDisconnected
+
 		got := api.AddListener(listener, 100)
 		if want != got {
 			t.Errorf("want %s, got %s", want, got)
 		}
 	})
 
-	t.Run("with connected client, check the subscribed & unsubscribed vins", func(t *testing.T) {
+	t.Run("with connected client", func(t *testing.T) {
 		api.Connect()
 		vins := VinRange(5, 10)
-		got := api.AddListener(listener, vins...)
 
+		got := api.AddListener(listener, vins...)
 		if got != nil {
 			t.Error("want no error, got ", got)
 		}
-
-		subscribed := api.client.Client.(*fakeMqttClient).subscribed
-		for _, topic := range []string{TOPIC_STATUS, TOPIC_REPORT} {
-			gotVins := subscribed[topic]
-			sort.Ints(gotVins)
-			if !reflect.DeepEqual(vins, gotVins) {
-				t.Errorf("%s want %v, got %v", topic, vins, gotVins)
-			}
-		}
-
-		api.RemoveListener(vins...)
-		for _, topic := range []string{TOPIC_STATUS, TOPIC_REPORT} {
-			want := 0
-			got := len(subscribed[topic])
-			if want != got {
-				t.Errorf("want %d vins, got %d", want, got)
-			}
-		}
 	})
+
+	t.Run("check the subscribed vins", func(t *testing.T) {
+		api.Connect()
+		vins := VinRange(5, 10)
+
+		_ = api.AddListener(listener, vins...)
+		assertSubscribed(t, &api, TOPIC_STATUS, vins)
+		assertSubscribed(t, &api, TOPIC_REPORT, vins)
+
+		moreVins := []int{13, 15}
+		wantVins := append(vins, moreVins...)
+		_ = api.AddListener(listener, moreVins...)
+		assertSubscribed(t, &api, TOPIC_STATUS, wantVins)
+		assertSubscribed(t, &api, TOPIC_REPORT, wantVins)
+	})
+
+	// t.Run("check the subscribed & unsubscribed vins", func(t *testing.T) {
+	// 	api.Connect()
+	// 	vins := VinRange(5, 10)
+
+	// 	_ = api.AddListener(listener, vins...)
+	// 	subscribed := api.client.Client.(*fakeMqttClient).subscribed
+	// 	for _, topic := range []string{TOPIC_STATUS, TOPIC_REPORT} {
+	// 		gotVins := subscribed[topic]
+	// 		sort.Ints(gotVins)
+	// 		if !reflect.DeepEqual(vins, gotVins) {
+	// 			t.Errorf("%s want %v, got %v", topic, vins, gotVins)
+	// 		}
+	// 	}
+
+	// 	api.RemoveListener(vins...)
+	// 	for _, topic := range []string{TOPIC_STATUS, TOPIC_REPORT} {
+	// 		want := 0
+	// 		got := len(subscribed[topic])
+	// 		if want != got {
+	// 			t.Errorf("want %d vins, got %d", want, got)
+	// 		}
+	// 	}
+	// })
 }
 
 func TestSdkAddListener(t *testing.T) {
@@ -86,7 +107,7 @@ func TestSdkAddListener(t *testing.T) {
 		}
 	})
 
-	t.Run("with only 1 listener", func(t *testing.T) {
+	t.Run("with only 1 listener, 1 vins", func(t *testing.T) {
 		got := api.AddListener(Listener{
 			StatusFunc: func(vin int, online bool) {},
 		}, 123)
@@ -95,7 +116,7 @@ func TestSdkAddListener(t *testing.T) {
 		}
 	})
 
-	t.Run("with only 2 listener", func(t *testing.T) {
+	t.Run("with 2 listener, 1 vins", func(t *testing.T) {
 		got := api.AddListener(Listener{
 			StatusFunc: func(vin int, online bool) {},
 			ReportFunc: func(vin int, report *ReportPacket) {},
@@ -121,4 +142,17 @@ func TestSdkAddListener(t *testing.T) {
 			t.Errorf("want %v, got %v", want, got)
 		}
 	})
+}
+
+func assertSubscribed(t *testing.T, api *Sdk, topic string, vins []int) {
+	t.Helper()
+	subs := api.client.Client.(*fakeMqttClient).subscribed
+
+	gotVins := subs[topic]
+	for _, vin := range vins {
+		if !hasVin(gotVins, vin) {
+			t.Fatalf("%s want %v, got %v", topic, vins, gotVins)
+		}
+		// fmt.Println(vin, gotVins)
+	}
 }
