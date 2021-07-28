@@ -23,8 +23,9 @@ type client struct {
 
 // newClient create instance of mqtt client
 func newClient(config *ClientConfig, logger *log.Logger) *client {
+	opts := newClientOptions(config, logger)
 	return &client{
-		Client: mqtt.NewClient(newClientOptions(config, logger)),
+		Client: mqtt.NewClient(opts),
 		logger: logger,
 	}
 }

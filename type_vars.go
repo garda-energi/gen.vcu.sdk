@@ -17,11 +17,11 @@ var (
 	errClientDisconnected = errors.New("client disconnected")
 	errCmdNotFound        = errors.New("command not found")
 	errPacketAckCorrupt   = errors.New("packet ack corrupt")
-	errInvalidPrefix      = errors.New("prefix invalid")
-	errInvalidSize        = errors.New("size invalid")
-	errInvalidVin         = errors.New("vin invalid")
-	errInvalidCmdCode     = errors.New("cmd code invalid")
-	errInvalidResCode     = errors.New("resCode invalid")
+	errInvalidPrefix      = errors.New("invalid prefix")
+	errInvalidSize        = errors.New("invalid size")
+	errInvalidVin         = errors.New("invalid vin")
+	errInvalidCmdCode     = errors.New("invalid cmd code")
+	errInvalidResCode     = errors.New("invalid res code")
 )
 
 type errPacketTimeout string
