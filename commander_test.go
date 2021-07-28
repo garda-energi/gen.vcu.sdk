@@ -130,10 +130,10 @@ func TestCommander(t *testing.T) {
 
 	for _, tC := range testCases {
 		t.Run(tC.invoker, func(t *testing.T) {
-			cmder := newFakeCommander(testVin)
+			cmder := newStubCommander(testVin)
 			defer cmder.Destroy()
 
-			cmderFakeClient(cmder).
+			cmderStubClient(cmder).
 				mockResponse(testVin, tC.invoker, func(rp *responsePacket) {
 					if tC.resMsg != nil {
 						rp.Message = tC.resMsg
@@ -181,7 +181,7 @@ func TestCommanderInvalidInput(t *testing.T) {
 		},
 		{
 			invoker: "OvdReportFrame",
-			arg:     FrameInvalid,
+			arg:     FrameLimit,
 			wantErr: errInputOutOfRange("frame").Error(),
 		},
 		{
@@ -255,10 +255,10 @@ func TestCommanderInvalidInput(t *testing.T) {
 	for _, tC := range testCases {
 		testName := fmt.Sprint(tC.invoker, " for ", tC.wantErr)
 		t.Run(testName, func(t *testing.T) {
-			cmder := newFakeCommander(testVin)
+			cmder := newStubCommander(testVin)
 			defer cmder.Destroy()
 
-			cmderFakeClient(cmder).
+			cmderStubClient(cmder).
 				mockResponse(testVin, tC.invoker, nil)
 
 			// call related method, pass in arg, evaluate outs

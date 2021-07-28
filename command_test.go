@@ -31,10 +31,10 @@ func TestResponsePacket(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			cmder := newFakeCommander(testVin)
+			cmder := newStubCommander(testVin)
 			defer cmder.Destroy()
 
-			cmderFakeClient(cmder).
+			cmderStubClient(cmder).
 				mockAck(testVin, tC.res)
 
 			_, err := cmder.GenInfo()
@@ -121,10 +121,10 @@ func TestResponseError(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			cmder := newFakeCommander(testVin)
+			cmder := newStubCommander(testVin)
 			defer cmder.Destroy()
 
-			cmderFakeClient(cmder).
+			cmderStubClient(cmder).
 				mockResponse(testVin, "GenInfo", tC.modifier)
 
 			_, err := cmder.GenInfo()

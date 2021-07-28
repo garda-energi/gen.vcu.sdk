@@ -17,7 +17,7 @@ func TestSdk(t *testing.T) {
 	}
 
 	t.Run("with dis/connected client", func(t *testing.T) {
-		api := newFakeApi()
+		api := newStubApi()
 
 		vin := 100
 
@@ -35,7 +35,7 @@ func TestSdk(t *testing.T) {
 	})
 
 	t.Run("check the un/subscribed vins", func(t *testing.T) {
-		api := newFakeApi()
+		api := newStubApi()
 		api.Connect()
 
 		vins := VinRange(5, 10)
@@ -62,7 +62,7 @@ func TestSdk(t *testing.T) {
 
 func TestSdkAddListener(t *testing.T) {
 	t.Run("without listener", func(t *testing.T) {
-		api := newFakeApi()
+		api := newStubApi()
 		api.Connect()
 
 		want := "at least 1 listener supplied"
@@ -73,7 +73,7 @@ func TestSdkAddListener(t *testing.T) {
 	})
 
 	t.Run("without vin args", func(t *testing.T) {
-		api := newFakeApi()
+		api := newStubApi()
 		api.Connect()
 
 		want := "at least 1 vin supplied"
@@ -86,7 +86,7 @@ func TestSdkAddListener(t *testing.T) {
 	})
 
 	t.Run("with only 1 listener, 1 vins", func(t *testing.T) {
-		api := newFakeApi()
+		api := newStubApi()
 		api.Connect()
 
 		got := api.AddListener(Listener{
@@ -98,7 +98,7 @@ func TestSdkAddListener(t *testing.T) {
 	})
 
 	t.Run("with 2 listener, 1 vins", func(t *testing.T) {
-		api := newFakeApi()
+		api := newStubApi()
 		api.Connect()
 
 		got := api.AddListener(Listener{
@@ -111,7 +111,7 @@ func TestSdkAddListener(t *testing.T) {
 	})
 
 	t.Run("use VinRange() as input", func(t *testing.T) {
-		api := newFakeApi()
+		api := newStubApi()
 		api.Connect()
 
 		got := api.AddListener(Listener{
@@ -123,7 +123,7 @@ func TestSdkAddListener(t *testing.T) {
 	})
 
 	t.Run("check VinRange() output", func(t *testing.T) {
-		api := newFakeApi()
+		api := newStubApi()
 		api.Connect()
 
 		want := []int{1, 2, 3, 4}
@@ -137,7 +137,7 @@ func TestSdkAddListener(t *testing.T) {
 func assertSubscribed(t *testing.T, api *Sdk, subscribed bool, topic string, vins []int) {
 	t.Helper()
 
-	fc := sdkFakeClient(api)
+	fc := sdkStubClient(api)
 	for _, vin := range vins {
 		_, found := fc.vins[vin][topic]
 		if subscribed {

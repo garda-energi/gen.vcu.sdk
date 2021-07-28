@@ -109,7 +109,7 @@ func (c *commander) OvdReportInterval(dur time.Duration) error {
 
 // OvdReportFrame override report frame type.
 func (c *commander) OvdReportFrame(frame Frame) error {
-	if frame == FrameInvalid {
+	if frame == FrameLimit {
 		return errInputOutOfRange("frame")
 	}
 
@@ -167,7 +167,7 @@ func (c *commander) FingerAdd() (int, error) {
 
 // FingerDel delete a fingerprint id.
 func (c *commander) FingerDel(id int) error {
-	if id < FINGERPRINT_ID_MIN || id > FINGERPRINT_ID_MAX {
+	if id < DRIVER_ID_MIN || id > DRIVER_ID_MAX {
 		return errInputOutOfRange("id")
 	}
 
