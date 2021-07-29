@@ -2,8 +2,8 @@ package sdk
 
 import (
 	"log"
-	"reflect"
 	"sync"
+	"testing"
 	"time"
 )
 
@@ -23,10 +23,17 @@ func newStubClient(l *log.Logger, connected bool) *client {
 
 			responses: &sync.Map{},
 
-			responseChan: &sync.Map{},
-			commandChan:  &sync.Map{},
-			reportChan:   &sync.Map{},
-			statusChan:   &sync.Map{},
+			ch: struct {
+				res *sync.Map
+				cmd *sync.Map
+				rep *sync.Map
+				sts *sync.Map
+			}{
+				res: &sync.Map{},
+				cmd: &sync.Map{},
+				rep: &sync.Map{},
+				sts: &sync.Map{},
+			},
 		},
 		logger: l,
 	}
@@ -37,7 +44,7 @@ func newStubCommander(vin int) *commander {
 	client := newStubClient(logger, true)
 	sleeper := &stubSleeper{
 		sleep: time.Millisecond,
-		after: 125 * time.Millisecond,
+		after: 150 * time.Millisecond,
 	}
 
 	cmder, err := newCommander(vin, client, sleeper, logger)
@@ -55,17 +62,20 @@ func cmderStubClient(cmder *commander) *stubMqttClient {
 	return cmder.client.Client.(*stubMqttClient)
 }
 
-func callCommand(cmder *commander, invoker string, arg interface{}) (res, err interface{}) {
-	method := reflect.ValueOf(cmder).MethodByName(invoker)
-	ins := []reflect.Value{}
-	if arg != nil {
-		ins = append(ins, reflect.ValueOf(arg))
-	}
-	outs := method.Call(ins)
+func assertSubscribed(t *testing.T, api *Sdk, subscribed bool, vins []int) {
+	t.Helper()
+	time.Sleep(time.Millisecond)
 
-	err = outs[len(outs)-1].Interface()
-	if len(outs) > 1 {
-		res = outs[0].Interface()
+	for _, vin := range vins {
+		_, found := sdkStubClient(api).ch.rep.Load(vin)
+		if subscribed {
+			if !found {
+				t.Fatalf("%s want %v, got none", TOPIC_REPORT, vin)
+			}
+		} else {
+			if found {
+				t.Fatalf("%s want no %v, got one", TOPIC_REPORT, vin)
+			}
+		}
 	}
-	return
 }

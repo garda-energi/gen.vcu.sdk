@@ -70,11 +70,11 @@ func main() {
 			fmt.Println(info)
 		}
 
-		// if err := dev354313.GenLed(false); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Println("Device led (on-board) was turned-off")
-		// }
+		if err := dev354313.GenLed(false); err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println("Device led (on-board) was turned-off")
+		}
 
 		// rtc := time.Now()
 		// if err := dev354313.GenRtc(rtc); err != nil {

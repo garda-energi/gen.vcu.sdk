@@ -1,9 +1,6 @@
 package sdk
 
-import (
-	"fmt"
-	"strings"
-)
+import "time"
 
 type HeaderCommand struct {
 	Header
@@ -16,94 +13,229 @@ type commandPacket struct {
 	Message message
 }
 
-type headerResponse struct {
-	HeaderCommand
-	ResCode resCode `type:"uint8"`
+// command store essential command informations
+type command struct {
+	name    string
+	invoker string
+	code    uint8
+	subCode uint8
+	timeout time.Duration
 }
 
-type responsePacket struct {
-	Header  *headerResponse
-	Message message `type:"slice"`
+// cmdList store command name by its code & subCode as index
+var cmdList = [][]command{
+	{
+		command{
+			name:    "GEN_INFO",
+			invoker: "GenInfo",
+		},
+		command{
+			name:    "GEN_LED",
+			invoker: "GenLed",
+		},
+		command{
+			name:    "GEN_RTC",
+			invoker: "GenRtc",
+		},
+		command{
+			name:    "GEN_ODO",
+			invoker: "GenOdo",
+		},
+		command{
+			name:    "GEN_ANTI_THIEF",
+			invoker: "GenAntiThief",
+		},
+		command{
+			name:    "GEN_RPT_FLUSH",
+			invoker: "GenReportFlush",
+		},
+		command{
+			name:    "GEN_RPT_BLOCK",
+			invoker: "GenReportBlock",
+		},
+	},
+	{
+		command{
+			name:    "OVD_STATE",
+			invoker: "OvdState",
+		},
+		command{
+			name:    "OVD_RPT_INTERVAL",
+			invoker: "OvdReportInterval",
+		},
+		command{
+			name:    "OVD_RPT_FRAME",
+			invoker: "OvdReportFrame",
+		},
+		command{
+			name:    "OVD_RMT_SEAT",
+			invoker: "OvdRemoteSeat",
+		},
+		command{
+			name:    "OVD_RMT_ALARM",
+			invoker: "OvdRemoteAlarm",
+		},
+	},
+	{
+		command{
+			name:    "AUDIO_BEEP",
+			invoker: "AudioBeep",
+		},
+	},
+	{
+		command{
+			name:    "FINGER_FETCH",
+			invoker: "FingerFetch",
+			timeout: 15 * time.Second,
+		},
+		command{
+			name:    "FINGER_ADD",
+			invoker: "FingerAdd",
+			timeout: 20 * time.Second,
+		},
+		command{
+			name:    "FINGER_DEL",
+			invoker: "FingerDel",
+			timeout: 15 * time.Second,
+		},
+		command{
+			name:    "FINGER_RST",
+			invoker: "FingerRst",
+			timeout: 15 * time.Second,
+		},
+	},
+	{
+		command{
+			name:    "REMOTE_PAIRING",
+			invoker: "RemotePairing",
+			timeout: 15 * time.Second,
+		},
+	},
+	{
+		command{
+			name:    "FOTA_VCU",
+			invoker: "FotaVcu",
+			timeout: 6 * 60 * time.Second,
+		},
+		command{
+			name:    "FOTA_HMI",
+			invoker: "FotaHmi",
+			timeout: 12 * 60 * time.Second,
+		},
+	},
+	{
+		command{
+			name:    "NET_SEND_USSD",
+			invoker: "NetSendUssd",
+		},
+		command{
+			name:    "NET_READ_SMS",
+			invoker: "NetReadSms",
+		},
+	},
+	{
+		// TODO: finish CON command handler on VCU device (pending)
+		command{
+			name: "CON_APN",
+			// desc: "Set APN connection (ex: 3gprs;3gprs;3gprs)",
+			//   range: [
+			//     [1, 30],
+			//     [1, 30],
+			//     [1, 30],
+			//   ],
+			//   size: 3 * 30,
+			//   Tipe: "[char Name, user, pass][3]",
+			//   Validator: (v) => Validator.CON(v, 3),
+			//   formatCmd: (v) => AsciiToHex(v),
+		},
+		command{
+			name: "CON_FTP",
+			// desc: "Set FTP connection",
+			//   range: [
+			//     [1, 30],
+			//     [1, 30],
+			//     [1, 30],
+			//   ],
+			//   size: 3 * 30,
+			//   Tipe: "[char host, user, pass][3]",
+			//   Validator: (v) => Validator.CON(v, 3),
+			//   formatCmd: (v) => AsciiToHex(v),
+		},
+		command{
+			name: "CON_MQTT",
+			// desc: "Set MQTT connection",
+			//   range: [
+			//     [1, 30],
+			//     [1, 30],
+			//     [1, 30],
+			//     [1, 30],
+			//   ],
+			//   size: 4 * 30,
+			//   Tipe: "[char host, port, user, pass][4]",
+			//   Validator: (v) => Validator.CON(v, 4),
+			//   formatCmd: (v) => AsciiToHex(v),
+		},
+	},
+	{
+		command{
+			name:    "HBAR_DRIVE",
+			invoker: "HbarDrive",
+		},
+		command{
+			name:    "HBAR_TRIP",
+			invoker: "HbarTrip",
+		},
+		command{
+			name:    "HBAR_AVG",
+			invoker: "HbarAvg",
+		},
+		command{
+			name:    "HBAR_REVERSE",
+			invoker: "HbarReverse",
+		},
+	},
+	{
+		command{
+			name:    "MCU_SPEED_MAX",
+			invoker: "McuSpeedMax",
+		},
+		command{
+			name:    "MCU_TEMPLATES",
+			invoker: "McuTemplates",
+		},
+	},
 }
 
-// validPrefix check if r's prefix is valid
-func (r *responsePacket) validPrefix() bool {
-	if r.Header == nil {
-		return false
-	}
-	return r.Header.Prefix == PREFIX_RESPONSE
+// cmdEvaluator is boolean evaluator for findCmd().
+type cmdEvaluator func(code, subCode int, cmd *command) bool
+
+// getCmdByInvoker get related command by invoker
+func getCmdByInvoker(invoker string) (*command, error) {
+	return findCmd(func(code, subCode int, cmd *command) bool {
+		return cmd.invoker == invoker
+	})
 }
 
-// size calculate r's size, ignoring prefix & size field
-func (r *responsePacket) size() int {
-	if r.Header == nil {
-		return 0
-	}
-	return getPacketSize(r) - 3
+// getCmdByCode get related command by code
+func getCmdByCode(code, subCode int) (*command, error) {
+	return findCmd(func(c, sc int, cmd *command) bool {
+		return code == c && subCode == sc
+	})
 }
 
-// validSize check if r's size is valid
-func (r *responsePacket) validSize() bool {
-	if r.Header == nil {
-		return false
-	}
-	return int(r.Header.Size) == r.size()
-}
-
-// belongsTo check if r is response for cmd
-func (r *responsePacket) belongsTo(cmd *command) bool {
-	if r.Header == nil || cmd == nil {
-		return false
-	}
-	return r.Header.Code == cmd.code && r.Header.SubCode == cmd.subCode
-}
-
-// validCmdCode check if r's command code & subCode is valid
-func (r *responsePacket) validCmdCode() bool {
-	if r.Header == nil {
-		return false
-	}
-	_, err := getCmdByCode(int(r.Header.Code), int(r.Header.SubCode))
-	return err == nil
-}
-
-// validResCode check if r's response code is valid
-func (r *responsePacket) validResCode() bool {
-	if r.Header == nil {
-		return false
-	}
-	for i := resCodeError; i < resCodeLimit; i++ {
-		if r.Header.ResCode == i {
-			return true
+// findCmd find related cmd according to boolean evaluator
+func findCmd(evaluator cmdEvaluator) (*command, error) {
+	for code, subCodes := range cmdList {
+		for subCode, cmd := range subCodes {
+			if evaluator(code, subCode, &cmd) {
+				cmd.code = uint8(code)
+				cmd.subCode = uint8(subCode)
+				if cmd.timeout == 0 {
+					cmd.timeout = DEFAULT_CMD_TIMEOUT
+				}
+				return &cmd, nil
+			}
 		}
 	}
-	return false
-}
-
-// hasMessage check if r has message
-func (r *responsePacket) hasMessage() bool {
-	return len(r.Message) > 0
-}
-
-// renderMessage subtitue BikeState to r's message
-func (r *responsePacket) renderMessage() {
-	if !r.hasMessage() {
-		return
-	}
-
-	str := string(r.Message)
-	for i := BikeStateUnknown; i < BikeStateLimit; i++ {
-		old := fmt.Sprintf("{%d}", i)
-		new := BikeState(i).String()
-		str = strings.ReplaceAll(str, old, new)
-	}
-	r.Message = []byte(str)
-}
-
-// message is type for command & response message (last field)
-type message []byte
-
-// overflow check if m length is overflowed
-func (m message) overflow() bool {
-	return len(m) > MESSAGE_LEN_MAX
+	return nil, errCmdNotFound
 }

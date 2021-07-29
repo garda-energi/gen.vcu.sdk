@@ -12,7 +12,8 @@ import (
 )
 
 // decodeResponse extract header and message response from bytes packet.
-func decodeResponse(packet []byte) (*responsePacket, error) {
+func decodeResponse(packet packet) (*responsePacket, error) {
+	// TODO: redundant with decodeReport logic, implement DRY
 	reader := bytes.NewReader(packet)
 	result := &responsePacket{}
 	if err := decode(reader, result); err != nil {
@@ -39,7 +40,7 @@ func decodeResponse(packet []byte) (*responsePacket, error) {
 }
 
 // decodeReport extract report from bytes packet.
-func decodeReport(packet []byte) (*ReportPacket, error) {
+func decodeReport(packet packet) (*ReportPacket, error) {
 	reader := bytes.NewReader(packet)
 	result := &ReportPacket{}
 	if err := decode(reader, result); err != nil {

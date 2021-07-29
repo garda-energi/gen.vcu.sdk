@@ -1,0 +1,37 @@
+name: Go Test
+
+on:
+  push:
+    branches: [development]
+  pull_request:
+    branches: [development]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        go: ["1.16"]
+
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: make build
+
+      - name: Test
+        run: make test
+
+      - name: Cover
+        run: make cover
+
+      - name: Upload coverage to Codecov
+        # run: bash <(curl -s https://codecov.io/bash)
+        uses: codecov/codecov-action@v1

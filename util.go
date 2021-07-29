@@ -49,10 +49,12 @@ func hexToByte(s string) []byte {
 	return b
 }
 
+// bitSet check is bit index is set on word
 func bitSet(word uint32, bit uint8) bool {
 	return word&(1<<bit) > 0
 }
 
+// sliceToStr convert sclice to string
 func sliceToStr(s interface{}, prefix string) string {
 	rv := reflect.ValueOf(s)
 	if rv.Kind() != reflect.Slice {
@@ -106,44 +108,4 @@ func setTopicToVins(topic string, vins []int) []string {
 		topics[i] = setTopicToVin(topic, v)
 	}
 	return topics
-}
-
-func getPacketSize(v interface{}) int {
-	size := 0
-	rv := reflect.ValueOf(v)
-
-	for rv.Kind() == reflect.Ptr && !rv.IsNil() {
-		rv = rv.Elem()
-	}
-
-	switch rk := rv.Kind(); rk {
-
-	case reflect.Struct:
-		for i := 0; i < rv.NumField(); i++ {
-			rvField := rv.Field(i)
-			rtField := rv.Type().Field(i)
-
-			tagField := deTag(rtField.Tag, rvField.Kind())
-			if rvField.Type() == typeOfTime {
-				size += tagField.Len
-			} else if rk := rvField.Kind(); rk == reflect.Struct || rk == reflect.Array || rk == reflect.Ptr || rk == reflect.Slice {
-				size += getPacketSize(rvField.Addr().Interface())
-			} else {
-				size += tagField.Len
-			}
-		}
-
-	case reflect.Array, reflect.Slice:
-		if rv.Type() == typeOfMessage {
-			size += rv.Len()
-		} else {
-			for i := 0; i < rv.Len(); i++ {
-				size += getPacketSize(rv.Index(i).Addr().Interface())
-			}
-		}
-
-	default:
-	}
-
-	return size
 }

@@ -21,9 +21,9 @@ func (ls *Listener) status() mqtt.MessageHandler {
 	return func(client mqtt.Client, msg mqtt.Message) {
 		ls.logger.Println(RPT, debugPacket(msg))
 		vin := getTopicVin(msg.Topic())
-		online := online(msg.Payload())
+		packet := packet(msg.Payload())
 
-		ls.StatusFunc(vin, online)
+		ls.StatusFunc(vin, packet.online())
 	}
 }
 
@@ -41,9 +41,4 @@ func (ls *Listener) report() mqtt.MessageHandler {
 
 		ls.ReportFunc(vin, result)
 	}
-}
-
-// online convert status payload to online status.
-func online(b []byte) bool {
-	return b[0] == '1'
 }

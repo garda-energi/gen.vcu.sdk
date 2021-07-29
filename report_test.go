@@ -68,7 +68,7 @@ func getTestDataFromJson() []string {
 
 func TestReport(t *testing.T) {
 	type args struct {
-		b []byte
+		b packet
 	}
 	type tester struct {
 		name string
@@ -119,7 +119,7 @@ func TestReport(t *testing.T) {
 
 func TestReportErrorHandler(t *testing.T) {
 	type args struct {
-		b []byte
+		b packet
 	}
 	type tester struct {
 		name string

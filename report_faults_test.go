@@ -26,14 +26,14 @@ func TestReportEventsAndFaults(t *testing.T) {
 	type tester struct {
 		name string
 		args struct {
-			b []byte
+			b packet
 		}
 		want expectedData
 	}
 	testdata := make([]tester, 1)
 
 	var resetDataTo = []struct {
-		packet      []byte
+		packet      packet
 		want        expectedData
 		dataChanger map[string]interface{}
 	}{
