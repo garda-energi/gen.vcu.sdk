@@ -16,7 +16,8 @@ type stubMqttClient struct {
 	connected bool
 	cmdChan   chan []byte
 	resChan   chan struct{}
-	stopChan  chan struct{}
+	// stopChan  chan struct{}
+
 	vins      map[int]map[string]responses
 	vinsMutex *sync.RWMutex
 }
@@ -60,11 +61,11 @@ func (c *stubMqttClient) Unsubscribe(topics ...string) mqtt.Token {
 		c.vinsMutex.Lock()
 		if _, ok := c.vins[vin]; ok {
 			switch gTopic {
-			case TOPIC_COMMAND, TOPIC_RESPONSE:
-				c.stopChan <- struct{}{}
-				c.stopChan <- struct{}{}
+			case TOPIC_COMMAND:
+				close(c.cmdChan)
+			case TOPIC_RESPONSE:
+				close(c.resChan)
 			}
-
 			delete(c.vins[vin], gTopic)
 		}
 		c.vinsMutex.Unlock()
@@ -87,40 +88,45 @@ func (c *stubMqttClient) mockSub(filters map[string]byte, callback mqtt.MessageH
 
 		switch gTopic {
 		case TOPIC_COMMAND:
-			go func() {
-				for {
-					select {
-					case msg := <-c.cmdChan:
+			go func(cmdChan <-chan []byte, resChan chan<- struct{}) {
+				for msg := range cmdChan {
+					callback(c.Client, &stubMessage{
+						topic:   topic,
+						payload: msg,
+					})
+					resChan <- struct{}{}
+				}
+			}(c.cmdChan, c.resChan)
+		case TOPIC_RESPONSE:
+			go func(resChan <-chan struct{}) {
+				for range resChan {
+					c.vinsMutex.RLock()
+					responses := c.vins[vin][gTopic]
+					c.vinsMutex.RUnlock()
+
+					for _, msg := range responses {
+						time.Sleep(5 * time.Millisecond)
 						callback(c.Client, &stubMessage{
 							topic:   topic,
 							payload: msg,
 						})
-						c.resChan <- struct{}{}
-					case <-c.stopChan:
-						return
 					}
 				}
-			}()
-		case TOPIC_RESPONSE:
+			}(c.resChan)
+		case TOPIC_REPORT:
 			go func() {
-				for {
-					select {
-					case <-c.resChan:
-						c.vinsMutex.RLock()
-						responses := c.vins[vin][gTopic]
-						c.vinsMutex.RUnlock()
-
-						for _, msg := range responses {
-							time.Sleep(5 * time.Millisecond)
-							callback(c.Client, &stubMessage{
-								topic:   topic,
-								payload: msg,
-							})
-						}
-					case <-c.stopChan:
-						return
-					}
-				}
+				// for {
+				// 	select {
+				// 	case msg := <-c.cmdChan:
+				// 		callback(c.Client, &stubMessage{
+				// 			topic:   topic,
+				// 			payload: msg,
+				// 		})
+				// 		c.resChan <- struct{}{}
+				// 	case <-c.stopChan:
+				// 		return
+				// 	}
+				// }
 			}()
 		}
 	}

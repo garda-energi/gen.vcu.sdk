@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-const testVin = 353313
+const testVin = 354313
 
 func TestResponsePacket(t *testing.T) {
 	testCases := []struct {

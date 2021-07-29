@@ -22,7 +22,6 @@ func newStubClient(l *log.Logger, connected bool) *client {
 			connected: connected,
 			cmdChan:   make(chan []byte),
 			resChan:   make(chan struct{}),
-			stopChan:  make(chan struct{}, 2),
 			vins:      make(map[int]map[string]responses),
 			vinsMutex: &sync.RWMutex{},
 		},
