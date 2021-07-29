@@ -21,12 +21,11 @@ func newStubClient(l *log.Logger, connected bool) *client {
 		Client: &stubMqttClient{
 			connected: connected,
 
-			vinsMutex: &sync.RWMutex{},
-			vins:      make(map[int]map[string]packets),
+			responses: &sync.Map{},
 
-			commandChan:  make(map[int]chan []byte),
-			responseChan: make(map[int]chan struct{}),
-			reportChan:   make(map[int]chan [][]byte),
+			responseChan: &sync.Map{},
+			commandChan:  &sync.Map{},
+			reportChan:   &sync.Map{},
 		},
 		logger: l,
 	}

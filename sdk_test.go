@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 )
 
 var noopListener = Listener{
@@ -75,22 +76,18 @@ func TestSdk(t *testing.T) {
 		vins := VinRange(5, 10)
 
 		_ = api.AddListener(noopListener, vins...)
-		assertSubscribed(t, api, true, TOPIC_STATUS, vins)
-		assertSubscribed(t, api, true, TOPIC_REPORT, vins)
+		assertSubscribed(t, api, true, vins)
 
 		addVins := []int{13, 15}
 		curVins := append(vins, addVins...)
 		_ = api.AddListener(noopListener, addVins...)
-		assertSubscribed(t, api, true, TOPIC_STATUS, curVins)
-		assertSubscribed(t, api, true, TOPIC_REPORT, curVins)
+		assertSubscribed(t, api, true, curVins)
 
 		delVins := []int{4, 5, 6, 15}
 		curVins = []int{7, 8, 9, 10, 13}
 		api.RemoveListener(delVins...)
-		assertSubscribed(t, api, false, TOPIC_STATUS, delVins)
-		assertSubscribed(t, api, false, TOPIC_REPORT, delVins)
-		assertSubscribed(t, api, true, TOPIC_STATUS, curVins)
-		assertSubscribed(t, api, true, TOPIC_REPORT, curVins)
+		assertSubscribed(t, api, false, delVins)
+		assertSubscribed(t, api, true, curVins)
 		api.RemoveListener(curVins...)
 	})
 }
@@ -168,18 +165,19 @@ func TestSdkAddListener(t *testing.T) {
 	})
 }
 
-func assertSubscribed(t *testing.T, api *Sdk, subscribed bool, topic string, vins []int) {
+func assertSubscribed(t *testing.T, api *Sdk, subscribed bool, vins []int) {
 	t.Helper()
+	time.Sleep(time.Millisecond)
 
 	for _, vin := range vins {
-		_, found := sdkStubClient(api).vins[vin][topic]
+		_, found := sdkStubClient(api).reportChan.Load(vin)
 		if subscribed {
 			if !found {
-				t.Fatalf("%s want %v, got none", topic, vin)
+				t.Fatalf("%s want %v, got none", TOPIC_REPORT, vin)
 			}
 		} else {
 			if found {
-				t.Fatalf("%s want no %v, got one", topic, vin)
+				t.Fatalf("%s want no %v, got one", TOPIC_REPORT, vin)
 			}
 		}
 	}
