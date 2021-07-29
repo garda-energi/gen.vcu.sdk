@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -10,86 +9,6 @@ import (
 var noopListener = Listener{
 	StatusFunc: func(vin int, online bool) {},
 	ReportFunc: func(vin int, report *ReportPacket) {},
-}
-
-func TestSdk(t *testing.T) {
-	t.Run("check incomming report packet", func(t *testing.T) {
-		listener := Listener{
-			// StatusFunc: func(vin int, online bool) {
-			// 	fmt.Println(vin, "=>", online)
-			// },
-			ReportFunc: func(vin int, report *ReportPacket) {
-				fmt.Println(report)
-			},
-		}
-
-		api := newStubApi()
-		api.Connect()
-		defer api.Disconnect()
-
-		vins := VinRange(5, 10)
-		err := api.AddListener(listener, vins...)
-		if err != nil {
-			t.Error("want no error, got ", err)
-		}
-		defer api.RemoveListener(vins...)
-
-		vin := vins[0]
-		sdkStubClient(api).
-			mockReport(vin, []*ReportPacket{
-				makeReportPacket(vin),
-			})
-	})
-
-	t.Run("with dis/connected client", func(t *testing.T) {
-		api := newStubApi()
-
-		vin := 100
-
-		want := errClientDisconnected
-		err := api.AddListener(noopListener, vin)
-		switch err {
-		case nil:
-			defer api.RemoveListener(vin)
-		case want:
-		default:
-			t.Errorf("want %s, got %s", want, err)
-		}
-
-		api.Connect()
-		defer api.Disconnect()
-
-		err = api.AddListener(noopListener, vin)
-		switch err {
-		case nil:
-			defer api.RemoveListener(vin)
-		default:
-			t.Error("want no error, got ", err)
-		}
-	})
-
-	t.Run("check the un/subscribed vins", func(t *testing.T) {
-		api := newStubApi()
-		api.Connect()
-		defer api.Disconnect()
-
-		vins := VinRange(5, 10)
-
-		_ = api.AddListener(noopListener, vins...)
-		assertSubscribed(t, api, true, vins)
-
-		addVins := []int{13, 15}
-		curVins := append(vins, addVins...)
-		_ = api.AddListener(noopListener, addVins...)
-		assertSubscribed(t, api, true, curVins)
-
-		delVins := []int{4, 5, 6, 15}
-		curVins = []int{7, 8, 9, 10, 13}
-		api.RemoveListener(delVins...)
-		assertSubscribed(t, api, false, delVins)
-		assertSubscribed(t, api, true, curVins)
-		api.RemoveListener(curVins...)
-	})
 }
 
 func TestSdkAddListener(t *testing.T) {
@@ -181,4 +100,56 @@ func assertSubscribed(t *testing.T, api *Sdk, subscribed bool, vins []int) {
 			}
 		}
 	}
+}
+
+func TestSdkConnection(t *testing.T) {
+	t.Run("with dis/connected client", func(t *testing.T) {
+		api := newStubApi()
+
+		vin := 100
+
+		want := errClientDisconnected
+		err := api.AddListener(noopListener, vin)
+		switch err {
+		case nil:
+			defer api.RemoveListener(vin)
+		case want:
+		default:
+			t.Errorf("want %s, got %s", want, err)
+		}
+
+		api.Connect()
+		defer api.Disconnect()
+
+		err = api.AddListener(noopListener, vin)
+		switch err {
+		case nil:
+			defer api.RemoveListener(vin)
+		default:
+			t.Error("want no error, got ", err)
+		}
+	})
+
+	t.Run("check the un/subscribed vins", func(t *testing.T) {
+		api := newStubApi()
+		api.Connect()
+		defer api.Disconnect()
+
+		vins := VinRange(5, 10)
+
+		_ = api.AddListener(noopListener, vins...)
+		assertSubscribed(t, api, true, vins)
+
+		addVins := []int{13, 15}
+		curVins := append(vins, addVins...)
+		_ = api.AddListener(noopListener, addVins...)
+		assertSubscribed(t, api, true, curVins)
+
+		delVins := []int{4, 5, 6, 15}
+		curVins = []int{7, 8, 9, 10, 13}
+		api.RemoveListener(delVins...)
+		assertSubscribed(t, api, false, delVins)
+		assertSubscribed(t, api, true, curVins)
+		api.RemoveListener(curVins...)
+	})
 }

@@ -31,7 +31,12 @@ func (c *commander) exec(invoker string, msg message) ([]byte, error) {
 
 // sendCommand encode and send outgoing command.
 func (c *commander) sendCommand(cmd *command, msg message) error {
-	packet, err := encodeCommand(c.vin, cmd, msg)
+	if msg.overflow() {
+		return errInputOutOfRange("message")
+	}
+
+	cp := makeCommandPacket(c.vin, cmd, msg)
+	packet, err := encodePacket(cp)
 	if err != nil {
 		return err
 	}

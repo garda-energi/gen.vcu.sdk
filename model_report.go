@@ -100,7 +100,7 @@ func (v *Vcu) RealtimeData() bool {
 	if v == nil {
 		return false
 	}
-	realtimeDuration := time.Now().Add(REPORT_REALTIME_DURATION)
+	realtimeDuration := time.Now().UTC().Add(REPORT_REALTIME_DURATION)
 	return v.LogBuffered == 0 && v.LogDatetime.After(realtimeDuration)
 }
 

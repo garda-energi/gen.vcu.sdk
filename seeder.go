@@ -46,7 +46,7 @@ func makeReportPacket(vin int) *ReportPacket {
 	return &ReportPacket{
 		Header: &HeaderReport{
 			Header: Header{
-				Prefix:       TOPIC_REPORT,
+				Prefix:       PREFIX_REPORT,
 				Size:         0,
 				Vin:          uint32(vin),
 				SendDatetime: time.Now(),

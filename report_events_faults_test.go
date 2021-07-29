@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func TestReportMethods(t *testing.T) {
+func TestReportEventsAndFaults(t *testing.T) {
 	type expectedData struct {
 		vcuEvents       VcuEvents
 		vcuEventsString string

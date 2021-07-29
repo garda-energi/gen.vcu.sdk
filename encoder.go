@@ -13,21 +13,17 @@ import (
 // header has length and length get after encode.
 // alternative solution : change bit #3 after encode as length of body
 
-// encodeCommand combine command and message to bytes packet.
-func encodeCommand(vin int, cmd *command, msg message) ([]byte, error) {
-	if msg.overflow() {
-		return nil, errInputOutOfRange("message")
-	}
-
-	cp := makeCommandPacket(vin, cmd, msg)
-
-	resBytes, err := encode(&cp)
+// encodePacket encode to bytes packet with appropriate len.
+func encodePacket(p interface{}) ([]byte, error) {
+	resBytes, err := encode(p)
 	if err != nil {
 		return nil, err
 	}
 
 	// change Header.Size
-	resBytes[2] = uint8(len(resBytes) - 3)
+	if resBytes[2] == 0 {
+		resBytes[2] = uint8(len(resBytes) - 3)
+	}
 	return resBytes, nil
 }
 
