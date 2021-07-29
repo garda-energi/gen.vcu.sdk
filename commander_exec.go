@@ -41,8 +41,8 @@ func (c *commander) sendCommand(cmd *command, msg message) error {
 		return err
 	}
 
-	c.client.pub(setTopicToVin(TOPIC_COMMAND, c.vin), 1, true, packet)
-	return nil
+	topic := setTopicToVin(TOPIC_COMMAND, c.vin)
+	return c.client.pub(topic, 1, true, packet)
 }
 
 // waitResponse wait, decode and check of incomming ACK and RESPONSE packet.

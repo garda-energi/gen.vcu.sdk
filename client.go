@@ -31,7 +31,7 @@ func newClient(config *ClientConfig, logger *log.Logger) *client {
 }
 
 func (c *client) pub(topic string, qos byte, retained bool, packet packet) error {
-	token := c.Publish(topic, qos, retained, packet)
+	token := c.Publish(topic, qos, retained, []byte(packet))
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
