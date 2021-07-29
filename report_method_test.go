@@ -92,23 +92,24 @@ func TestReportMethods(t *testing.T) {
 				gotVcuEvent := got.Vcu.GetEvents()
 				gotBmsFault := got.Bms.GetFaults()
 				gotMcuFault := got.Mcu.GetFaults()
+
 				if score := compareVar(gotVcuEvent, tt.want.vcuEvents); score != 100 {
 					t.Errorf("[VCU Event] Got %s want %s", gotVcuEvent, tt.want.vcuEvents)
 				}
-				if score := compareVar(gotVcuEvent.String(), tt.want.vcuEvents.String()); score != 100 {
-					t.Errorf("[VCU Event string] Got %s want %s", gotVcuEvent, tt.want.vcuEvents)
+				if score := compareVar(gotVcuEvent.String(), tt.want.vcuEventsString); score != 100 {
+					t.Errorf("[VCU Event string] Got %s want %s", gotVcuEvent, tt.want.vcuEventsString)
 				}
 				if score := compareVar(gotBmsFault, tt.want.bmsFaults); score != 100 {
 					t.Errorf("[BMS Faults] Got %s want %s", gotBmsFault, tt.want.bmsFaults)
 				}
-				if score := compareVar(gotBmsFault.String(), tt.want.bmsFaults.String()); score != 100 {
-					t.Errorf("[BMS Faults string] Got %s want %s", gotBmsFault, tt.want.bmsFaults)
+				if score := compareVar(gotBmsFault.String(), tt.want.bmsFaultsString); score != 100 {
+					t.Errorf("[BMS Faults string] Got %s want %s", gotBmsFault, tt.want.bmsFaultsString)
 				}
 				if score := compareVar(gotMcuFault, tt.want.mcuFaults); score != 100 {
 					t.Errorf("[MCU Faults] Got %s want %s", gotMcuFault, tt.want.mcuFaults)
 				}
-				if score := compareVar(gotMcuFault.String(), tt.want.mcuFaults.String()); score != 100 {
-					t.Errorf("[MCU Faults string] Got %s want %s", gotMcuFault, tt.want.mcuFaults)
+				if score := compareVar(gotMcuFault.String(), tt.want.mcuFaultsString); score != 100 {
+					t.Errorf("[MCU Faults string] Got %s want %s", gotMcuFault, tt.want.mcuFaultsString)
 				}
 			}
 		})

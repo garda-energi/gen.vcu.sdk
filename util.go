@@ -49,6 +49,19 @@ func hexToByte(s string) []byte {
 	return b
 }
 
+func sliceToStr(s interface{}, prefix string) string {
+	rv := reflect.ValueOf(s)
+	if rv.Kind() != reflect.Slice {
+		return ""
+	}
+
+	buf := make([]string, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		buf[i] = fmt.Sprintf("%s", rv.Index(i))
+	}
+	return prefix + "[" + strings.Join(buf, ", ") + "]"
+}
+
 // debugPacket format received mqtt message
 func debugPacket(msg mqtt.Message) string {
 	return fmt.Sprintln(msg.Topic(), "=>", byteToHex(msg.Payload()))

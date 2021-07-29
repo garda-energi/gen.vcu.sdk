@@ -3,7 +3,6 @@ package sdk
 import (
 	"fmt"
 	"reflect"
-	"strings"
 	"time"
 )
 
@@ -77,11 +76,7 @@ type Vcu struct {
 
 // String converts VcuEvents type to string.
 func (ve VcuEvents) String() string {
-	strEvents := make([]string, len(ve))
-	for _, v := range ve {
-		strEvents = append(strEvents, v.String())
-	}
-	return "[" + strings.Join(strEvents, ", ") + "]"
+	return sliceToStr(ve, "")
 }
 
 // GetEvents parse v's events in an array
@@ -255,11 +250,7 @@ type Bms struct {
 
 // String converts BmsFaults type to string.
 func (bf BmsFaults) String() string {
-	strBmsFaults := make([]string, len(bf))
-	for _, v := range bf {
-		strBmsFaults = append(strBmsFaults, v.String())
-	}
-	return "[" + strings.Join(strBmsFaults, ", ") + "]"
+	return sliceToStr(bf, "")
 }
 
 // GetFaults parse b's fault field
@@ -275,7 +266,6 @@ func (b *Bms) GetFaults() BmsFaults {
 
 // IsFault check if b's fault is bf
 func (b *Bms) IsFault(bf BmsFault) bool {
-	// return b.Faults&(uint16(math.Pow(2, float64(bf)))) != 0
 	return b.Faults&(1<<uint8(bf)) > 0
 }
 
@@ -324,20 +314,7 @@ type Mcu struct {
 
 // String converts McuFaults type to string.
 func (mf McuFaults) String() string {
-	// see the pattern? it is redundant
-	strMcuPostFaults := make([]string, len(mf.Post))
-	for _, v := range mf.Post {
-		strMcuPostFaults = append(strMcuPostFaults, v.String())
-	}
-	strPostFaults := "Post[" + strings.Join(strMcuPostFaults, ", ") + "]"
-
-	strMcuRunFaults := make([]string, len(mf.Run))
-	for _, v := range mf.Run {
-		strMcuRunFaults = append(strMcuRunFaults, v.String())
-	}
-	strRunFaults := "Run[" + strings.Join(strMcuRunFaults, ", ") + "]"
-
-	return strPostFaults + "\n" + strRunFaults
+	return sliceToStr(mf.Post, "Post") + "\n" + sliceToStr(mf.Run, "Run")
 }
 
 // GetFaults parse mcu's fault field
