@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"fmt"
-	"math"
 	"reflect"
 	"strings"
 	"time"
@@ -372,39 +371,57 @@ func (m *Mcu) GetFaults() McuFaults {
 		Post: make([]McuFaultPost, 0, MCU_POST_FAULTS_MAX),
 		Run:  make([]McuFaultRun, 0, MCU_RUN_FAULTS_MAX),
 	}
-	var tmpFaults uint32
 
-	// see the pattern? it is redundant
-	tmpFaults = m.Faults.Post
+	// var tmpFaults uint32
+	// // see the pattern? it is redundant
+	// tmpFaults = m.Faults.Post
+	// for i := 0; i < int(MCU_POST_FAULTS_MAX); i++ {
+	// 	// check if first bit is 1
+	// 	if tmpFaults&1 == 1 {
+	// 		r.Post = append(r.Post, McuFaultPost(i))
+	// 	}
+
+	// 	// shift bit to right (1 bit)
+	// 	tmpFaults /= 2
+	// }
+
+	// // see the pattern? it is redundant
+	// tmpFaults = m.Faults.Run
+	// for i := 0; i < int(MCU_RUN_FAULTS_MAX); i++ {
+	// 	// check if first bit is 1
+	// 	if tmpFaults&1 == 1 {
+	// 		r.Run = append(r.Run, McuFaultRun(i))
+	// 	}
+
+	// 	// shift bit to right (1 bit)
+	// 	tmpFaults /= 2
+	// }
+
 	for i := 0; i < int(MCU_POST_FAULTS_MAX); i++ {
-		// check if first bit is 1
-		if tmpFaults&1 == 1 {
+		if m.IsFaultPost(McuFaultPost(i)) {
 			r.Post = append(r.Post, McuFaultPost(i))
 		}
-
-		// shift bit to right (1 bit)
-		tmpFaults /= 2
 	}
 
-	// see the pattern? it is redundant
-	tmpFaults = m.Faults.Run
 	for i := 0; i < int(MCU_RUN_FAULTS_MAX); i++ {
-		// check if first bit is 1
-		if tmpFaults&1 == 1 {
+		if m.IsFaultRun(McuFaultRun(i)) {
 			r.Run = append(r.Run, McuFaultRun(i))
 		}
-
-		// shift bit to right (1 bit)
-		tmpFaults /= 2
 	}
 
 	return r
 }
 
-// IsFault check if mcu's fault is mf
-// usage m.IsFault(m.Faults.Post, McuFault(fault))
-func (m *Mcu) IsFault(faults uint32, mf McuFault) bool {
-	return (faults & (uint32(math.Pow(2, float64(mf))))) != 0
+// IsFaultPost check if mcu's post fault is mf
+func (m *Mcu) IsFaultPost(mf McuFaultPost) bool {
+	// return (faults & (uint32(math.Pow(2, float64(mf))))) != 0
+	return m.Faults.Post&(1<<uint8(mf)) > 0
+}
+
+// IsFaultRun check if mcu's run fault is mf
+func (m *Mcu) IsFaultRun(mf McuFaultRun) bool {
+	// return (faults & (uint32(math.Pow(2, float64(mf))))) != 0
+	return m.Faults.Run&(1<<uint8(mf)) > 0
 }
 
 type Task struct {
