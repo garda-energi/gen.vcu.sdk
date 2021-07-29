@@ -50,3 +50,44 @@ func deTag(tag reflect.StructTag, rk reflect.Kind) tagger {
 
 	return t
 }
+
+// getPacketSize calculate packet size
+func getPacketSize(v interface{}) int {
+	size := 0
+	rv := reflect.ValueOf(v)
+
+	for rv.Kind() == reflect.Ptr && !rv.IsNil() {
+		rv = rv.Elem()
+	}
+
+	switch rk := rv.Kind(); rk {
+
+	case reflect.Struct:
+		for i := 0; i < rv.NumField(); i++ {
+			rvField := rv.Field(i)
+			rtField := rv.Type().Field(i)
+
+			tagField := deTag(rtField.Tag, rvField.Kind())
+			if rvField.Type() == typeOfTime {
+				size += tagField.Len
+			} else if rk := rvField.Kind(); rk == reflect.Struct || rk == reflect.Array || rk == reflect.Ptr || rk == reflect.Slice {
+				size += getPacketSize(rvField.Addr().Interface())
+			} else {
+				size += tagField.Len
+			}
+		}
+
+	case reflect.Array, reflect.Slice:
+		if rv.Type() == typeOfMessage {
+			size += rv.Len()
+		} else {
+			for i := 0; i < rv.Len(); i++ {
+				size += getPacketSize(rv.Index(i).Addr().Interface())
+			}
+		}
+
+	default:
+	}
+
+	return size
+}

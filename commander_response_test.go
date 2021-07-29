@@ -11,7 +11,7 @@ func TestResponseAck(t *testing.T) {
 	testCases := []struct {
 		desc string
 		want error
-		res  []byte
+		res  packet
 	}{
 		{
 			desc: "no packet",

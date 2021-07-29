@@ -3,7 +3,6 @@ package sdk
 import (
 	"reflect"
 	"testing"
-	"time"
 )
 
 var noopListener = Listener{
@@ -82,24 +81,6 @@ func TestSdkAddListener(t *testing.T) {
 			t.Errorf("want %v, got %v", want, got)
 		}
 	})
-}
-
-func assertSubscribed(t *testing.T, api *Sdk, subscribed bool, vins []int) {
-	t.Helper()
-	time.Sleep(time.Millisecond)
-
-	for _, vin := range vins {
-		_, found := sdkStubClient(api).reportChan.Load(vin)
-		if subscribed {
-			if !found {
-				t.Fatalf("%s want %v, got none", TOPIC_REPORT, vin)
-			}
-		} else {
-			if found {
-				t.Fatalf("%s want no %v, got one", TOPIC_REPORT, vin)
-			}
-		}
-	}
 }
 
 func TestSdkConnection(t *testing.T) {

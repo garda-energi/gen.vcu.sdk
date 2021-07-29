@@ -14,13 +14,13 @@ import (
 // alternative solution : change bit #3 after encode as length of body
 
 // encodePacket encode to bytes packet with appropriate len.
-func encodePacket(p interface{}) ([]byte, error) {
+func encodePacket(p interface{}) (packet, error) {
 	resBytes, err := encode(p)
 	if err != nil {
 		return nil, err
 	}
 
-	// change Header.Size
+	// calculate header size
 	if resBytes[2] == 0 {
 		resBytes[2] = uint8(len(resBytes) - 3)
 	}

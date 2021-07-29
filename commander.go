@@ -17,7 +17,7 @@ type commander struct {
 	vin     int
 	logger  *log.Logger
 	mutex   *sync.Mutex
-	resChan chan []byte
+	resChan chan packet
 	client  *client
 	sleeper Sleeper
 }
@@ -28,7 +28,7 @@ func newCommander(vin int, c *client, s Sleeper, l *log.Logger) (*commander, err
 		vin:     vin,
 		logger:  l,
 		mutex:   &sync.Mutex{},
-		resChan: make(chan []byte, 1),
+		resChan: make(chan packet, 1),
 		client:  c,
 		sleeper: s,
 	}
@@ -92,8 +92,7 @@ func (c *commander) OvdState(state BikeState) error {
 		return errInputOutOfRange("state")
 	}
 
-	msg := []byte{byte(state)}
-	_, err := c.exec("OvdState", msg)
+	_, err := c.exec("OvdState", message{byte(state)})
 	return err
 }
 
@@ -113,8 +112,7 @@ func (c *commander) OvdReportFrame(frame Frame) error {
 		return errInputOutOfRange("frame")
 	}
 
-	msg := []byte{byte(frame)}
-	_, err := c.exec("OvdReportFrame", msg)
+	_, err := c.exec("OvdReportFrame", message{byte(frame)})
 	return err
 }
 
@@ -215,7 +213,7 @@ func (c *commander) NetSendUssd(ussd string) (string, error) {
 		return "", errors.New("invalid ussd format")
 	}
 
-	msg, err := c.exec("NetSendUssd", []byte(ussd))
+	msg, err := c.exec("NetSendUssd", message(ussd))
 	if err != nil {
 		return "", err
 	}
@@ -237,8 +235,7 @@ func (c *commander) HbarDrive(drive ModeDrive) error {
 		return errInputOutOfRange("drive-mode")
 	}
 
-	msg := []byte{byte(drive)}
-	_, err := c.exec("HbarDrive", msg)
+	_, err := c.exec("HbarDrive", message{byte(drive)})
 	return err
 }
 
@@ -248,8 +245,7 @@ func (c *commander) HbarTrip(trip ModeTrip) error {
 		return errInputOutOfRange("trip-mode")
 	}
 
-	msg := []byte{byte(trip)}
-	_, err := c.exec("HbarTrip", msg)
+	_, err := c.exec("HbarTrip", message{byte(trip)})
 	return err
 }
 
@@ -259,8 +255,7 @@ func (c *commander) HbarAvg(avg ModeAvg) error {
 		return errInputOutOfRange("avg-mode")
 	}
 
-	msg := []byte{byte(avg)}
-	_, err := c.exec("HbarAvg", msg)
+	_, err := c.exec("HbarAvg", message{byte(avg)})
 	return err
 }
 

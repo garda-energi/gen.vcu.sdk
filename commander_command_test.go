@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"testing"
@@ -141,7 +142,7 @@ func TestCommandHandler(t *testing.T) {
 				})
 
 			// call related method, pass in arg, evaluate outs
-			resOut, errOut := callCommand(cmder, tC.invoker, tC.arg)
+			resOut, errOut := cmder.callCommand(tC.invoker, tC.arg)
 
 			// check output error
 			if errOut != nil {
@@ -167,62 +168,62 @@ func TestCommandInvalidInputHandler(t *testing.T) {
 	testCases := []struct {
 		invoker string
 		arg     interface{}
-		wantErr string
+		want    error
 	}{
 		{
 			invoker: "OvdState",
 			arg:     BikeStateLimit,
-			wantErr: errInputOutOfRange("state").Error(),
+			want:    errInputOutOfRange("state"),
 		},
 		{
 			invoker: "OvdReportInterval",
 			arg:     100 * time.Hour,
-			wantErr: errInputOutOfRange("duration").Error(),
+			want:    errInputOutOfRange("duration"),
 		},
 		{
 			invoker: "OvdReportFrame",
 			arg:     FrameLimit,
-			wantErr: errInputOutOfRange("frame").Error(),
+			want:    errInputOutOfRange("frame"),
 		},
 		{
 			invoker: "FingerDel",
 			arg:     9,
-			wantErr: errInputOutOfRange("id").Error(),
+			want:    errInputOutOfRange("id"),
 		},
 		{
 			invoker: "NetSendUssd",
 			arg:     "*123*123123*324234*423423424*4324342424234#",
-			wantErr: errInputOutOfRange("ussd").Error(),
+			want:    errInputOutOfRange("ussd"),
 		},
 		{
 			invoker: "NetSendUssd",
 			arg:     "*#",
-			wantErr: errInputOutOfRange("ussd").Error(),
+			want:    errInputOutOfRange("ussd"),
 		},
 		{
 			invoker: "NetSendUssd",
 			arg:     "*123*1*3*",
-			wantErr: "invalid ussd format",
+			want:    errors.New("invalid ussd format"),
 		},
 		{
 			invoker: "HbarDrive",
 			arg:     ModeDriveLimit,
-			wantErr: errInputOutOfRange("drive-mode").Error(),
+			want:    errInputOutOfRange("drive-mode"),
 		},
 		{
 			invoker: "HbarTrip",
 			arg:     ModeTripLimit,
-			wantErr: errInputOutOfRange("trip-mode").Error(),
+			want:    errInputOutOfRange("trip-mode"),
 		},
 		{
 			invoker: "HbarAvg",
 			arg:     ModeAvgLimit,
-			wantErr: errInputOutOfRange("avg-mode").Error(),
+			want:    errInputOutOfRange("avg-mode"),
 		},
 		{
 			invoker: "McuSpeedMax",
 			arg:     uint8(245),
-			wantErr: errInputOutOfRange("speed-max").Error(),
+			want:    errInputOutOfRange("speed-max"),
 		},
 		{
 			invoker: "McuTemplates",
@@ -231,7 +232,7 @@ func TestCommandInvalidInputHandler(t *testing.T) {
 				{DisCur: MCU_DISCUR_MIN - 1, Torque: 20}, // standard
 				{DisCur: 50, Torque: 25},                 // sport
 			},
-			wantErr: errInputOutOfRange(fmt.Sprint(ModeDriveStandard, ":dischare-current")).Error(),
+			want: errInputOutOfRange(fmt.Sprint(ModeDriveStandard, ":dischare-current")),
 		},
 		{
 			invoker: "McuTemplates",
@@ -240,7 +241,7 @@ func TestCommandInvalidInputHandler(t *testing.T) {
 				{DisCur: 50, Torque: 20},                 // standard
 				{DisCur: 50, Torque: MCU_TORQUE_MAX + 1}, // sport
 			},
-			wantErr: errInputOutOfRange(fmt.Sprint(ModeDriveSport, ":torque")).Error(),
+			want: errInputOutOfRange(fmt.Sprint(ModeDriveSport, ":torque")),
 		},
 		{
 			invoker: "McuTemplates",
@@ -248,12 +249,12 @@ func TestCommandInvalidInputHandler(t *testing.T) {
 				{DisCur: 0, Torque: 10},  // economy
 				{DisCur: 50, Torque: 20}, // standard
 			},
-			wantErr: "templates should be set for all driving mode at once",
+			want: errors.New("templates should be set for all driving mode at once"),
 		},
 	}
 
 	for _, tC := range testCases {
-		testName := fmt.Sprint(tC.invoker, " for ", tC.wantErr)
+		testName := fmt.Sprint(tC.invoker, " for ", tC.want)
 		t.Run(testName, func(t *testing.T) {
 			cmder := newStubCommander(testVin)
 			defer cmder.Destroy()
@@ -262,11 +263,11 @@ func TestCommandInvalidInputHandler(t *testing.T) {
 				mockResponse(testVin, tC.invoker, nil)
 
 			// call related method, pass in arg, evaluate outs
-			_, errOut := callCommand(cmder, tC.invoker, tC.arg)
+			_, errOut := cmder.callCommand(tC.invoker, tC.arg)
 
 			// check output error
-			if err := errOut.(error).Error(); err != tC.wantErr {
-				t.Errorf("want %s, got %s", tC.wantErr, err)
+			if err := errOut.(error); err.Error() != tC.want.Error() {
+				t.Errorf("want %s, got %s", tC.want, err)
 			}
 		})
 	}

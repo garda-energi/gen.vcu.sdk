@@ -144,25 +144,25 @@ func TestSdkStatusListener(t *testing.T) {
 
 	testCases := []struct {
 		desc   string
-		packet []byte
+		packet packet
 		online bool
 		vin    int
 	}{
 		{
 			desc:   "online status packet",
-			packet: []byte("1"),
+			packet: packet("1"),
 			online: true,
 			vin:    5,
 		},
 		{
 			desc:   "offline status packet",
-			packet: []byte("0"),
+			packet: packet("0"),
 			online: false,
 			vin:    8,
 		},
 		{
 			desc:   "unknown status packet",
-			packet: []byte("XXX"),
+			packet: packet("XXX"),
 			online: false,
 			vin:    10,
 		},
