@@ -8,18 +8,18 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-type responses [][]byte
+type packets [][]byte
 
 // stubMqttClient implements stub mqtt client stub
 type stubMqttClient struct {
 	mqtt.Client
 	connected bool
-	cmdChan   chan []byte
-	resChan   chan struct{}
-	// stopChan  chan struct{}
 
-	vins      map[int]map[string]responses
 	vinsMutex *sync.RWMutex
+	vins      map[int]map[string]packets
+
+	cmdChan map[int]chan []byte
+	resChan map[int]chan struct{}
 }
 
 func (c *stubMqttClient) Connect() mqtt.Token {
@@ -36,9 +36,11 @@ func (c *stubMqttClient) IsConnected() bool {
 }
 
 func (c *stubMqttClient) Publish(topic string, qos byte, retained bool, payload interface{}) mqtt.Token {
-	bytes := payload.([]byte)
-	if flush := bytes == nil; !flush {
-		c.cmdChan <- bytes
+	packet := payload.([]byte)
+	// feed go routine (command topic) with encoded command
+	if flush := packet == nil; !flush {
+		vin := getTopicVin(topic)
+		c.cmdChan[vin] <- packet
 	}
 	return &mqtt.DummyToken{}
 }
@@ -58,14 +60,17 @@ func (c *stubMqttClient) Unsubscribe(topics ...string) mqtt.Token {
 		gTopic := toGlobalTopic(topic)
 		vin := getTopicVin(topic)
 
+		// signal running go routines to stop
 		c.vinsMutex.Lock()
 		if _, ok := c.vins[vin]; ok {
 			switch gTopic {
 			case TOPIC_COMMAND:
-				close(c.cmdChan)
+				close(c.cmdChan[vin])
 			case TOPIC_RESPONSE:
-				close(c.resChan)
+				close(c.resChan[vin])
 			}
+
+			// remove vin's topic from dictionary
 			delete(c.vins[vin], gTopic)
 		}
 		c.vinsMutex.Unlock()
@@ -79,15 +84,29 @@ func (c *stubMqttClient) mockSub(filters map[string]byte, callback mqtt.MessageH
 		gTopic := toGlobalTopic(topic)
 		vin := getTopicVin(topic)
 
+		// create topics to vin's dictionary
 		c.vinsMutex.Lock()
 		if _, ok := c.vins[vin]; !ok {
-			c.vins[vin] = make(map[string]responses)
+			c.vins[vin] = make(map[string]packets)
 		}
 		c.vins[vin][gTopic] = nil
 		c.vinsMutex.Unlock()
 
+		// create cmd & response chan (if not initialized)
+		switch gTopic {
+		case TOPIC_COMMAND, TOPIC_RESPONSE:
+			if _, ok := c.cmdChan[vin]; !ok {
+				c.cmdChan[vin] = make(chan []byte)
+			}
+			if _, ok := c.resChan[vin]; !ok {
+				c.resChan[vin] = make(chan struct{})
+			}
+		}
+
+		// make go routines to mock broker behavior on specific topic
 		switch gTopic {
 		case TOPIC_COMMAND:
+			// wait incomming published command, then send signal to (response) go routine
 			go func(cmdChan <-chan []byte, resChan chan<- struct{}) {
 				for msg := range cmdChan {
 					callback(c.Client, &stubMessage{
@@ -96,8 +115,9 @@ func (c *stubMqttClient) mockSub(filters map[string]byte, callback mqtt.MessageH
 					})
 					resChan <- struct{}{}
 				}
-			}(c.cmdChan, c.resChan)
+			}(c.cmdChan[vin], c.resChan[vin])
 		case TOPIC_RESPONSE:
+			// wait incomming signal from (command) go routine, then pass mock responses to callback
 			go func(resChan <-chan struct{}) {
 				for range resChan {
 					c.vinsMutex.RLock()
@@ -112,22 +132,7 @@ func (c *stubMqttClient) mockSub(filters map[string]byte, callback mqtt.MessageH
 						})
 					}
 				}
-			}(c.resChan)
-		case TOPIC_REPORT:
-			go func() {
-				// for {
-				// 	select {
-				// 	case msg := <-c.cmdChan:
-				// 		callback(c.Client, &stubMessage{
-				// 			topic:   topic,
-				// 			payload: msg,
-				// 		})
-				// 		c.resChan <- struct{}{}
-				// 	case <-c.stopChan:
-				// 		return
-				// 	}
-				// }
-			}()
+			}(c.resChan[vin])
 		}
 	}
 }
@@ -135,7 +140,7 @@ func (c *stubMqttClient) mockSub(filters map[string]byte, callback mqtt.MessageH
 func (c *stubMqttClient) mockAck(vin int, ack []byte) {
 	if ack != nil {
 		c.vinsMutex.Lock()
-		c.vins[vin][TOPIC_RESPONSE] = responses{ack}
+		c.vins[vin][TOPIC_RESPONSE] = packets{ack}
 		c.vinsMutex.Unlock()
 	}
 }
@@ -160,7 +165,7 @@ func (c *stubMqttClient) mockResponse(vin int, invoker string, modifier func(*re
 	}
 
 	c.vinsMutex.Lock()
-	c.vins[vin][TOPIC_RESPONSE] = responses{
+	c.vins[vin][TOPIC_RESPONSE] = packets{
 		strToBytes(PREFIX_ACK),
 		resBytes,
 	}
