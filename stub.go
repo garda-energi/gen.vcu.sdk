@@ -42,7 +42,7 @@ func (c *stubMqttClient) IsConnected() bool {
 }
 
 func (c *stubMqttClient) Publish(topic string, qos byte, retained bool, payload interface{}) mqtt.Token {
-	packet := payload.(packet)
+	packet := packet(payload.([]byte))
 	if flush := packet == nil; !flush {
 		vin := getTopicVin(topic)
 		// feed go routine (command topic) with encoded command
