@@ -78,7 +78,7 @@ type Vcu struct {
 
 // String converts VcuEvents type to string.
 func (ve VcuEvents) String() string {
-	strEvents := make([]string, 0)
+	strEvents := make([]string, len(ve))
 	for _, v := range ve {
 		strEvents = append(strEvents, v.String())
 	}
@@ -89,22 +89,28 @@ func (ve VcuEvents) String() string {
 func (v *Vcu) GetEvents() VcuEvents {
 	r := make(VcuEvents, 0, VCU_EVENTS_MAX)
 
-	tmpEvents := v.Events
+	// tmpEvents := v.Events
+	// for i := 0; i < int(VCU_EVENTS_MAX); i++ {
+	// 	// check if first bit is 1
+	// 	if tmpEvents&1 == 1 {
+	// 		r = append(r, VcuEvent(i))
+	// 	}
+	// 	// shift bit to right (1 bit)
+	// 	tmpEvents /= 2
+	// }
+
 	for i := 0; i < int(VCU_EVENTS_MAX); i++ {
-		// check if first bit is 1
-		if tmpEvents&1 == 1 {
+		if v.IsEvent(VcuEvent(i)) {
 			r = append(r, VcuEvent(i))
 		}
-
-		// shift bit to right (1 bit)
-		tmpEvents /= 2
 	}
 	return r
 }
 
 // IsEvent check if v's event is ev
 func (v *Vcu) IsEvent(ev VcuEvent) bool {
-	return v.Events&(uint16(math.Pow(2, float64(ev)))) != 0
+	// return v.Events&(uint16(math.Pow(2, float64(ev)))) != 0
+	return v.Events&(1<<uint8(ev)) > 0
 }
 
 // RealtimeData check if current report log is realtime
@@ -262,7 +268,7 @@ type Bms struct {
 
 // String converts BmsFaults type to string.
 func (bf BmsFaults) String() string {
-	strBmsFaults := make([]string, 0)
+	strBmsFaults := make([]string, len(bf))
 	for _, v := range bf {
 		strBmsFaults = append(strBmsFaults, v.String())
 	}
@@ -339,13 +345,13 @@ type Mcu struct {
 // String converts McuFaults type to string.
 func (mf McuFaults) String() string {
 	// see the pattern? it is redundant
-	strMcuPostFaults := make([]string, 0)
+	strMcuPostFaults := make([]string, len(mf.Post))
 	for _, v := range mf.Post {
 		strMcuPostFaults = append(strMcuPostFaults, v.String())
 	}
 	strPostFaults := "Post[" + strings.Join(strMcuPostFaults, ", ") + "]"
 
-	strMcuRunFaults := make([]string, 0)
+	strMcuRunFaults := make([]string, len(mf.Run))
 	for _, v := range mf.Run {
 		strMcuRunFaults = append(strMcuRunFaults, v.String())
 	}
