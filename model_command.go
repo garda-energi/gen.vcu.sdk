@@ -3,7 +3,6 @@ package sdk
 import (
 	"fmt"
 	"strings"
-	"time"
 )
 
 type HeaderCommand struct {
@@ -17,22 +16,6 @@ type commandPacket struct {
 	Message message
 }
 
-func newCommandPacket(vin int, cmd *command, msg message) *commandPacket {
-	return &commandPacket{
-		Header: &HeaderCommand{
-			Header: Header{
-				Prefix:       PREFIX_COMMAND,
-				Size:         0,
-				Vin:          uint32(vin),
-				SendDatetime: time.Now(),
-			},
-			Code:    cmd.code,
-			SubCode: cmd.subCode,
-		},
-		Message: msg,
-	}
-}
-
 type headerResponse struct {
 	HeaderCommand
 	ResCode resCode `type:"uint8"`
@@ -41,25 +24,6 @@ type headerResponse struct {
 type responsePacket struct {
 	Header  *headerResponse
 	Message message `type:"slice"`
-}
-
-func newResponsePacket(vin int, cmd *command, msg message) *responsePacket {
-	return &responsePacket{
-		Header: &headerResponse{
-			HeaderCommand: HeaderCommand{
-				Header: Header{
-					Prefix:       PREFIX_RESPONSE,
-					Size:         0,
-					Vin:          uint32(vin),
-					SendDatetime: time.Now(),
-				},
-				Code:    cmd.code,
-				SubCode: cmd.subCode,
-			},
-			ResCode: resCodeOk,
-		},
-		Message: msg,
-	}
 }
 
 // validPrefix check if r's prefix is valid

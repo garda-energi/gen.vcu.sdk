@@ -137,7 +137,8 @@ func TestSdkAddListener(t *testing.T) {
 func assertSubscribed(t *testing.T, api *Sdk, subscribed bool, topic string, vins []int) {
 	t.Helper()
 
-	fc := sdkStubClient(api)
+	// fc := sdkStubClient(api)
+	fc := api.client.Client.(*stubMqttClient)
 	for _, vin := range vins {
 		_, found := fc.vins[vin][topic]
 		if subscribed {

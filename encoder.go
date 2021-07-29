@@ -19,7 +19,7 @@ func encodeCommand(vin int, cmd *command, msg message) ([]byte, error) {
 		return nil, errInputOutOfRange("message")
 	}
 
-	cp := newCommandPacket(vin, cmd, msg)
+	cp := makeCommandPacket(vin, cmd, msg)
 
 	resBytes, err := encode(&cp)
 	if err != nil {

@@ -10,21 +10,6 @@ import (
 
 type responses [][]byte
 
-func newStubClient(l *log.Logger, connected bool) *client {
-	_ = newClientOptions(&ClientConfig{}, l)
-	return &client{
-		Client: &stubMqttClient{
-			connected: connected,
-			cmdChan:   make(chan []byte),
-			resChan:   make(chan struct{}),
-			stopChan:  make(chan struct{}, 2),
-			vins:      make(map[int]map[string]responses),
-			vinsMutex: &sync.RWMutex{},
-		},
-		logger: l,
-	}
-}
-
 // stubMqttClient implements stub mqtt client stub
 type stubMqttClient struct {
 	mqtt.Client
@@ -155,7 +140,7 @@ func (c *stubMqttClient) mockResponse(vin int, invoker string, modifier func(*re
 		log.Fatal(err)
 	}
 
-	rp := newResponsePacket(vin, cmd, nil)
+	rp := makeResponsePacket(vin, cmd, nil)
 	if modifier != nil {
 		modifier(rp)
 	}

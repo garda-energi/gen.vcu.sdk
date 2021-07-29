@@ -3,6 +3,7 @@ package sdk
 import (
 	"log"
 	"reflect"
+	"sync"
 	"time"
 )
 
@@ -11,6 +12,21 @@ func newStubApi() *Sdk {
 	return &Sdk{
 		logger: logger,
 		client: newStubClient(logger, false),
+	}
+}
+
+func newStubClient(l *log.Logger, connected bool) *client {
+	_ = newClientOptions(&ClientConfig{}, l)
+	return &client{
+		Client: &stubMqttClient{
+			connected: connected,
+			cmdChan:   make(chan []byte),
+			resChan:   make(chan struct{}),
+			stopChan:  make(chan struct{}, 2),
+			vins:      make(map[int]map[string]responses),
+			vinsMutex: &sync.RWMutex{},
+		},
+		logger: l,
 	}
 }
 
@@ -29,6 +45,14 @@ func newStubCommander(vin int) *commander {
 	return cmder
 }
 
+// func sdkStubClient(api *Sdk) *stubMqttClient {
+// 	return api.client.Client.(*stubMqttClient)
+// }
+
+func cmderStubClient(cmder *commander) *stubMqttClient {
+	return cmder.client.Client.(*stubMqttClient)
+}
+
 func callCommand(cmder *commander, invoker string, arg interface{}) (res, err interface{}) {
 	method := reflect.ValueOf(cmder).MethodByName(invoker)
 	ins := []reflect.Value{}
@@ -42,12 +66,4 @@ func callCommand(cmder *commander, invoker string, arg interface{}) (res, err in
 		res = outs[0].Interface()
 	}
 	return
-}
-
-func sdkStubClient(api *Sdk) *stubMqttClient {
-	return api.client.Client.(*stubMqttClient)
-}
-
-func cmderStubClient(cmder *commander) *stubMqttClient {
-	return cmder.client.Client.(*stubMqttClient)
 }

@@ -5,7 +5,42 @@ import (
 	"time"
 )
 
-func newFakeReport(vin int) *ReportPacket {
+func makeCommandPacket(vin int, cmd *command, msg message) *commandPacket {
+	return &commandPacket{
+		Header: &HeaderCommand{
+			Header: Header{
+				Prefix:       PREFIX_COMMAND,
+				Size:         0,
+				Vin:          uint32(vin),
+				SendDatetime: time.Now(),
+			},
+			Code:    cmd.code,
+			SubCode: cmd.subCode,
+		},
+		Message: msg,
+	}
+}
+
+func makeResponsePacket(vin int, cmd *command, msg message) *responsePacket {
+	return &responsePacket{
+		Header: &headerResponse{
+			HeaderCommand: HeaderCommand{
+				Header: Header{
+					Prefix:       PREFIX_RESPONSE,
+					Size:         0,
+					Vin:          uint32(vin),
+					SendDatetime: time.Now(),
+				},
+				Code:    cmd.code,
+				SubCode: cmd.subCode,
+			},
+			ResCode: resCodeOk,
+		},
+		Message: msg,
+	}
+}
+
+func makeReportPacket(vin int) *ReportPacket {
 	rand.Seed(time.Now().UnixNano())
 
 	return &ReportPacket{
