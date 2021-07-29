@@ -26,6 +26,7 @@ func newStubClient(l *log.Logger, connected bool) *client {
 			responseChan: &sync.Map{},
 			commandChan:  &sync.Map{},
 			reportChan:   &sync.Map{},
+			statusChan:   &sync.Map{},
 		},
 		logger: l,
 	}

@@ -1,13 +1,14 @@
 package sdk
 
 import (
+	"fmt"
 	"math/rand"
 	"reflect"
 	"testing"
 	"time"
 )
 
-func TestSdkReportMethods(t *testing.T) {
+func TestSdkReportListener(t *testing.T) {
 	type stream struct {
 		vin    int
 		report *ReportPacket
@@ -17,21 +18,19 @@ func TestSdkReportMethods(t *testing.T) {
 	defer close(reportChan)
 
 	/////////////////////// SAND BOX ////////////////////////
-	listener := Listener{
+	api := newStubApi()
+	api.Connect()
+	defer api.Disconnect()
+
+	vins := VinRange(5, 10)
+	if err := api.AddListener(Listener{
 		ReportFunc: func(vin int, report *ReportPacket) {
 			reportChan <- &stream{
 				vin:    vin,
 				report: report,
 			}
 		},
-	}
-
-	api := newStubApi()
-	api.Connect()
-	defer api.Disconnect()
-
-	vins := VinRange(5, 10)
-	if err := api.AddListener(listener, vins...); err != nil {
+	}, vins...); err != nil {
 		t.Error("want no error, got ", err)
 	}
 	defer api.RemoveListener(vins...)
@@ -90,6 +89,7 @@ func TestSdkReportMethods(t *testing.T) {
 				return reflect.DeepEqual(want, rp.Vcu.GetEvents())
 			},
 		},
+		// TODO: test all report's methods
 	}
 
 	for _, tC := range testCases {
@@ -100,7 +100,7 @@ func TestSdkReportMethods(t *testing.T) {
 			tC.modifier(rp)
 
 			sdkStubClient(api).
-				mockReport(vin, []*ReportPacket{rp})
+				mockReports(vin, []*ReportPacket{rp})
 
 			data := <-reportChan
 
@@ -109,6 +109,78 @@ func TestSdkReportMethods(t *testing.T) {
 			}
 			if !tC.validator(data.report) {
 				t.Errorf("report received is invalid")
+			}
+		})
+	}
+}
+
+func TestSdkStatusListener(t *testing.T) {
+	type stream struct {
+		vin    int
+		online bool
+	}
+
+	statusChan := make(chan *stream)
+	defer close(statusChan)
+
+	/////////////////////// SAND BOX ////////////////////////
+	api := newStubApi()
+	api.Connect()
+	defer api.Disconnect()
+
+	vins := VinRange(5, 10)
+	if err := api.AddListener(Listener{
+		StatusFunc: func(vin int, online bool) {
+			statusChan <- &stream{
+				vin:    vin,
+				online: online,
+			}
+		},
+	}, vins...); err != nil {
+		t.Error("want no error, got ", err)
+	}
+	defer api.RemoveListener(vins...)
+	//////////////////////////////////////////////////////////
+
+	testCases := []struct {
+		desc   string
+		packet []byte
+		online bool
+		vin    int
+	}{
+		{
+			desc:   "online status packet",
+			packet: []byte("1"),
+			online: true,
+			vin:    5,
+		},
+		{
+			desc:   "offline status packet",
+			packet: []byte("0"),
+			online: false,
+			vin:    8,
+		},
+		{
+			desc:   "unknown status packet",
+			packet: []byte("XXX"),
+			online: false,
+			vin:    10,
+		},
+	}
+
+	for _, tC := range testCases {
+		testName := fmt.Sprintf("vin %d, %s", tC.vin, tC.desc)
+		t.Run(testName, func(t *testing.T) {
+			sdkStubClient(api).
+				mockStatus(tC.vin, tC.packet)
+
+			data := <-statusChan
+
+			if tC.vin != data.vin {
+				t.Errorf("vin want %d, got %d", tC.vin, data.vin)
+			}
+			if tC.online != data.online {
+				t.Errorf("status received is invalid")
 			}
 		})
 	}
