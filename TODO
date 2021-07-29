@@ -26,6 +26,7 @@ Todo Package:
   ☐ mock mqttClient properly
     ✔ mock command & response properly @done(21-07-28 16:07)
     ☐ mock status & report properly
+  ☐ dont use append for slice, if the size is already initialized
   
 Todo Report:
   ✔ multiply value with factor tag @done(21-07-13 19:39)

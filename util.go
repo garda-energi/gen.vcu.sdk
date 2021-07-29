@@ -35,7 +35,7 @@ func newLogger(logging bool, prefix string) *log.Logger {
 	if logging {
 		out = os.Stderr
 	}
-	return log.New(out, fmt.Sprint(prefix, " "), log.Ldate|log.Ltime)
+	return log.New(out, fmt.Sprint(prefix, " "), log.Ltime)
 }
 
 // byteToHex convert bytes to hex string

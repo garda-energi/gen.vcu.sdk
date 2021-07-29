@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -18,8 +19,9 @@ type stubMqttClient struct {
 	vinsMutex *sync.RWMutex
 	vins      map[int]map[string]packets
 
-	cmdChan map[int]chan []byte
-	resChan map[int]chan struct{}
+	commandChan  map[int]chan []byte
+	responseChan map[int]chan struct{}
+	reportChan   map[int]chan [][]byte
 }
 
 func (c *stubMqttClient) Connect() mqtt.Token {
@@ -40,7 +42,7 @@ func (c *stubMqttClient) Publish(topic string, qos byte, retained bool, payload 
 	// feed go routine (command topic) with encoded command
 	if flush := packet == nil; !flush {
 		vin := getTopicVin(topic)
-		c.cmdChan[vin] <- packet
+		c.commandChan[vin] <- packet
 	}
 	return &mqtt.DummyToken{}
 }
@@ -65,9 +67,11 @@ func (c *stubMqttClient) Unsubscribe(topics ...string) mqtt.Token {
 		if _, ok := c.vins[vin]; ok {
 			switch gTopic {
 			case TOPIC_COMMAND:
-				close(c.cmdChan[vin])
-			case TOPIC_RESPONSE:
-				close(c.resChan[vin])
+				close(c.commandChan[vin])
+			// case TOPIC_RESPONSE:
+			// 	close(c.responseChan[vin])
+			case TOPIC_REPORT:
+				close(c.reportChan[vin])
 			}
 
 			// remove vin's topic from dictionary
@@ -92,14 +96,16 @@ func (c *stubMqttClient) mockSub(filters map[string]byte, callback mqtt.MessageH
 		c.vins[vin][gTopic] = nil
 		c.vinsMutex.Unlock()
 
-		// create cmd & response chan (if not initialized)
+		// create chan (if not initialized) for specific topic
 		switch gTopic {
 		case TOPIC_COMMAND, TOPIC_RESPONSE:
-			if _, ok := c.cmdChan[vin]; !ok {
-				c.cmdChan[vin] = make(chan []byte)
+			if _, ok := c.commandChan[vin]; !ok {
+				c.commandChan[vin] = make(chan []byte)
+				c.responseChan[vin] = make(chan struct{})
 			}
-			if _, ok := c.resChan[vin]; !ok {
-				c.resChan[vin] = make(chan struct{})
+		case TOPIC_REPORT:
+			if _, ok := c.reportChan[vin]; !ok {
+				c.reportChan[vin] = make(chan [][]byte)
 			}
 		}
 
@@ -107,24 +113,27 @@ func (c *stubMqttClient) mockSub(filters map[string]byte, callback mqtt.MessageH
 		switch gTopic {
 		case TOPIC_COMMAND:
 			// wait incomming published command, then send signal to (response) go routine
-			go func(cmdChan <-chan []byte, resChan chan<- struct{}) {
-				for msg := range cmdChan {
+			go func(commandChan <-chan []byte, responseChan chan<- struct{}) {
+				for msg := range commandChan {
 					callback(c.Client, &stubMessage{
 						topic:   topic,
 						payload: msg,
 					})
-					resChan <- struct{}{}
+					responseChan <- struct{}{}
 				}
-			}(c.cmdChan[vin], c.resChan[vin])
+				close(responseChan)
+			}(c.commandChan[vin], c.responseChan[vin])
 		case TOPIC_RESPONSE:
-			// wait incomming signal from (command) go routine, then pass mock responses to callback
-			go func(resChan <-chan struct{}) {
-				for range resChan {
+			// wait incomming signal from (command) go routine, then pass mock packets to callback
+			go func(responseChan <-chan struct{}) {
+				for range responseChan {
+					// read packets from vins dictionary
 					c.vinsMutex.RLock()
-					responses := c.vins[vin][gTopic]
+					packets := c.vins[vin][gTopic]
 					c.vinsMutex.RUnlock()
 
-					for _, msg := range responses {
+					// feed to callback
+					for _, msg := range packets {
 						time.Sleep(5 * time.Millisecond)
 						callback(c.Client, &stubMessage{
 							topic:   topic,
@@ -132,7 +141,23 @@ func (c *stubMqttClient) mockSub(filters map[string]byte, callback mqtt.MessageH
 						})
 					}
 				}
-			}(c.resChan[vin])
+			}(c.responseChan[vin])
+		case TOPIC_REPORT:
+			// wait incomming signal, then pass mock packets to callback
+			go func(reportChan <-chan [][]byte) {
+				for packets := range reportChan {
+					fmt.Println(vin, gTopic, packets)
+
+					// feed to callback
+					for _, msg := range packets {
+						time.Sleep(5 * time.Millisecond)
+						callback(c.Client, &stubMessage{
+							topic:   topic,
+							payload: msg,
+						})
+					}
+				}
+			}(c.reportChan[vin])
 		}
 	}
 }
@@ -172,20 +197,20 @@ func (c *stubMqttClient) mockResponse(vin int, invoker string, modifier func(*re
 	c.vinsMutex.Unlock()
 }
 
-// func (c *stubMqttClient) mockReport(vin int, rps []*ReportPacket) {
-// 	var res = responses{}
-// 	for _, rp := range rps {
-// 		resBytes, err := encode(rp)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		res = append(res, resBytes)
-// 	}
+func (c *stubMqttClient) mockReport(vin int, rps []*ReportPacket) {
+	// encode fake reports
+	res := make(packets, len(rps))
+	for i, rp := range rps {
+		resBytes, err := encode(rp)
+		if err != nil {
+			log.Fatal(err)
+		}
+		res[i] = resBytes
+	}
 
-// 	c.vinsMutex.Lock()
-// 	c.vins[vin][TOPIC_REPORT] = res
-// 	c.vinsMutex.Unlock()
-// }
+	// tirgger go routine (report) to start
+	c.reportChan[vin] <- res
+}
 
 // stubMessage implements fake message stub
 type stubMessage struct {

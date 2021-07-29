@@ -24,8 +24,9 @@ func newStubClient(l *log.Logger, connected bool) *client {
 			vinsMutex: &sync.RWMutex{},
 			vins:      make(map[int]map[string]packets),
 
-			cmdChan: make(map[int]chan []byte),
-			resChan: make(map[int]chan struct{}),
+			commandChan:  make(map[int]chan []byte),
+			responseChan: make(map[int]chan struct{}),
+			reportChan:   make(map[int]chan [][]byte),
 		},
 		logger: l,
 	}
@@ -46,9 +47,9 @@ func newStubCommander(vin int) *commander {
 	return cmder
 }
 
-// func sdkStubClient(api *Sdk) *stubMqttClient {
-// 	return api.client.Client.(*stubMqttClient)
-// }
+func sdkStubClient(api *Sdk) *stubMqttClient {
+	return api.client.Client.(*stubMqttClient)
+}
 
 func cmderStubClient(cmder *commander) *stubMqttClient {
 	return cmder.client.Client.(*stubMqttClient)
