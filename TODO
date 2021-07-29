@@ -22,10 +22,11 @@ Todo Package:
   ✔ rename repositories, notify to all repo consumer @done(21-07-24 09:28)
   ✔ change all magic number to const @done(21-07-25 19:40)
   ✔ rename Broker to Client @done(21-07-26 15:01)
-  ☐ make test coverage, at least near 95%
-  ☐ mock mqttClient properly
+  ☐ make test coverage, at least near 90%
+  ✔ mock mqttClient properly @done(21-07-29 16:51)
     ✔ mock command & response properly @done(21-07-28 16:07)
-    ☐ mock status & report properly
+    ✔ mock status & report properly @done(21-07-29 16:51)
+  ☐ dont use append for slice, if the size is already init
   
 Todo Report:
   ✔ multiply value with factor tag @done(21-07-13 19:39)
@@ -42,12 +43,12 @@ Todo Report:
   ☐ add usefull method to *ReportPacket
     ✔ IsValidGPS @done(21-07-25 09:19)
     ✔ EepromCapacityLow @done(21-07-25 09:19)
-    ☐ Events Renderer
+    ✔ Events Renderer @done(21-07-29 16:51)
     ✔ BatteryPackLow @done(21-07-25 09:19)
     ✔ StackOverflow @done(21-07-25 09:19)
     ☐ FingerValidId
     ☐ UnitGetter
-    ☐ BMS & MCU Error Renderer
+    ✔ BMS & MCU Error Renderer @done(21-07-29 16:51)
   ✔ Size() in Report's Method, make to dynamic calculation based on struct field, not hardcoded. @done(21-07-28 10:03)
   
 Todo Command:

@@ -35,7 +35,7 @@ func newLogger(logging bool, prefix string) *log.Logger {
 	if logging {
 		out = os.Stderr
 	}
-	return log.New(out, fmt.Sprint(prefix, " "), log.Ldate|log.Ltime)
+	return log.New(out, fmt.Sprint(prefix, " "), log.Ltime)
 }
 
 // byteToHex convert bytes to hex string
@@ -47,6 +47,23 @@ func byteToHex(b []byte) string {
 func hexToByte(s string) []byte {
 	b, _ := hex.DecodeString(s)
 	return b
+}
+
+func bitSet(word uint32, bit uint8) bool {
+	return word&(1<<bit) > 0
+}
+
+func sliceToStr(s interface{}, prefix string) string {
+	rv := reflect.ValueOf(s)
+	if rv.Kind() != reflect.Slice {
+		return ""
+	}
+
+	buf := make([]string, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		buf[i] = fmt.Sprintf("%s", rv.Index(i))
+	}
+	return prefix + "[" + strings.Join(buf, ", ") + "]"
 }
 
 // debugPacket format received mqtt message

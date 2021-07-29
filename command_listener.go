@@ -6,6 +6,8 @@ import (
 
 // Destroy unsubscribe from command & response topic for current VIN.
 func (c *commander) Destroy() error {
+	defer close(c.resChan)
+
 	topics := []string{
 		setTopicToVin(TOPIC_COMMAND, c.vin),
 		setTopicToVin(TOPIC_RESPONSE, c.vin),

@@ -3,9 +3,9 @@ package sdk
 type Frame uint8
 
 const (
-	FrameInvalid Frame = iota
-	FrameSimple
+	FrameSimple Frame = iota + 1
 	FrameFull
+	FrameLimit
 )
 
 func (m Frame) String() string {
@@ -126,6 +126,7 @@ const (
 	NetStateInternetOn
 	NetStateServerOn
 	NetStateMqttOn
+	NetStateLimit
 )
 
 func (m NetState) String() string {
@@ -156,6 +157,7 @@ const (
 	NetIpStatusClosing
 	NetIpStatusClosed
 	NetIpStatusPdpDeact
+	NetIpStatusLimit
 )
 
 func (m NetIpStatus) String() string {
@@ -182,6 +184,7 @@ const (
 	McuInvDischargeCheck
 	McuInvDischargeOccuring
 	McuInvDischargeCompleted
+	McuInvDischargeLimit
 )
 
 func (m McuInvDischarge) String() string {

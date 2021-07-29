@@ -2,9 +2,7 @@ package sdk
 
 import (
 	"fmt"
-	"math"
 	"reflect"
-	"strings"
 	"time"
 )
 
@@ -78,33 +76,23 @@ type Vcu struct {
 
 // String converts VcuEvents type to string.
 func (ve VcuEvents) String() string {
-	strEvents := make([]string, 0)
-	for _, v := range ve {
-		strEvents = append(strEvents, v.String())
-	}
-	return "[" + strings.Join(strEvents, ", ") + "]"
+	return sliceToStr(ve, "")
 }
 
 // GetEvents parse v's events in an array
 func (v *Vcu) GetEvents() VcuEvents {
 	r := make(VcuEvents, 0, VCU_EVENTS_MAX)
-
-	tmpEvents := v.Events
 	for i := 0; i < int(VCU_EVENTS_MAX); i++ {
-		// check if first bit is 1
-		if tmpEvents&1 == 1 {
+		if v.IsEvent(VcuEvent(i)) {
 			r = append(r, VcuEvent(i))
 		}
-
-		// shift bit to right (1 bit)
-		tmpEvents /= 2
 	}
 	return r
 }
 
 // IsEvent check if v's event is ev
 func (v *Vcu) IsEvent(ev VcuEvent) bool {
-	return v.Events&(uint16(math.Pow(2, float64(ev)))) != 0
+	return bitSet(uint32(v.Events), uint8(ev))
 }
 
 // RealtimeData check if current report log is realtime
@@ -112,7 +100,7 @@ func (v *Vcu) RealtimeData() bool {
 	if v == nil {
 		return false
 	}
-	realtimeDuration := time.Now().Add(REPORT_REALTIME_DURATION)
+	realtimeDuration := time.Now().UTC().Add(REPORT_REALTIME_DURATION)
 	return v.LogBuffered == 0 && v.LogDatetime.After(realtimeDuration)
 }
 
@@ -262,35 +250,23 @@ type Bms struct {
 
 // String converts BmsFaults type to string.
 func (bf BmsFaults) String() string {
-	strBmsFaults := make([]string, 0)
-	for _, v := range bf {
-		strBmsFaults = append(strBmsFaults, v.String())
-	}
-	return "[" + strings.Join(strBmsFaults, ", ") + "]"
+	return sliceToStr(bf, "")
 }
 
 // GetFaults parse b's fault field
 func (b *Bms) GetFaults() BmsFaults {
 	r := make(BmsFaults, 0, BMS_FAULTS_MAX)
-
-	tmpFaults := b.Faults
-	// see the pattern? it is redundant (with mcu.GetFaults)
 	for i := 0; i < int(BMS_FAULTS_MAX); i++ {
-		// check if first bit is 1
-		if tmpFaults&1 == 1 {
+		if b.IsFault(BmsFault(i)) {
 			r = append(r, BmsFault(i))
 		}
-
-		// shift bit to right (1 bit)
-		tmpFaults /= 2
 	}
-
 	return r
 }
 
 // IsFault check if b's fault is bf
 func (b *Bms) IsFault(bf BmsFault) bool {
-	return b.Faults&(uint16(math.Pow(2, float64(bf)))) != 0
+	return bitSet(uint32(b.Faults), uint8(bf))
 }
 
 // LowCapacity check if b's SoC (State of Charge) is low
@@ -338,20 +314,7 @@ type Mcu struct {
 
 // String converts McuFaults type to string.
 func (mf McuFaults) String() string {
-	// see the pattern? it is redundant
-	strMcuPostFaults := make([]string, 0)
-	for _, v := range mf.Post {
-		strMcuPostFaults = append(strMcuPostFaults, v.String())
-	}
-	strPostFaults := "Post[" + strings.Join(strMcuPostFaults, ", ") + "]"
-
-	strMcuRunFaults := make([]string, 0)
-	for _, v := range mf.Run {
-		strMcuRunFaults = append(strMcuRunFaults, v.String())
-	}
-	strRunFaults := "Run[" + strings.Join(strMcuRunFaults, ", ") + "]"
-
-	return strPostFaults + "\n" + strRunFaults
+	return sliceToStr(mf.Post, "Post") + "\n" + sliceToStr(mf.Run, "Run")
 }
 
 // GetFaults parse mcu's fault field
@@ -360,39 +323,27 @@ func (m *Mcu) GetFaults() McuFaults {
 		Post: make([]McuFaultPost, 0, MCU_POST_FAULTS_MAX),
 		Run:  make([]McuFaultRun, 0, MCU_RUN_FAULTS_MAX),
 	}
-	var tmpFaults uint32
-
-	// see the pattern? it is redundant
-	tmpFaults = m.Faults.Post
 	for i := 0; i < int(MCU_POST_FAULTS_MAX); i++ {
-		// check if first bit is 1
-		if tmpFaults&1 == 1 {
+		if m.IsFaultPost(McuFaultPost(i)) {
 			r.Post = append(r.Post, McuFaultPost(i))
 		}
-
-		// shift bit to right (1 bit)
-		tmpFaults /= 2
 	}
-
-	// see the pattern? it is redundant
-	tmpFaults = m.Faults.Run
 	for i := 0; i < int(MCU_RUN_FAULTS_MAX); i++ {
-		// check if first bit is 1
-		if tmpFaults&1 == 1 {
+		if m.IsFaultRun(McuFaultRun(i)) {
 			r.Run = append(r.Run, McuFaultRun(i))
 		}
-
-		// shift bit to right (1 bit)
-		tmpFaults /= 2
 	}
-
 	return r
 }
 
-// IsFault check if mcu's fault is mf
-// usage m.IsFault(m.Faults.Post, McuFault(fault))
-func (m *Mcu) IsFault(faults uint32, mf McuFault) bool {
-	return (faults & (uint32(math.Pow(2, float64(mf))))) != 0
+// IsFaultPost check if mcu's post fault is mf
+func (m *Mcu) IsFaultPost(mf McuFaultPost) bool {
+	return bitSet(m.Faults.Post, uint8(mf))
+}
+
+// IsFaultRun check if mcu's run fault is mf
+func (m *Mcu) IsFaultRun(mf McuFaultRun) bool {
+	return m.Faults.Run&(1<<uint8(mf)) > 0
 }
 
 type Task struct {

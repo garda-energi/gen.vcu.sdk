@@ -25,14 +25,15 @@ func decodeResponse(packet []byte) (*responsePacket, error) {
 	if !result.validSize() {
 		return nil, errInvalidSize
 	}
+	if reader.Len() != 0 {
+		return nil, errInvalidSize
+	}
+
 	if !result.validCmdCode() {
 		return nil, errInvalidCmdCode
 	}
 	if !result.validResCode() {
 		return nil, errInvalidResCode
-	}
-	if reader.Len() != 0 {
-		return nil, errInvalidSize
 	}
 	return result, nil
 }
