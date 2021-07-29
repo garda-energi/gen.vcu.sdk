@@ -279,24 +279,30 @@ func (bf BmsFaults) String() string {
 func (b *Bms) GetFaults() BmsFaults {
 	r := make(BmsFaults, 0, BMS_FAULTS_MAX)
 
-	tmpFaults := b.Faults
-	// see the pattern? it is redundant (with mcu.GetFaults)
+	// tmpFaults := b.Faults
+	// // see the pattern? it is redundant (with mcu.GetFaults)
+	// for i := 0; i < int(BMS_FAULTS_MAX); i++ {
+	// 	// check if first bit is 1
+	// 	if tmpFaults&1 == 1 {
+	// 		r = append(r, BmsFault(i))
+	// 	}
+
+	// 	// shift bit to right (1 bit)
+	// 	tmpFaults /= 2
+	// }
+
 	for i := 0; i < int(BMS_FAULTS_MAX); i++ {
-		// check if first bit is 1
-		if tmpFaults&1 == 1 {
+		if b.IsFault(BmsFault(i)) {
 			r = append(r, BmsFault(i))
 		}
-
-		// shift bit to right (1 bit)
-		tmpFaults /= 2
 	}
-
 	return r
 }
 
 // IsFault check if b's fault is bf
 func (b *Bms) IsFault(bf BmsFault) bool {
-	return b.Faults&(uint16(math.Pow(2, float64(bf)))) != 0
+	// return b.Faults&(uint16(math.Pow(2, float64(bf)))) != 0
+	return b.Faults&(1<<uint8(bf)) > 0
 }
 
 // LowCapacity check if b's SoC (State of Charge) is low
