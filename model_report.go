@@ -87,17 +87,6 @@ func (ve VcuEvents) String() string {
 // GetEvents parse v's events in an array
 func (v *Vcu) GetEvents() VcuEvents {
 	r := make(VcuEvents, 0, VCU_EVENTS_MAX)
-
-	// tmpEvents := v.Events
-	// for i := 0; i < int(VCU_EVENTS_MAX); i++ {
-	// 	// check if first bit is 1
-	// 	if tmpEvents&1 == 1 {
-	// 		r = append(r, VcuEvent(i))
-	// 	}
-	// 	// shift bit to right (1 bit)
-	// 	tmpEvents /= 2
-	// }
-
 	for i := 0; i < int(VCU_EVENTS_MAX); i++ {
 		if v.IsEvent(VcuEvent(i)) {
 			r = append(r, VcuEvent(i))
@@ -108,7 +97,6 @@ func (v *Vcu) GetEvents() VcuEvents {
 
 // IsEvent check if v's event is ev
 func (v *Vcu) IsEvent(ev VcuEvent) bool {
-	// return v.Events&(uint16(math.Pow(2, float64(ev)))) != 0
 	return v.Events&(1<<uint8(ev)) > 0
 }
 
@@ -277,19 +265,6 @@ func (bf BmsFaults) String() string {
 // GetFaults parse b's fault field
 func (b *Bms) GetFaults() BmsFaults {
 	r := make(BmsFaults, 0, BMS_FAULTS_MAX)
-
-	// tmpFaults := b.Faults
-	// // see the pattern? it is redundant (with mcu.GetFaults)
-	// for i := 0; i < int(BMS_FAULTS_MAX); i++ {
-	// 	// check if first bit is 1
-	// 	if tmpFaults&1 == 1 {
-	// 		r = append(r, BmsFault(i))
-	// 	}
-
-	// 	// shift bit to right (1 bit)
-	// 	tmpFaults /= 2
-	// }
-
 	for i := 0; i < int(BMS_FAULTS_MAX); i++ {
 		if b.IsFault(BmsFault(i)) {
 			r = append(r, BmsFault(i))
@@ -371,56 +346,26 @@ func (m *Mcu) GetFaults() McuFaults {
 		Post: make([]McuFaultPost, 0, MCU_POST_FAULTS_MAX),
 		Run:  make([]McuFaultRun, 0, MCU_RUN_FAULTS_MAX),
 	}
-
-	// var tmpFaults uint32
-	// // see the pattern? it is redundant
-	// tmpFaults = m.Faults.Post
-	// for i := 0; i < int(MCU_POST_FAULTS_MAX); i++ {
-	// 	// check if first bit is 1
-	// 	if tmpFaults&1 == 1 {
-	// 		r.Post = append(r.Post, McuFaultPost(i))
-	// 	}
-
-	// 	// shift bit to right (1 bit)
-	// 	tmpFaults /= 2
-	// }
-
-	// // see the pattern? it is redundant
-	// tmpFaults = m.Faults.Run
-	// for i := 0; i < int(MCU_RUN_FAULTS_MAX); i++ {
-	// 	// check if first bit is 1
-	// 	if tmpFaults&1 == 1 {
-	// 		r.Run = append(r.Run, McuFaultRun(i))
-	// 	}
-
-	// 	// shift bit to right (1 bit)
-	// 	tmpFaults /= 2
-	// }
-
 	for i := 0; i < int(MCU_POST_FAULTS_MAX); i++ {
 		if m.IsFaultPost(McuFaultPost(i)) {
 			r.Post = append(r.Post, McuFaultPost(i))
 		}
 	}
-
 	for i := 0; i < int(MCU_RUN_FAULTS_MAX); i++ {
 		if m.IsFaultRun(McuFaultRun(i)) {
 			r.Run = append(r.Run, McuFaultRun(i))
 		}
 	}
-
 	return r
 }
 
 // IsFaultPost check if mcu's post fault is mf
 func (m *Mcu) IsFaultPost(mf McuFaultPost) bool {
-	// return (faults & (uint32(math.Pow(2, float64(mf))))) != 0
 	return m.Faults.Post&(1<<uint8(mf)) > 0
 }
 
 // IsFaultRun check if mcu's run fault is mf
 func (m *Mcu) IsFaultRun(mf McuFaultRun) bool {
-	// return (faults & (uint32(math.Pow(2, float64(mf))))) != 0
 	return m.Faults.Run&(1<<uint8(mf)) > 0
 }
 

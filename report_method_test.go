@@ -37,10 +37,10 @@ func TestReportMethods(t *testing.T) {
 				mcuFaultsString: "Post[5V_LOW]\nRun[RESERVER_1]",
 			},
 			dataChanger: map[string]interface{}{
-				"vcuEvents":     96,
-				"bmsFaults":     1156,
-				"mcuFaultsPost": 4096,
-				"mcuFaultsRun":  8192,
+				"vcuEvents":     1<<VCU_BMS_ERROR | 1<<VCU_MCU_ERROR,
+				"bmsFaults":     1<<BMS_SHORT_CIRCUIT | 1<<BMS_UNDER_VOLTAGE | 1<<BMS_UNBALANCE,
+				"mcuFaultsPost": 1 << MCU_POST_5V_LOW,
+				"mcuFaultsRun":  1 << MCU_RUN_RESERVER_1,
 			},
 		},
 	}
