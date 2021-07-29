@@ -92,7 +92,7 @@ func (v *Vcu) GetEvents() VcuEvents {
 
 // IsEvent check if v's event is ev
 func (v *Vcu) IsEvent(ev VcuEvent) bool {
-	return v.Events&(1<<uint8(ev)) > 0
+	return bitSet(uint32(v.Events), uint8(ev))
 }
 
 // RealtimeData check if current report log is realtime
@@ -266,7 +266,7 @@ func (b *Bms) GetFaults() BmsFaults {
 
 // IsFault check if b's fault is bf
 func (b *Bms) IsFault(bf BmsFault) bool {
-	return b.Faults&(1<<uint8(bf)) > 0
+	return bitSet(uint32(b.Faults), uint8(bf))
 }
 
 // LowCapacity check if b's SoC (State of Charge) is low
@@ -338,7 +338,7 @@ func (m *Mcu) GetFaults() McuFaults {
 
 // IsFaultPost check if mcu's post fault is mf
 func (m *Mcu) IsFaultPost(mf McuFaultPost) bool {
-	return m.Faults.Post&(1<<uint8(mf)) > 0
+	return bitSet(m.Faults.Post, uint8(mf))
 }
 
 // IsFaultRun check if mcu's run fault is mf

@@ -49,6 +49,10 @@ func hexToByte(s string) []byte {
 	return b
 }
 
+func bitSet(word uint32, bit uint8) bool {
+	return word&(1<<bit) > 0
+}
+
 func sliceToStr(s interface{}, prefix string) string {
 	rv := reflect.ValueOf(s)
 	if rv.Kind() != reflect.Slice {
