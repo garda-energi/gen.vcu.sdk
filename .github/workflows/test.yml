@@ -4,7 +4,7 @@ on:
   push:
     branches: [development]
   pull_request:
-    branches: [development]
+    branches: [master]
 
 jobs:
   test:
@@ -26,12 +26,11 @@ jobs:
       - name: Build
         run: make build
 
-      - name: Test
-        run: make test
+      # - name: Test
+      #   run: make test
 
-      - name: Cover
-        run: make cover
+      - name: Test & Coverage
+        run: make coverage
 
       - name: Upload coverage to Codecov
-        # run: bash <(curl -s https://codecov.io/bash)
         uses: codecov/codecov-action@v1

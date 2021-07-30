@@ -1,11 +1,11 @@
 test:
 	go test -v -race
 
-cover:
+coverage:
 	go test -v -race -coverprofile=coverage.txt -covermode=atomic
 
-
-cover-read:
+cover:
+	make coverage
 	go tool cover -html=coverage.txt
 
 build:
