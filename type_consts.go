@@ -33,10 +33,14 @@ const SPEED_KPH_MAX = 110
 
 const REPORT_REALTIME_DURATION = -5 * time.Second
 const EEPROM_LOW_CAPACITY_PERCENT = 90
-const BATTERY_BACKUP_LOW_MV = 3300
 const NET_LOW_SIGNAL_PERCENT = 20
 const BMS_LOW_CAPACITY_PERCENT = 20
 const STACK_OVERFLOW_BYTE_MIN = 50
+
+const (
+	BATTERY_BACKUP_FULL_MV = 4400
+	BATTERY_BACKUP_LOW_MV  = 3300
+)
 
 const (
 	DRIVER_ID_MIN = 1
@@ -76,4 +80,21 @@ const (
 	GPS_LNG_MAX = 141.020354
 	GPS_LAT_MIN = -11.107187
 	GPS_LAT_MAX = 5.90713
+)
+
+type TASK uint8
+
+const (
+	TASK_Manager TASK = iota
+	TASK_Network
+	TASK_Reporte
+	TASK_Command
+	TASK_Mems
+	TASK_Remote
+	TASK_Finger
+	TASK_Audio
+	TASK_Gate
+	TASK_CanRX
+	TASK_CanTX
+	TASK_Limit
 )

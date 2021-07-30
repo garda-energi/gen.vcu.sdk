@@ -83,16 +83,22 @@ func (ve VcuEvents) String() string {
 func (v *Vcu) GetEvents() VcuEvents {
 	r := make(VcuEvents, 0, VCU_EVENTS_MAX)
 	for i := 0; i < int(VCU_EVENTS_MAX); i++ {
-		if v.IsEvent(VcuEvent(i)) {
+		if v.IsEvents(VcuEvent(i)) {
 			r = append(r, VcuEvent(i))
 		}
 	}
 	return r
 }
 
-// IsEvent check if v's event is ev
-func (v *Vcu) IsEvent(ev VcuEvent) bool {
-	return bitSet(uint32(v.Events), uint8(ev))
+// IsEvents check if v's event has evs
+func (v *Vcu) IsEvents(ev ...VcuEvent) bool {
+	set := 0
+	for _, e := range ev {
+		if bitSet(uint32(v.Events), uint8(e)) {
+			set++
+		}
+	}
+	return set == len(ev)
 }
 
 // RealtimeData check if current report log is realtime
@@ -145,8 +151,8 @@ func (g *Gps) ValidHorizontal() bool {
 	if g.HDOP > GPS_DOP_MIN {
 		return false
 	}
-	return (g.Longitude > GPS_LNG_MIN && g.Longitude < GPS_LNG_MAX) &&
-		(g.Latitude > GPS_LAT_MIN && g.Latitude < GPS_LAT_MAX)
+	return (g.Longitude >= GPS_LNG_MIN && g.Longitude <= GPS_LNG_MAX) &&
+		(g.Latitude >= GPS_LAT_MIN && g.Latitude <= GPS_LAT_MAX)
 }
 
 // ValidVertical check if g's vertical section (altitude) is valid
@@ -257,16 +263,22 @@ func (bf BmsFaults) String() string {
 func (b *Bms) GetFaults() BmsFaults {
 	r := make(BmsFaults, 0, BMS_FAULTS_MAX)
 	for i := 0; i < int(BMS_FAULTS_MAX); i++ {
-		if b.IsFault(BmsFault(i)) {
+		if b.IsFaults(BmsFault(i)) {
 			r = append(r, BmsFault(i))
 		}
 	}
 	return r
 }
 
-// IsFault check if b's fault is bf
-func (b *Bms) IsFault(bf BmsFault) bool {
-	return bitSet(uint32(b.Faults), uint8(bf))
+// IsFault check if b's fault has bfs
+func (b *Bms) IsFaults(bf ...BmsFault) bool {
+	set := 0
+	for _, f := range bf {
+		if bitSet(uint32(b.Faults), uint8(f)) {
+			set++
+		}
+	}
+	return set == len(bf)
 }
 
 // LowCapacity check if b's SoC (State of Charge) is low
@@ -324,29 +336,43 @@ func (m *Mcu) GetFaults() McuFaults {
 		Run:  make([]McuFaultRun, 0, MCU_RUN_FAULTS_MAX),
 	}
 	for i := 0; i < int(MCU_POST_FAULTS_MAX); i++ {
-		if m.IsFaultPost(McuFaultPost(i)) {
+		if m.IsPostFaults(McuFaultPost(i)) {
 			r.Post = append(r.Post, McuFaultPost(i))
 		}
 	}
 	for i := 0; i < int(MCU_RUN_FAULTS_MAX); i++ {
-		if m.IsFaultRun(McuFaultRun(i)) {
+		if m.IsRunFaults(McuFaultRun(i)) {
 			r.Run = append(r.Run, McuFaultRun(i))
 		}
 	}
 	return r
 }
 
-// IsFaultPost check if mcu's post fault is mf
-func (m *Mcu) IsFaultPost(mf McuFaultPost) bool {
-	return bitSet(m.Faults.Post, uint8(mf))
+// IsPostFaults check if mcu's post fault has mfs
+func (m *Mcu) IsPostFaults(mf ...McuFaultPost) bool {
+	set := 0
+	for _, f := range mf {
+		if bitSet(m.Faults.Post, uint8(f)) {
+			set++
+		}
+	}
+	return set == len(mf)
 }
 
-// IsFaultRun check if mcu's run fault is mf
-func (m *Mcu) IsFaultRun(mf McuFaultRun) bool {
-	return m.Faults.Run&(1<<uint8(mf)) > 0
+// IsRunFaults check if mcu's run fault has mfs
+func (m *Mcu) IsRunFaults(mf ...McuFaultRun) bool {
+	set := 0
+	for _, f := range mf {
+		if bitSet(m.Faults.Run, uint8(f)) {
+			set++
+		}
+	}
+	return set == len(mf)
 }
 
 type Task struct {
+	// Stack  [TASK_Limit]uint16 `type:"uint16" unit:"Bytes"`
+	// Wakeup [TASK_Limit]uint8  `type:"uint8" unit:"s"`
 	Stack struct {
 		Manager  uint16 `type:"uint16" unit:"Bytes"`
 		Network  uint16 `type:"uint16" unit:"Bytes"`

@@ -3,7 +3,6 @@ package sdk
 import (
 	"fmt"
 	"math/rand"
-	"reflect"
 	"testing"
 	"time"
 )
@@ -52,6 +51,35 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
+			desc: "vcu's events has BMS_ERROR & BIKE_FALLEN",
+			modifier: func(rp *ReportPacket) {
+				rp.Vcu.Events = 1<<VCU_BMS_ERROR | 1<<VCU_BIKE_FALLEN
+			},
+			validator: func(rp *ReportPacket) bool {
+				want := VcuEvents{VCU_BIKE_FALLEN, VCU_BMS_ERROR}
+				return rp.Vcu.IsEvents(want...) &&
+					len(want) == len(rp.Vcu.GetEvents())
+			},
+		},
+		{
+			desc: "vcu's events is empty",
+			modifier: func(rp *ReportPacket) {
+				rp.Vcu.Events = 0
+			},
+			validator: func(rp *ReportPacket) bool {
+				return len(rp.Vcu.GetEvents()) == 0
+			},
+		},
+		{
+			desc: "vcu's events has invalid value",
+			modifier: func(rp *ReportPacket) {
+				rp.Vcu.Events = 1 << VCU_EVENTS_MAX
+			},
+			validator: func(rp *ReportPacket) bool {
+				return len(rp.Vcu.GetEvents()) == 0
+			},
+		},
+		{
 			desc: "log datetime is yesterday",
 			modifier: func(rp *ReportPacket) {
 				rp.Vcu.LogDatetime = time.Now().UTC().Add(-24 * time.Hour)
@@ -74,22 +102,200 @@ func TestSdkReportListener(t *testing.T) {
 			desc: "log is buffered",
 			modifier: func(rp *ReportPacket) {
 				rp.Vcu.LogBuffered = 5
+				rp.Vcu.LogDatetime = time.Now().UTC()
 			},
 			validator: func(rp *ReportPacket) bool {
 				return !rp.Vcu.RealtimeData()
 			},
 		},
 		{
-			desc: "vcu has BMS_ERROR & BIKE_FALLEN events",
+			desc: "backup battery medium",
 			modifier: func(rp *ReportPacket) {
-				rp.Vcu.Events = 1<<VCU_BMS_ERROR | 1<<VCU_BIKE_FALLEN
+				rp.Vcu.BatVoltage = BATTERY_BACKUP_FULL_MV - 300
 			},
 			validator: func(rp *ReportPacket) bool {
-				want := VcuEvents{VCU_BIKE_FALLEN, VCU_BMS_ERROR}
-				return reflect.DeepEqual(want, rp.Vcu.GetEvents())
+				return !rp.Vcu.BatteryLow()
 			},
 		},
-		// TODO: test all report's methods
+		{
+			desc: "backup battery low",
+			modifier: func(rp *ReportPacket) {
+				rp.Vcu.BatVoltage = BATTERY_BACKUP_LOW_MV - 300
+			},
+			validator: func(rp *ReportPacket) bool {
+				return rp.Vcu.BatteryLow()
+			},
+		},
+		{
+			desc: "eeprom capacity medium",
+			modifier: func(rp *ReportPacket) {
+				rp.Eeprom.Used = 2
+			},
+			validator: func(rp *ReportPacket) bool {
+				return !rp.Eeprom.CapacityLow()
+			},
+		},
+		{
+			desc: "eeprom capacity low",
+			modifier: func(rp *ReportPacket) {
+				rp.Eeprom.Used = 99
+			},
+			validator: func(rp *ReportPacket) bool {
+				return rp.Eeprom.CapacityLow()
+			},
+		},
+		{
+			desc: "gps dop low",
+			modifier: func(rp *ReportPacket) {
+				rp.Gps.HDOP = GPS_DOP_MIN + 3
+				rp.Gps.VDOP = GPS_DOP_MIN + 18
+			},
+			validator: func(rp *ReportPacket) bool {
+				return !rp.Gps.ValidHorizontal() && !rp.Gps.ValidVertical()
+			},
+		},
+		{
+			desc: "gps valid vdop",
+			modifier: func(rp *ReportPacket) {
+				rp.Gps.VDOP = 1.5
+			},
+			validator: func(rp *ReportPacket) bool {
+				return rp.Gps.ValidVertical()
+			},
+		},
+		{
+			desc: "gps valid hdop, invalid long lat",
+			modifier: func(rp *ReportPacket) {
+				rp.Gps.HDOP = 2.5
+				rp.Gps.Longitude = GPS_LNG_MIN - 20
+				rp.Gps.Latitude = GPS_LAT_MAX + 15
+			},
+			validator: func(rp *ReportPacket) bool {
+				return !rp.Gps.ValidHorizontal()
+			},
+		},
+		{
+			desc: "gps valid hdop, valid long lat",
+			modifier: func(rp *ReportPacket) {
+				rp.Gps.HDOP = GPS_DOP_MIN
+				rp.Gps.Longitude = GPS_LNG_MIN
+				rp.Gps.Latitude = GPS_LAT_MAX
+			},
+			validator: func(rp *ReportPacket) bool {
+				return rp.Gps.ValidHorizontal()
+			},
+		},
+		{
+			desc: "net signal good",
+			modifier: func(rp *ReportPacket) {
+				rp.Net.Signal = 75
+			},
+			validator: func(rp *ReportPacket) bool {
+				return !rp.Net.LowSignal()
+			},
+		},
+		{
+			desc: "net signal poor",
+			modifier: func(rp *ReportPacket) {
+				rp.Net.Signal = NET_LOW_SIGNAL_PERCENT - 5
+			},
+			validator: func(rp *ReportPacket) bool {
+				return rp.Net.LowSignal()
+			},
+		},
+		{
+			desc: "bms's faults has BMS_SHORT_CIRCUIT & BMS_UNBALANCE",
+			modifier: func(rp *ReportPacket) {
+				rp.Bms.Faults = 1<<BMS_SHORT_CIRCUIT | 1<<BMS_UNBALANCE
+			},
+			validator: func(rp *ReportPacket) bool {
+				want := BmsFaults{BMS_SHORT_CIRCUIT, BMS_UNBALANCE}
+				return rp.Bms.IsFaults(want...) &&
+					len(want) == len(rp.Bms.GetFaults())
+			},
+		},
+		{
+			desc: "bms's faults is empty",
+			modifier: func(rp *ReportPacket) {
+				rp.Bms.Faults = 0
+			},
+			validator: func(rp *ReportPacket) bool {
+				return len(rp.Bms.GetFaults()) == 0
+			},
+		},
+		{
+			desc: "bms's faults has invalid value",
+			modifier: func(rp *ReportPacket) {
+				rp.Bms.Faults = 1 << BMS_FAULTS_MAX
+			},
+			validator: func(rp *ReportPacket) bool {
+				return len(rp.Bms.GetFaults()) == 0
+			},
+		},
+		{
+			desc: "bms soc full",
+			modifier: func(rp *ReportPacket) {
+				rp.Bms.SOC = 100
+			},
+			validator: func(rp *ReportPacket) bool {
+				return !rp.Bms.LowCapacity()
+			},
+		},
+		{
+			desc: "bms soc low",
+			modifier: func(rp *ReportPacket) {
+				rp.Bms.SOC = 1
+			},
+			validator: func(rp *ReportPacket) bool {
+				return rp.Bms.LowCapacity()
+			},
+		},
+		{
+			desc: "mcu's faults has MCU_POST_5V_LOW, MCU_POST_BRAKE_OPEN & MCU_RUN_ACCEL_OPEN",
+			modifier: func(rp *ReportPacket) {
+				rp.Mcu.Faults.Post = 1<<MCU_POST_5V_LOW | 1<<MCU_POST_BRAKE_OPEN
+				rp.Mcu.Faults.Run = 1 << MCU_RUN_ACCEL_OPEN
+			},
+			validator: func(rp *ReportPacket) bool {
+				wantPost := []McuFaultPost{MCU_POST_5V_LOW, MCU_POST_BRAKE_OPEN}
+				wantRun := []McuFaultRun{MCU_RUN_ACCEL_OPEN}
+				return rp.Mcu.IsPostFaults(wantPost...) &&
+					len(rp.Mcu.GetFaults().Post) == len(wantPost) &&
+					rp.Mcu.IsRunFaults(wantRun...) &&
+					len(rp.Mcu.GetFaults().Run) == len(wantRun)
+
+			},
+		},
+		{
+			desc: "mcu's faults is empty",
+			modifier: func(rp *ReportPacket) {
+				rp.Mcu.Faults.Post = 0
+				rp.Mcu.Faults.Run = 0
+			},
+			validator: func(rp *ReportPacket) bool {
+				return len(rp.Mcu.GetFaults().Post) == 0 &&
+					len(rp.Mcu.GetFaults().Run) == 0
+			},
+		},
+		{
+			desc: "some task's stack are near overflow",
+			modifier: func(rp *ReportPacket) {
+				rp.Task.Stack.Manager = STACK_OVERFLOW_BYTE_MIN - 20
+				rp.Task.Stack.Command = 0
+			},
+			validator: func(rp *ReportPacket) bool {
+				return rp.Task.StackOverflow()
+			},
+		},
+		// {
+		// 	desc: "all task's stack are good",
+		// 	modifier: func(rp *ReportPacket) {
+		// 		rp.Task.Stack.Manager = STACK_OVERFLOW_BYTE_MIN + uint16(rand.Intn(10))
+		// 	},
+		// 	validator: func(rp *ReportPacket) bool {
+		// 		return rp.Task.StackOverflow()
+		// 	},
+		// },
 	}
 
 	for _, tC := range testCases {
