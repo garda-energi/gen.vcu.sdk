@@ -7,6 +7,20 @@ import (
 	"time"
 )
 
+func apiSandbox(t *testing.T, vins []int, l Listener) (api *Sdk, destroy func()) {
+	api = newStubApi()
+	api.Connect()
+
+	if err := api.AddListener(l, vins...); err != nil {
+		t.Error("want no error, got ", err)
+	}
+
+	return api, func() {
+		api.RemoveListener(vins...)
+		api.Disconnect()
+	}
+}
+
 func newStubApi() *Sdk {
 	logger := newLogger(false, "TEST")
 	return &Sdk{

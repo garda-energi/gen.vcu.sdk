@@ -371,6 +371,7 @@ func (m *Mcu) IsRunFaults(mf ...McuFaultRun) bool {
 }
 
 type Task struct {
+	// TODO can it be implemented, use array for tasks
 	// Stack  [TASK_Limit]uint16 `type:"uint16" unit:"Bytes"`
 	// Wakeup [TASK_Limit]uint8  `type:"uint8" unit:"s"`
 	Stack struct {

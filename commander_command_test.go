@@ -266,6 +266,10 @@ func TestCommandInvalidInputHandler(t *testing.T) {
 			_, errOut := cmder.callCommand(tC.invoker, tC.arg)
 
 			// check output error
+			if errOut == nil {
+				t.Fatalf("want %s, got none", tC.want)
+			}
+
 			if err := errOut.(error); err.Error() != tC.want.Error() {
 				t.Errorf("want %s, got %s", tC.want, err)
 			}

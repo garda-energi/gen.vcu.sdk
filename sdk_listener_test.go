@@ -17,22 +17,16 @@ func TestSdkReportListener(t *testing.T) {
 	defer close(reportChan)
 
 	/////////////////////// SAND BOX ////////////////////////
-	api := newStubApi()
-	api.Connect()
-	defer api.Disconnect()
-
 	vins := VinRange(5, 10)
-	if err := api.AddListener(Listener{
+	api, destroy := apiSandbox(t, vins, Listener{
 		ReportFunc: func(vin int, report *ReportPacket) {
 			reportChan <- &stream{
 				vin:    vin,
 				report: report,
 			}
 		},
-	}, vins...); err != nil {
-		t.Error("want no error, got ", err)
-	}
-	defer api.RemoveListener(vins...)
+	})
+	defer destroy()
 	//////////////////////////////////////////////////////////
 
 	testCases := []struct {
@@ -330,22 +324,16 @@ func TestSdkStatusListener(t *testing.T) {
 	defer close(statusChan)
 
 	/////////////////////// SAND BOX ////////////////////////
-	api := newStubApi()
-	api.Connect()
-	defer api.Disconnect()
-
 	vins := VinRange(5, 10)
-	if err := api.AddListener(Listener{
+	api, destroy := apiSandbox(t, vins, Listener{
 		StatusFunc: func(vin int, online bool) {
 			statusChan <- &stream{
 				vin:    vin,
 				online: online,
 			}
 		},
-	}, vins...); err != nil {
-		t.Error("want no error, got ", err)
-	}
-	defer api.RemoveListener(vins...)
+	})
+	defer destroy()
 	//////////////////////////////////////////////////////////
 
 	testCases := []struct {
