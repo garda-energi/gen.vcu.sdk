@@ -41,7 +41,7 @@ func (c *commander) sendCommand(cmd *command, msg message) error {
 		return err
 	}
 
-	topic := setTopicToVin(TOPIC_COMMAND, c.vin)
+	topic := setTopicVin(TOPIC_COMMAND, c.vin)
 	return c.client.pub(topic, 1, true, packet)
 }
 
@@ -97,8 +97,8 @@ func (c *commander) waitPacket(name string, timeout time.Duration) (packet, erro
 // Destroy unsubscribe from command & response topic for current VIN.
 func (c *commander) Destroy() error {
 	topics := []string{
-		setTopicToVin(TOPIC_COMMAND, c.vin),
-		setTopicToVin(TOPIC_RESPONSE, c.vin),
+		setTopicVin(TOPIC_COMMAND, c.vin),
+		setTopicVin(TOPIC_RESPONSE, c.vin),
 	}
 	return c.client.unsub(topics)
 }
@@ -112,7 +112,7 @@ func (c *commander) listen() error {
 	cFunc := func(client mqtt.Client, msg mqtt.Message) {
 		c.logger.Println(CMD, debugPacket(msg))
 	}
-	topic := setTopicToVin(TOPIC_COMMAND, c.vin)
+	topic := setTopicVin(TOPIC_COMMAND, c.vin)
 	if err := c.client.sub(topic, QOS_SUB_COMMAND, cFunc); err != nil {
 		return err
 	}
@@ -121,7 +121,7 @@ func (c *commander) listen() error {
 		c.logger.Println(CMD, debugPacket(msg))
 		c.resChan <- msg.Payload()
 	}
-	topic = setTopicToVin(TOPIC_RESPONSE, c.vin)
+	topic = setTopicVin(TOPIC_RESPONSE, c.vin)
 	if err := c.client.sub(topic, QOS_SUB_RESPONSE, rFunc); err != nil {
 		return err
 	}
@@ -132,12 +132,12 @@ func (c *commander) listen() error {
 // It indicates that command is done or cancelled.
 func (c *commander) flush() {
 	for _, t := range []string{TOPIC_COMMAND, TOPIC_RESPONSE} {
-		_ = c.client.pub(setTopicToVin(t, c.vin), QOS_CMD_FLUSH, true, nil)
+		_ = c.client.pub(setTopicVin(t, c.vin), QOS_CMD_FLUSH, true, nil)
 	}
 }
 
-// callCommand invoke related command using reflection
-func (c *commander) callCommand(invoker string, arg interface{}) (res, err interface{}) {
+// invoke call related command using reflection
+func (c *commander) invoke(invoker string, arg interface{}) (res, err interface{}) {
 	method := reflect.ValueOf(c).MethodByName(invoker)
 	ins := []reflect.Value{}
 	if arg != nil {
