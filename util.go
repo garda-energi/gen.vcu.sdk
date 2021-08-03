@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"os/signal"
 	"reflect"
@@ -82,13 +83,6 @@ func reverseBytes(b []byte) []byte {
 	return nb
 }
 
-// getTopicVin extract VIN information from mqtt topic
-func getTopicVin(topic string) int {
-	s := strings.Split(topic, "/")
-	vin, _ := strconv.Atoi(s[1])
-	return vin
-}
-
 // toGlobalTopic replace VIN from topic with '+' character
 func toGlobalTopic(topic string) string {
 	s := strings.Split(topic, "/")
@@ -96,16 +90,38 @@ func toGlobalTopic(topic string) string {
 	return strings.Join(s, "/")
 }
 
-// setTopicToVin insert VIN into topic pattern
-func setTopicToVin(topic string, vin int) string {
+// getTopicVin extract VIN information from mqtt topic
+func getTopicVin(topic string) int {
+	s := strings.Split(topic, "/")
+	vin, _ := strconv.Atoi(s[1])
+	return vin
+}
+
+// setTopicVin insert VIN into topic pattern
+func setTopicVin(topic string, vin int) string {
 	return strings.Replace(topic, "+", strconv.Itoa(vin), 1)
 }
 
-// setTopicToVins create multiple topic for list of vin
-func setTopicToVins(topic string, vins []int) []string {
+// setTopicVins create multiple topic for list of vin
+func setTopicVins(topic string, vins []int) []string {
 	topics := make([]string, len(vins))
 	for i, v := range vins {
-		topics[i] = setTopicToVin(topic, v)
+		topics[i] = setTopicVin(topic, v)
 	}
 	return topics
+}
+
+// randBool generate random boolean
+func randBool() bool {
+	return rand.Intn(1) == 1
+}
+
+// randInt generate random integer
+func randInt(min, max int) int {
+	return rand.Intn(max-min) + min
+}
+
+// randFloat generate random float
+func randFloat(min, max float32) float32 {
+	return min + rand.Float32()*(max-min)
 }

@@ -65,14 +65,14 @@ func (s *Sdk) AddListener(ls Listener, vins ...int) error {
 
 	ls.logger = s.logger
 	if ls.StatusFunc != nil {
-		topics := setTopicToVins(TOPIC_STATUS, vins)
+		topics := setTopicVins(TOPIC_STATUS, vins)
 		if err := s.client.subMulti(topics, QOS_SUB_STATUS, ls.status()); err != nil {
 			return err
 		}
 	}
 
 	if ls.ReportFunc != nil {
-		topics := setTopicToVins(TOPIC_REPORT, vins)
+		topics := setTopicVins(TOPIC_REPORT, vins)
 		if err := s.client.subMulti(topics, QOS_SUB_REPORT, ls.report()); err != nil {
 			return err
 		}
@@ -83,8 +83,8 @@ func (s *Sdk) AddListener(ls Listener, vins ...int) error {
 // RemoveListener unsubscribe status and report topic for spesific vin in range.
 func (s *Sdk) RemoveListener(vins ...int) error {
 	topics := append(
-		setTopicToVins(TOPIC_STATUS, vins),
-		setTopicToVins(TOPIC_REPORT, vins)...,
+		setTopicVins(TOPIC_STATUS, vins),
+		setTopicVins(TOPIC_REPORT, vins)...,
 	)
 	return s.client.unsub(topics)
 }

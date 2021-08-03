@@ -23,7 +23,7 @@ type command struct {
 }
 
 // cmdList store command name by its code & subCode as index
-var cmdList = [][]command{
+var cmdList = [...][]command{
 	{
 		command{
 			name:    "GEN_INFO",

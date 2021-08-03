@@ -330,15 +330,3 @@ func makeReportPacket(vin int, full Frame) *ReportPacket {
 
 	return rp
 }
-
-func randBool() bool {
-	return rand.Intn(1) == 1
-}
-
-// func randInt(min, max int) int {
-// 	return rand.Intn(max-min) + min
-// }
-
-func randFloat(min, max float32) float32 {
-	return min + rand.Float32()*(max-min)
-}

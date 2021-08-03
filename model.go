@@ -1,6 +1,8 @@
 package sdk
 
-import "time"
+import (
+	"time"
+)
 
 type Header struct {
 	Prefix       string    `type:"string" len:"2"`
