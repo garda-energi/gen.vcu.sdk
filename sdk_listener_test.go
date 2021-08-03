@@ -18,24 +18,35 @@ func TestSdkReportListener(t *testing.T) {
 
 	/////////////////////// SAND BOX ////////////////////////
 	vins := VinRange(5, 10)
-	api, destroy := apiSandbox(t, vins, Listener{
+	listener := Listener{
 		ReportFunc: func(vin int, report *ReportPacket) {
 			reportChan <- &stream{
 				vin:    vin,
 				report: report,
 			}
 		},
-	})
-	defer destroy()
+	}
+
+	api := newStubApi()
+	api.Connect()
+	defer api.Disconnect()
+
+	if err := api.AddListener(listener, vins...); err != nil {
+		t.Error("want no error, got ", err)
+	}
+	defer api.RemoveListener(vins...)
+
 	//////////////////////////////////////////////////////////
 
 	testCases := []struct {
 		desc      string
+		frame     Frame
 		modifier  func(rp *ReportPacket)
 		validator func(rp *ReportPacket) bool
 	}{
 		{
-			desc: "send datetime is yesterday",
+			desc:  "send datetime is yesterday",
+			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Header.SendDatetime = time.Now().UTC().Add(-24 * time.Hour)
 			},
@@ -45,7 +56,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "vcu's events has BMS_ERROR & BIKE_FALLEN",
+			desc:  "vcu's events has BMS_ERROR & BIKE_FALLEN",
+			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Vcu.Events = 1<<VCU_BMS_ERROR | 1<<VCU_BIKE_FALLEN
 			},
@@ -56,7 +68,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "vcu's events is empty",
+			desc:  "vcu's events is empty",
+			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Vcu.Events = 0
 			},
@@ -65,7 +78,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "vcu's events has invalid value",
+			desc:  "vcu's events has invalid value",
+			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Vcu.Events = 1 << VCU_EVENTS_MAX
 			},
@@ -74,7 +88,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "log datetime is yesterday",
+			desc:  "log datetime is yesterday",
+			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Vcu.LogDatetime = time.Now().UTC().Add(-24 * time.Hour)
 			},
@@ -83,7 +98,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "log datetime is now, no buffered",
+			desc:  "log datetime is now, no buffered",
+			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Vcu.LogBuffered = 0
 				rp.Vcu.LogDatetime = time.Now().UTC()
@@ -93,7 +109,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "log is buffered",
+			desc:  "log is buffered",
+			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Vcu.LogBuffered = 5
 				rp.Vcu.LogDatetime = time.Now().UTC()
@@ -103,7 +120,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "backup battery medium",
+			desc:  "backup battery medium",
+			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Vcu.BatVoltage = BATTERY_BACKUP_FULL_MV - 300
 			},
@@ -112,7 +130,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "backup battery low",
+			desc:  "backup battery low",
+			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Vcu.BatVoltage = BATTERY_BACKUP_LOW_MV - 300
 			},
@@ -121,7 +140,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "eeprom capacity medium",
+			desc:  "eeprom capacity medium",
+			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Eeprom.Used = 2
 			},
@@ -130,7 +150,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "eeprom capacity low",
+			desc:  "eeprom capacity low",
+			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Eeprom.Used = 99
 			},
@@ -139,7 +160,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "gps dop low",
+			desc:  "gps dop low",
+			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Gps.HDOP = GPS_DOP_MIN + 3
 				rp.Gps.VDOP = GPS_DOP_MIN + 18
@@ -149,7 +171,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "gps valid vdop",
+			desc:  "gps valid vdop",
+			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Gps.VDOP = 1.5
 			},
@@ -158,7 +181,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "gps valid hdop, invalid long lat",
+			desc:  "gps valid hdop, invalid long lat",
+			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Gps.HDOP = 2.5
 				rp.Gps.Longitude = GPS_LNG_MIN - 20
@@ -169,7 +193,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "gps valid hdop, valid long lat",
+			desc:  "gps valid hdop, valid long lat",
+			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Gps.HDOP = GPS_DOP_MIN
 				rp.Gps.Longitude = GPS_LNG_MIN
@@ -180,7 +205,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "net signal good",
+			desc:  "net signal good",
+			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
 				rp.Net.Signal = 75
 			},
@@ -189,7 +215,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "net signal poor",
+			desc:  "net signal poor",
+			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
 				rp.Net.Signal = NET_LOW_SIGNAL_PERCENT - 5
 			},
@@ -198,7 +225,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "bms's faults has BMS_SHORT_CIRCUIT & BMS_UNBALANCE",
+			desc:  "bms's faults has BMS_SHORT_CIRCUIT & BMS_UNBALANCE",
+			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
 				rp.Bms.Faults = 1<<BMS_SHORT_CIRCUIT | 1<<BMS_UNBALANCE
 			},
@@ -209,7 +237,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "bms's faults is empty",
+			desc:  "bms's faults is empty",
+			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
 				rp.Bms.Faults = 0
 			},
@@ -218,7 +247,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "bms's faults has invalid value",
+			desc:  "bms's faults has invalid value",
+			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
 				rp.Bms.Faults = 1 << BMS_FAULTS_MAX
 			},
@@ -227,7 +257,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "bms soc full",
+			desc:  "bms soc full",
+			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
 				rp.Bms.SOC = 100
 			},
@@ -236,7 +267,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "bms soc low",
+			desc:  "bms soc low",
+			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
 				rp.Bms.SOC = 1
 			},
@@ -245,7 +277,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "mcu's faults has MCU_POST_5V_LOW, MCU_POST_BRAKE_OPEN & MCU_RUN_ACCEL_OPEN",
+			desc:  "mcu's faults has MCU_POST_5V_LOW, MCU_POST_BRAKE_OPEN & MCU_RUN_ACCEL_OPEN",
+			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
 				rp.Mcu.Faults.Post = 1<<MCU_POST_5V_LOW | 1<<MCU_POST_BRAKE_OPEN
 				rp.Mcu.Faults.Run = 1 << MCU_RUN_ACCEL_OPEN
@@ -261,7 +294,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "mcu's faults is empty",
+			desc:  "mcu's faults is empty",
+			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
 				rp.Mcu.Faults.Post = 0
 				rp.Mcu.Faults.Run = 0
@@ -272,7 +306,8 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc: "some task's stack are near overflow",
+			desc:  "some task's stack are near overflow",
+			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
 				rp.Task.Stack.Manager = STACK_OVERFLOW_BYTE_MIN - 20
 				rp.Task.Stack.Command = 0
@@ -283,6 +318,7 @@ func TestSdkReportListener(t *testing.T) {
 		},
 		// {
 		// 	desc: "all task's stack are good",
+		//	frame: FrameFull,
 		// 	modifier: func(rp *ReportPacket) {
 		// 		rp.Task.Stack.Manager = STACK_OVERFLOW_BYTE_MIN + uint16(rand.Intn(10))
 		// 	},
@@ -296,7 +332,7 @@ func TestSdkReportListener(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			vin := vins[rand.Intn(len(vins))]
 
-			rp := makeReportPacket(vin)
+			rp := makeReportPacket(vin, tC.frame)
 			tC.modifier(rp)
 
 			sdkStubClient(api).
@@ -325,15 +361,23 @@ func TestSdkStatusListener(t *testing.T) {
 
 	/////////////////////// SAND BOX ////////////////////////
 	vins := VinRange(5, 10)
-	api, destroy := apiSandbox(t, vins, Listener{
+	listener := Listener{
 		StatusFunc: func(vin int, online bool) {
 			statusChan <- &stream{
 				vin:    vin,
 				online: online,
 			}
 		},
-	})
-	defer destroy()
+	}
+
+	api := newStubApi()
+	api.Connect()
+	defer api.Disconnect()
+
+	if err := api.AddListener(listener, vins...); err != nil {
+		t.Error("want no error, got ", err)
+	}
+	defer api.RemoveListener(vins...)
 	//////////////////////////////////////////////////////////
 
 	testCases := []struct {
