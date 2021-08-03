@@ -144,7 +144,7 @@ func TestReportEventsAndFaults(t *testing.T) {
 					t.Errorf("[VCU Event string] Got %s want %s", gotVcuEvent, tt.want.vcuEventsString)
 				}
 				if len(tt.want.vcuEvents) > 0 {
-					isEvent := got.Vcu.IsEvent(tt.want.vcuEvents[0])
+					isEvent := got.Vcu.IsEvents(tt.want.vcuEvents[0])
 					if !isEvent {
 						t.Errorf("[VCU Event IsEvent] Got %t want %t", isEvent, true)
 					}
@@ -157,7 +157,7 @@ func TestReportEventsAndFaults(t *testing.T) {
 					t.Errorf("[BMS Faults string] Got %s want %s", gotBmsFault, tt.want.bmsFaultsString)
 				}
 				if len(tt.want.bmsFaults) > 0 {
-					isFault := got.Bms.IsFault(tt.want.bmsFaults[0])
+					isFault := got.Bms.IsFaults(tt.want.bmsFaults[0])
 					if !isFault {
 						t.Errorf("[BMS Faults isFault] Got %t want %t", isFault, true)
 					}
@@ -170,7 +170,7 @@ func TestReportEventsAndFaults(t *testing.T) {
 					t.Errorf("[MCU Faults string] Got %s want %s", gotMcuFault, tt.want.mcuFaultsString)
 				}
 				if len(tt.want.mcuFaults.Post) > 0 {
-					isFault := got.Mcu.IsFaultPost(tt.want.mcuFaults.Post[0])
+					isFault := got.Mcu.IsPostFaults(tt.want.mcuFaults.Post[0])
 					if !isFault {
 						t.Errorf("[MCU Faults isFault] Got %t want %t", isFault, true)
 					}

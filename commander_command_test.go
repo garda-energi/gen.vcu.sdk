@@ -142,7 +142,7 @@ func TestCommandHandler(t *testing.T) {
 				})
 
 			// call related method, pass in arg, evaluate outs
-			resOut, errOut := cmder.callCommand(tC.invoker, tC.arg)
+			resOut, errOut := cmder.invoke(tC.invoker, tC.arg)
 
 			// check output error
 			if errOut != nil {
@@ -263,9 +263,13 @@ func TestCommandInvalidInputHandler(t *testing.T) {
 				mockResponse(testVin, tC.invoker, nil)
 
 			// call related method, pass in arg, evaluate outs
-			_, errOut := cmder.callCommand(tC.invoker, tC.arg)
+			_, errOut := cmder.invoke(tC.invoker, tC.arg)
 
 			// check output error
+			if errOut == nil {
+				t.Fatalf("want %s, got none", tC.want)
+			}
+
 			if err := errOut.(error); err.Error() != tC.want.Error() {
 				t.Errorf("want %s, got %s", tC.want, err)
 			}

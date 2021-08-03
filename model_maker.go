@@ -40,10 +40,10 @@ func makeResponsePacket(vin int, cmd *command, msg message) *responsePacket {
 	}
 }
 
-func makeReportPacket(vin int) *ReportPacket {
+func makeReportPacket(vin int, full Frame) *ReportPacket {
 	rand.Seed(time.Now().UnixNano())
 
-	return &ReportPacket{
+	rp := &ReportPacket{
 		Header: &HeaderReport{
 			Header: Header{
 				Prefix:       PREFIX_REPORT,
@@ -51,7 +51,7 @@ func makeReportPacket(vin int) *ReportPacket {
 				Vin:          uint32(vin),
 				SendDatetime: time.Now(),
 			},
-			Frame: Frame(rand.Intn(int(FrameLimit))),
+			Frame: full, // Frame(rand.Intn(int(FrameLimit))),
 		},
 		Vcu: &Vcu{
 			LogDatetime: time.Now().Add(-2 * time.Second),
@@ -314,16 +314,19 @@ func makeReportPacket(vin int) *ReportPacket {
 			},
 		},
 	}
-}
 
-func randBool() bool {
-	return rand.Intn(1) == 1
-}
+	if rp.Header.Frame == FrameSimple {
+		rp.Hbar = nil
+		rp.Net = nil
+		rp.Mems = nil
+		rp.Remote = nil
+		rp.Finger = nil
+		rp.Audio = nil
+		rp.Hmi = nil
+		rp.Bms = nil
+		rp.Mcu = nil
+		rp.Task = nil
+	}
 
-func randInt(min, max int) int {
-	return rand.Intn(max-min) + min
-}
-
-func randFloat(min, max float32) float32 {
-	return min + rand.Float32()*(max-min)
+	return rp
 }
