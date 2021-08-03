@@ -33,7 +33,7 @@ func main() {
 			fmt.Println(vin, "=>", status)
 		},
 		ReportFunc: func(vin int, report *sdk.ReportPacket) {
-			// fmt.Println(report)
+			fmt.Println(report)
 
 			// show-off all *ReportPacket methods available
 			// if report.Vcu.RealtimeData() {
@@ -48,13 +48,20 @@ func main() {
 		},
 	}
 
-	// listen to report
+	// listen to range of vins
 	// see api.Addlistener doc for usage
-	vins := sdk.VinRange(354309, 354323)
-	if err := api.AddListener(listener, vins...); err != nil {
+	// vins := sdk.VinRange(354309, 354323)
+	// if err := api.AddListener(listener, vins...); err != nil {
+	// 	fmt.Println(err)
+	// } else {
+	// 	defer api.RemoveListener(vins...)
+	// }
+
+	// listen to all vins
+	if err := api.AddListener(listener); err != nil {
 		fmt.Println(err)
 	} else {
-		defer api.RemoveListener(vins...)
+		defer api.RemoveListener()
 	}
 
 	// listen to commands & response

@@ -28,10 +28,9 @@ func TestSdkAddListener(t *testing.T) {
 		api.Connect()
 		defer api.Disconnect()
 
-		want := "at least 1 vin supplied"
 		got := api.AddListener(noopListener)
-		if want != got.Error() {
-			t.Errorf("want %s, got %s", want, got)
+		if got != nil {
+			t.Error("want no error, got ", got)
 		}
 	})
 

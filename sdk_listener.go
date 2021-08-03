@@ -36,9 +36,9 @@ func (ls *Listener) report() mqtt.MessageHandler {
 
 		result, err := decodeReport(msg.Payload())
 		if err != nil {
-			log.Fatalln("cant decode", err)
+			log.Println("cant decode", err)
+		} else {
+			ls.ReportFunc(vin, result)
 		}
-
-		ls.ReportFunc(vin, result)
 	}
 }

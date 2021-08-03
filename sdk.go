@@ -41,7 +41,7 @@ func (s *Sdk) NewCommander(vin int) (*commander, error) {
 }
 
 // AddListener subscribe to Status & Report topic (if callback is specified) for spesific vin in range.
-//
+// If vins is empty, it will subscribe all vins.
 // Examples :
 //
 // listen by list :
@@ -53,9 +53,6 @@ func (s *Sdk) NewCommander(vin int) (*commander, error) {
 // listen by range :
 // s.AddListener(listerner, sdk.VinRange(min, max)...)
 func (s *Sdk) AddListener(ls Listener, vins ...int) error {
-	if len(vins) == 0 {
-		return errors.New("at least 1 vin supplied")
-	}
 	if ls.StatusFunc == nil && ls.ReportFunc == nil {
 		return errors.New("at least 1 listener supplied")
 	}
@@ -63,24 +60,41 @@ func (s *Sdk) AddListener(ls Listener, vins ...int) error {
 		return errClientDisconnected
 	}
 
+	global := len(vins) == 0
+
 	ls.logger = s.logger
 	if ls.StatusFunc != nil {
-		topics := setTopicVins(TOPIC_STATUS, vins)
-		if err := s.client.subMulti(topics, QOS_SUB_STATUS, ls.status()); err != nil {
-			return err
+		switch global {
+		case false:
+			topics := setTopicVins(TOPIC_STATUS, vins)
+			if err := s.client.subMulti(topics, QOS_SUB_STATUS, ls.status()); err != nil {
+				return err
+			}
+		case true:
+			if err := s.client.sub(TOPIC_STATUS, QOS_SUB_STATUS, ls.status()); err != nil {
+				return err
+			}
 		}
 	}
 
 	if ls.ReportFunc != nil {
-		topics := setTopicVins(TOPIC_REPORT, vins)
-		if err := s.client.subMulti(topics, QOS_SUB_REPORT, ls.report()); err != nil {
-			return err
+		switch global {
+		case false:
+			topics := setTopicVins(TOPIC_REPORT, vins)
+			if err := s.client.subMulti(topics, QOS_SUB_REPORT, ls.report()); err != nil {
+				return err
+			}
+		case true:
+			if err := s.client.sub(TOPIC_REPORT, QOS_SUB_REPORT, ls.report()); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
 
 // RemoveListener unsubscribe status and report topic for spesific vin in range.
+// If vins is empty, it will unsubscribe from all vins.
 func (s *Sdk) RemoveListener(vins ...int) error {
 	topics := append(
 		setTopicVins(TOPIC_STATUS, vins),
