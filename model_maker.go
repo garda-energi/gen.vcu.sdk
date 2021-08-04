@@ -153,7 +153,7 @@ func makeReportPacket(vin int, full Frame) *ReportPacket {
 			Nearby: randBool(),
 		},
 		Finger: &Finger{
-			Verified: randBool(),
+			Active:   randBool(),
 			DriverID: uint8(rand.Intn(DRIVER_ID_MAX)),
 		},
 		Audio: &Audio{

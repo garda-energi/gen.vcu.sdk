@@ -226,7 +226,7 @@ type Remote struct {
 }
 
 type Finger struct {
-	Verified bool  `type:"uint8"`
+	Active   bool  `type:"uint8"`
 	DriverID uint8 `type:"uint8"`
 }
 
