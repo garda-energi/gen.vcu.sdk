@@ -87,13 +87,13 @@ func makeReportPacket(vin int, full Frame) *ReportPacket {
 				Avg:   ModeAvg(rand.Intn(int(ModeAvgLimit))),
 			},
 			Trip: struct {
-				A        uint16 "type:\"uint16\" unit:\"Km\""
-				B        uint16 "type:\"uint16\" unit:\"Km\""
-				Odometer uint16 "type:\"uint16\" unit:\"Km\""
+				Odo uint16 "type:\"uint16\" unit:\"Km\""
+				A   uint16 "type:\"uint16\" unit:\"Km\""
+				B   uint16 "type:\"uint16\" unit:\"Km\""
 			}{
-				A:        uint16(rand.Intn(99999)),
-				B:        uint16(rand.Intn(99999)),
-				Odometer: uint16(rand.Intn(99999)),
+				Odo: uint16(rand.Intn(99999)),
+				A:   uint16(rand.Intn(99999)),
+				B:   uint16(rand.Intn(99999)),
 			},
 			Avg: struct {
 				Range      uint8 "type:\"uint8\" unit:\"Km\""
@@ -109,8 +109,8 @@ func makeReportPacket(vin int, full Frame) *ReportPacket {
 			IpStatus: NetIpStatus(rand.Intn(int(NetIpStatusLimit))),
 		},
 		Mems: &Mems{
-			Active: randBool(),
-			Motion: randBool(),
+			Active:    randBool(),
+			AntiThief: randBool(),
 			Accel: struct {
 				X float32 "type:\"int16\" len:\"2\" unit:\"G\" factor:\"0.01\""
 				Y float32 "type:\"int16\" len:\"2\" unit:\"G\" factor:\"0.01\""
@@ -153,7 +153,7 @@ func makeReportPacket(vin int, full Frame) *ReportPacket {
 			Nearby: randBool(),
 		},
 		Finger: &Finger{
-			Verified: randBool(),
+			Active:   randBool(),
 			DriverID: uint8(rand.Intn(DRIVER_ID_MAX)),
 		},
 		Audio: &Audio{

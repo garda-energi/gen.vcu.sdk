@@ -90,62 +90,43 @@ func main() {
 		// 	fmt.Println("RTC synced to", rtc)
 		// }
 
-		// km := uint16(54321)
-		// if err := dev354313.GenOdo(km); err != nil {
+		// if err := dev354313.GenAntiThief(false); err != nil {
 		// 	fmt.Println(err)
 		// } else {
-		// 	fmt.Println("Odometer changed to", km, "km")
-		// }
-
-		// if err := dev354313.GenAntiThief(); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Println("Anti-theaf detector was toggled")
-		// }
-
-		// if err := dev354313.GenReportFlush(); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Println("Report buffer was flushed")
-		// }
-
-		// if err := dev354313.GenReportBlock(false); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Println("Report is unblocked")
+		// 	fmt.Println("Anti-theaf detector was disabled")
 		// }
 
 		// bikeState := sdk.BikeStateNormal
-		// if err := dev354313.OvdState(bikeState); err != nil {
+		// if err := dev354313.GenBikeState(bikeState); err != nil {
 		// 	fmt.Println(err)
 		// } else {
 		// 	fmt.Println("Bike state is changed to", bikeState)
 		// }
 
+		// if err := dev354313.ReportFlush(); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("Report buffer was flushed")
+		// }
+
+		// if err := dev354313.ReportBlock(false); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("Report is unblocked")
+		// }
+
 		// reportInterval := 5 * time.Second
-		// if err := dev354313.OvdReportInterval(reportInterval); err != nil {
+		// if err := dev354313.ReportInterval(reportInterval); err != nil {
 		// 	fmt.Println(err)
 		// } else {
 		// 	fmt.Println("Report interval changed to", reportInterval)
 		// }
 
 		// frame := sdk.FrameFull
-		// if err := dev354313.OvdReportFrame(frame); err != nil {
+		// if err := dev354313.ReportFrame(frame); err != nil {
 		// 	fmt.Println(err)
 		// } else {
 		// 	fmt.Println("Report frame changed to", frame)
-		// }
-
-		// if err := dev354313.OvdRemoteSeat(); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Println("Remote button seat was toggled")
-		// }
-
-		// if err := dev354313.OvdRemoteAlarm(); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Println("Remote button alarm was toggled")
 		// }
 
 		// if err := dev354313.AudioBeep(); err != nil {
@@ -185,6 +166,18 @@ func main() {
 		// 	fmt.Println("Success pairing with new keyless/fob")
 		// }
 
+		// if err := dev354313.RemoteSeat(); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("Remote button seat was toggled")
+		// }
+
+		// if err := dev354313.RemoteAlarm(); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("Remote button alarm was toggled")
+		// }
+
 		// if res, err := dev354313.FotaVcu(); err != nil {
 		// 	fmt.Println(err)
 		// } else {
@@ -207,6 +200,14 @@ func main() {
 		// 	fmt.Println(err)
 		// } else {
 		// 	fmt.Println(res)
+		// }
+
+		// trip := sdk.ModeTripOdo
+		// km := uint16(54321)
+		// if err := dev354313.HbarTripMeter(trip, km); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Printf("Trip mode %s changed to %d km", trip, km)
 		// }
 
 		// driveMode := sdk.ModeDriveStandard

@@ -28,36 +28,33 @@ func TestCommandHandler(t *testing.T) {
 			arg:     time.Now(),
 		},
 		{
-			invoker: "GenOdo",
-			arg:     uint16(4321),
-		},
-		{
 			invoker: "GenAntiThief",
+			arg:     true,
 		},
 		{
-			invoker: "GenReportFlush",
-		},
-		{
-			invoker: "GenReportBlock",
-			arg:     false,
-		},
-		{
-			invoker: "OvdState",
+			invoker: "GenBikeState",
 			arg:     BikeStateNormal,
 		},
 		{
-			invoker: "OvdReportInterval",
+			invoker: "ReportFlush",
+		},
+		{
+			invoker: "ReportBlock",
+			arg:     false,
+		},
+		{
+			invoker: "ReportInterval",
 			arg:     5 * time.Second,
 		},
 		{
-			invoker: "OvdReportFrame",
+			invoker: "ReportFrame",
 			arg:     FrameFull,
 		},
 		{
-			invoker: "OvdRemoteSeat",
+			invoker: "RemoteSeat",
 		},
 		{
-			invoker: "OvdRemoteAlarm",
+			invoker: "RemoteAlarm",
 		},
 		{
 			invoker: "AudioBeep",
@@ -99,6 +96,10 @@ func TestCommandHandler(t *testing.T) {
 			invoker: "NetReadSms",
 			resMsg:  message("Poin Bonstri kamu: 20 Sisa Kuota kamu : Kuota ++ 372 MB s.d 03/01/2031 13:30:18 Temukan beragam paket lain di bima+ https://goo.gl/RQ1DBA"),
 		},
+		// {
+		// 	invoker: "HbarTripMeter",
+		// 	arg:     uint16(4321),
+		// },
 		{
 			invoker: "HbarDrive",
 			arg:     ModeDriveEconomy,
@@ -171,17 +172,17 @@ func TestCommandInvalidInputHandler(t *testing.T) {
 		want    error
 	}{
 		{
-			invoker: "OvdState",
+			invoker: "GenBikeState",
 			arg:     BikeStateLimit,
 			want:    errInputOutOfRange("state"),
 		},
 		{
-			invoker: "OvdReportInterval",
+			invoker: "ReportInterval",
 			arg:     100 * time.Hour,
 			want:    errInputOutOfRange("duration"),
 		},
 		{
-			invoker: "OvdReportFrame",
+			invoker: "ReportFrame",
 			arg:     FrameLimit,
 			want:    errInputOutOfRange("frame"),
 		},

@@ -171,9 +171,9 @@ type Hbar struct {
 		Avg   ModeAvg   `type:"uint8"`
 	}
 	Trip struct {
-		A        uint16 `type:"uint16" unit:"Km"`
-		B        uint16 `type:"uint16" unit:"Km"`
-		Odometer uint16 `type:"uint16" unit:"Km"`
+		Odo uint16 `type:"uint16" unit:"Km"`
+		A   uint16 `type:"uint16" unit:"Km"`
+		B   uint16 `type:"uint16" unit:"Km"`
 	}
 	Avg struct {
 		Range      uint8 `type:"uint8" unit:"Km"`
@@ -196,9 +196,9 @@ func (n *Net) LowSignal() bool {
 }
 
 type Mems struct {
-	Active bool `type:"uint8"`
-	Motion bool `type:"uint8"`
-	Accel  struct {
+	Active    bool `type:"uint8"`
+	AntiThief bool `type:"uint8"`
+	Accel     struct {
 		X float32 `type:"int16" len:"2" unit:"G" factor:"0.01"`
 		Y float32 `type:"int16" len:"2" unit:"G" factor:"0.01"`
 		Z float32 `type:"int16" len:"2" unit:"G" factor:"0.01"`
@@ -226,7 +226,7 @@ type Remote struct {
 }
 
 type Finger struct {
-	Verified bool  `type:"uint8"`
+	Active   bool  `type:"uint8"`
 	DriverID uint8 `type:"uint8"`
 }
 

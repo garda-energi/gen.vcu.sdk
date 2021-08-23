@@ -38,42 +38,30 @@ var cmdList = [...][]command{
 			invoker: "GenRtc",
 		},
 		command{
-			name:    "GEN_ODO",
-			invoker: "GenOdo",
-		},
-		command{
-			name:    "GEN_ANTI_THIEF",
+			name:    "GEN_ANTITHIEF",
 			invoker: "GenAntiThief",
 		},
 		command{
-			name:    "GEN_RPT_FLUSH",
-			invoker: "GenReportFlush",
-		},
-		command{
-			name:    "GEN_RPT_BLOCK",
-			invoker: "GenReportBlock",
+			name:    "GEN_BIKESTATE",
+			invoker: "GenBikeState",
 		},
 	},
 	{
 		command{
-			name:    "OVD_STATE",
-			invoker: "OvdState",
+			name:    "REPORT_FLUSH",
+			invoker: "ReportFlush",
 		},
 		command{
-			name:    "OVD_RPT_INTERVAL",
-			invoker: "OvdReportInterval",
+			name:    "REPORT_BLOCK",
+			invoker: "ReportBlock",
 		},
 		command{
-			name:    "OVD_RPT_FRAME",
-			invoker: "OvdReportFrame",
+			name:    "REPORT_INTERVAL",
+			invoker: "ReportInterval",
 		},
 		command{
-			name:    "OVD_RMT_SEAT",
-			invoker: "OvdRemoteSeat",
-		},
-		command{
-			name:    "OVD_RMT_ALARM",
-			invoker: "OvdRemoteAlarm",
+			name:    "REPORT_FRAME",
+			invoker: "ReportFrame",
 		},
 	},
 	{
@@ -109,6 +97,14 @@ var cmdList = [...][]command{
 			name:    "REMOTE_PAIRING",
 			invoker: "RemotePairing",
 			timeout: 15 * time.Second,
+		},
+		command{
+			name:    "REMOTE_SEAT",
+			invoker: "RemoteSeat",
+		},
+		command{
+			name:    "REMOTE_ALARM",
+			invoker: "RemoteAlarm",
 		},
 	},
 	{
@@ -177,6 +173,10 @@ var cmdList = [...][]command{
 		},
 	},
 	{
+		command{
+			name:    "HBAR_TRIPMETER",
+			invoker: "HbarTripMeter",
+		},
 		command{
 			name:    "HBAR_DRIVE",
 			invoker: "HbarDrive",

@@ -60,71 +60,52 @@ func (c *commander) GenRtc(time time.Time) error {
 	return err
 }
 
-// GenOdo set odometer value (in km).
-func (c *commander) GenOdo(km uint16) error {
-	msg := uintToBytes(reflect.Uint16, uint64(km))
-	_, err := c.exec("GenOdo", msg)
+// GenAntiThief set anti-thief motion detector.
+func (c *commander) GenAntiThief(on bool) error {
+	_, err := c.exec("GenAntiThief", boolToBytes(on))
 	return err
 }
 
-// GenAntiThief toggle anti-thief motion detector.
-func (c *commander) GenAntiThief() error {
-	_, err := c.exec("GenAntiThief", nil)
-	return err
-}
-
-// GenReportFlush flush pending report in device buffer.
-func (c *commander) GenReportFlush() error {
-	_, err := c.exec("GenReportFlush", nil)
-	return err
-}
-
-// GenReportBlock stop device reporting mode.
-func (c *commander) GenReportBlock(on bool) error {
-	_, err := c.exec("GenReportBlock", boolToBytes(on))
-	return err
-}
-
-// OvdState override bike state.
-func (c *commander) OvdState(state BikeState) error {
+// GenBikeState override bike state.
+func (c *commander) GenBikeState(state BikeState) error {
 	min, max := BikeStateNormal, BikeStateRun
 	if state < min || state > max {
 		return errInputOutOfRange("state")
 	}
 
-	_, err := c.exec("OvdState", message{byte(state)})
+	_, err := c.exec("GenBikeState", message{byte(state)})
 	return err
 }
 
-// OvdReportInterval override reporting interval.
-func (c *commander) OvdReportInterval(dur time.Duration) error {
+// ReportFlush flush pending report in device buffer.
+func (c *commander) ReportFlush() error {
+	_, err := c.exec("ReportFlush", nil)
+	return err
+}
+
+// ReportBlock stop device reporting mode.
+func (c *commander) ReportBlock(on bool) error {
+	_, err := c.exec("ReportBlock", boolToBytes(on))
+	return err
+}
+
+// ReportInterval override reporting interval.
+func (c *commander) ReportInterval(dur time.Duration) error {
 	if dur < REPORT_INTERVAL_MIN || dur > REPORT_INTERVAL_MAX {
 		return errInputOutOfRange("duration")
 	}
 	msg := uintToBytes(reflect.Uint16, uint64(dur.Seconds()))
-	_, err := c.exec("OvdReportInterval", msg)
+	_, err := c.exec("ReportInterval", msg)
 	return err
 }
 
-// OvdReportFrame override report frame type.
-func (c *commander) OvdReportFrame(frame Frame) error {
+// ReportFrame override report frame type.
+func (c *commander) ReportFrame(frame Frame) error {
 	if frame == FrameLimit {
 		return errInputOutOfRange("frame")
 	}
 
-	_, err := c.exec("OvdReportFrame", message{byte(frame)})
-	return err
-}
-
-// OvdRemoteSeat override seat button on remote/keyless.
-func (c *commander) OvdRemoteSeat() error {
-	_, err := c.exec("OvdRemoteSeat", nil)
-	return err
-}
-
-// OvdRemoteAlarm override alarm button on remote/keyless.
-func (c *commander) OvdRemoteAlarm() error {
-	_, err := c.exec("OvdRemoteAlarm", nil)
+	_, err := c.exec("ReportFrame", message{byte(frame)})
 	return err
 }
 
@@ -185,6 +166,18 @@ func (c *commander) RemotePairing() error {
 	return err
 }
 
+// RemoteSeat override seat button on remote/keyless.
+func (c *commander) RemoteSeat() error {
+	_, err := c.exec("RemoteSeat", nil)
+	return err
+}
+
+// RemoteAlarm override alarm button on remote/keyless.
+func (c *commander) RemoteAlarm() error {
+	_, err := c.exec("RemoteAlarm", nil)
+	return err
+}
+
 // FotaVcu upgrade VCU (Vehicle Control Unit) firmware over the air.
 func (c *commander) FotaVcu() (string, error) {
 	msg, err := c.exec("FotaVcu", nil)
@@ -227,6 +220,20 @@ func (c *commander) NetReadSms() (string, error) {
 		return "", err
 	}
 	return string(msg), nil
+}
+
+// HbarTripMeter set trip meter value (in km).
+func (c *commander) HbarTripMeter(trip ModeTrip, km uint16) error {
+	if trip == ModeTripLimit {
+		return errInputOutOfRange("trip-mode")
+	}
+
+	var buf bytes.Buffer
+	binary.Write(&buf, binary.LittleEndian, byte(trip))
+	binary.Write(&buf, binary.LittleEndian, uintToBytes(reflect.Uint16, uint64(km)))
+
+	_, err := c.exec("HbarTripMeter", buf.Bytes())
+	return err
 }
 
 // HbarDrive set handlebar drive mode.
