@@ -78,17 +78,17 @@ func (m ModeDrive) String() string {
 type ModeTrip uint8
 
 const (
-	ModeTripA ModeTrip = iota
+	ModeTripOdo ModeTrip = iota
+	ModeTripA
 	ModeTripB
-	ModeTripOdo
 	ModeTripLimit
 )
 
 func (m ModeTrip) String() string {
 	return [...]string{
+		"ODO",
 		"A",
 		"B",
-		"ODO",
 	}[m]
 }
 
