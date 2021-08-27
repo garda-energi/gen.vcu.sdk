@@ -12,9 +12,9 @@ func main() {
 
 	api := sdk.New(sdk.ClientConfig{
 		Host: "test.mosquitto.org",
-		Port: 1883,
-		User: "",
-		Pass: "",
+		Port: 1884,
+		User: "rw",
+		Pass: "readwrite",
 	}, true)
 
 	// connect to client
