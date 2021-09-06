@@ -32,6 +32,13 @@ func TestCommandHandler(t *testing.T) {
 			arg:     BikeStateNormal,
 		},
 		{
+			invoker: "GenLockDown",
+			arg:     false,
+		},
+		{
+			invoker: "GenRestart",
+		},
+		{
 			invoker: "ReportFlush",
 		},
 		{

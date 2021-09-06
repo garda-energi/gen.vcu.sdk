@@ -41,6 +41,14 @@ var cmdList = [...][]command{
 			name:    "GEN_BIKESTATE",
 			invoker: "GenBikeState",
 		},
+		command{
+			name:    "GEN_LOCKDOWN",
+			invoker: "GenLockDown",
+		},
+		command{
+			name:    "GEN_RESTART",
+			invoker: "GenRestart",
+		},
 	},
 	{
 		command{

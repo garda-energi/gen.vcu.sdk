@@ -97,6 +97,18 @@ func main() {
 		// 	fmt.Println("Bike state is changed to", bikeState)
 		// }
 
+		// if err := dev354313.GenLockDown(false); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("Lock-down mode is disabled")
+		// }
+
+		// if err := dev354313.GenRestart(); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("Main chip was restarted")
+		// }
+
 		// if err := dev354313.ReportFlush(); err != nil {
 		// 	fmt.Println(err)
 		// } else {

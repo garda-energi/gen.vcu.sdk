@@ -71,6 +71,18 @@ func (c *commander) GenBikeState(state BikeState) error {
 	return err
 }
 
+// GenLockDown force bice lock-down.
+func (c *commander) GenLockDown(on bool) error {
+	_, err := c.exec("GenLockDown", boolToBytes(on))
+	return err
+}
+
+// GenRestart soft restart main chip.
+func (c *commander) GenRestart() error {
+	_, err := c.exec("GenRestart", nil)
+	return err
+}
+
 // ReportFlush flush pending report in device buffer.
 func (c *commander) ReportFlush() error {
 	_, err := c.exec("ReportFlush", nil)
