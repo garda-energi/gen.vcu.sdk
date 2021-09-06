@@ -38,12 +38,16 @@ var cmdList = [...][]command{
 			invoker: "GenRtc",
 		},
 		command{
-			name:    "GEN_ANTITHIEF",
-			invoker: "GenAntiThief",
-		},
-		command{
 			name:    "GEN_BIKESTATE",
 			invoker: "GenBikeState",
+		},
+		command{
+			name:    "GEN_LOCKDOWN",
+			invoker: "GenLockDown",
+		},
+		command{
+			name:    "GEN_RESTART",
+			invoker: "GenRestart",
 		},
 	},
 	{
@@ -189,10 +193,6 @@ var cmdList = [...][]command{
 			name:    "HBAR_AVG",
 			invoker: "HbarAvg",
 		},
-		command{
-			name:    "HBAR_REVERSE",
-			invoker: "HbarReverse",
-		},
 	},
 	{
 		command{
@@ -202,6 +202,12 @@ var cmdList = [...][]command{
 		command{
 			name:    "MCU_TEMPLATES",
 			invoker: "McuTemplates",
+		},
+	},
+	{		
+		command{
+			name:    "IMU_ANTITHIEF",
+			invoker: "ImuAntiThief",
 		},
 	},
 }

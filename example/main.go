@@ -12,9 +12,9 @@ func main() {
 
 	api := sdk.New(sdk.ClientConfig{
 		Host: "test.mosquitto.org",
-		Port: 1883,
-		User: "",
-		Pass: "",
+		Port: 1884,
+		User: "rw",
+		Pass: "readwrite",
 	}, true)
 
 	// connect to client
@@ -90,17 +90,23 @@ func main() {
 		// 	fmt.Println("RTC synced to", rtc)
 		// }
 
-		// if err := dev354313.GenAntiThief(false); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Println("Anti-theaf detector was disabled")
-		// }
-
 		// bikeState := sdk.BikeStateNormal
 		// if err := dev354313.GenBikeState(bikeState); err != nil {
 		// 	fmt.Println(err)
 		// } else {
 		// 	fmt.Println("Bike state is changed to", bikeState)
+		// }
+
+		// if err := dev354313.GenLockDown(false); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("Lock-down mode is disabled")
+		// }
+
+		// if err := dev354313.GenRestart(); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("Main chip was restarted")
 		// }
 
 		// if err := dev354313.ReportFlush(); err != nil {
@@ -231,11 +237,6 @@ func main() {
 		// 	fmt.Println("Average mode changed to", avgMode)
 		// }
 
-		// if err := dev354313.HbarReverse(true); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Println("Motor now in reverse direction")
-		// }
 
 		// kph := uint8(100)
 		// if err := dev354313.McuSpeedMax(kph); err != nil {
@@ -255,6 +256,12 @@ func main() {
 		// 	for i, t := range templates {
 		// 		fmt.Println("Motor template for", sdk.ModeDrive(i), "changed to", t)
 		// 	}
+		// }
+
+		// if err := dev354313.ImuAntiThief(false); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("Anti-theaf detector was disabled")
 		// }
 	}
 

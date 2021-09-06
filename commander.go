@@ -60,12 +60,6 @@ func (c *commander) GenRtc(time time.Time) error {
 	return err
 }
 
-// GenAntiThief set anti-thief motion detector.
-func (c *commander) GenAntiThief(on bool) error {
-	_, err := c.exec("GenAntiThief", boolToBytes(on))
-	return err
-}
-
 // GenBikeState override bike state.
 func (c *commander) GenBikeState(state BikeState) error {
 	min, max := BikeStateNormal, BikeStateRun
@@ -74,6 +68,18 @@ func (c *commander) GenBikeState(state BikeState) error {
 	}
 
 	_, err := c.exec("GenBikeState", message{byte(state)})
+	return err
+}
+
+// GenLockDown force bice lock-down.
+func (c *commander) GenLockDown(on bool) error {
+	_, err := c.exec("GenLockDown", boolToBytes(on))
+	return err
+}
+
+// GenRestart soft restart main chip.
+func (c *commander) GenRestart() error {
+	_, err := c.exec("GenRestart", nil)
 	return err
 }
 
@@ -266,11 +272,6 @@ func (c *commander) HbarAvg(avg ModeAvg) error {
 	return err
 }
 
-// HbarReverse set MCU (Motor Control Unit) reverse state.
-func (c *commander) HbarReverse(on bool) error {
-	_, err := c.exec("HbarReverse", boolToBytes(on))
-	return err
-}
 
 // McuSpeedMax set maximum MCU (Motor Control Unit) speed (in kph).
 func (c *commander) McuSpeedMax(kph uint8) error {
@@ -309,5 +310,11 @@ func (c *commander) McuTemplates(ts []McuTemplate) error {
 	}
 
 	_, err := c.exec("McuTemplates", buf.Bytes())
+	return err
+}
+
+// ImuAntiThief set anti-thief motion detector.
+func (c *commander) ImuAntiThief(on bool) error {
+	_, err := c.exec("ImuAntiThief", boolToBytes(on))
 	return err
 }

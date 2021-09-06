@@ -28,12 +28,15 @@ func TestCommandHandler(t *testing.T) {
 			arg:     time.Now(),
 		},
 		{
-			invoker: "GenAntiThief",
-			arg:     true,
-		},
-		{
 			invoker: "GenBikeState",
 			arg:     BikeStateNormal,
+		},
+		{
+			invoker: "GenLockDown",
+			arg:     false,
+		},
+		{
+			invoker: "GenRestart",
 		},
 		{
 			invoker: "ReportFlush",
@@ -113,10 +116,6 @@ func TestCommandHandler(t *testing.T) {
 			arg:     ModeAvgEfficiency,
 		},
 		{
-			invoker: "HbarReverse",
-			arg:     false,
-		},
-		{
 			invoker: "McuSpeedMax",
 			arg:     uint8(90),
 		},
@@ -127,6 +126,10 @@ func TestCommandHandler(t *testing.T) {
 				{DisCur: 50, Torque: 20}, // standard
 				{DisCur: 50, Torque: 25}, // sport
 			},
+		},
+		{
+			invoker: "ImuAntiThief",
+			arg:     true,
 		},
 	}
 
