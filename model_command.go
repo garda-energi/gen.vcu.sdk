@@ -38,10 +38,6 @@ var cmdList = [...][]command{
 			invoker: "GenRtc",
 		},
 		command{
-			name:    "GEN_ANTITHIEF",
-			invoker: "GenAntiThief",
-		},
-		command{
 			name:    "GEN_BIKESTATE",
 			invoker: "GenBikeState",
 		},
@@ -198,6 +194,12 @@ var cmdList = [...][]command{
 		command{
 			name:    "MCU_TEMPLATES",
 			invoker: "McuTemplates",
+		},
+	},
+	{		
+		command{
+			name:    "IMU_ANTITHIEF",
+			invoker: "ImuAntiThief",
 		},
 	},
 }

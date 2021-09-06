@@ -90,12 +90,6 @@ func main() {
 		// 	fmt.Println("RTC synced to", rtc)
 		// }
 
-		// if err := dev354313.GenAntiThief(false); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Println("Anti-theaf detector was disabled")
-		// }
-
 		// bikeState := sdk.BikeStateNormal
 		// if err := dev354313.GenBikeState(bikeState); err != nil {
 		// 	fmt.Println(err)
@@ -250,6 +244,12 @@ func main() {
 		// 	for i, t := range templates {
 		// 		fmt.Println("Motor template for", sdk.ModeDrive(i), "changed to", t)
 		// 	}
+		// }
+
+		// if err := dev354313.ImuAntiThief(false); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("Anti-theaf detector was disabled")
 		// }
 	}
 

@@ -60,12 +60,6 @@ func (c *commander) GenRtc(time time.Time) error {
 	return err
 }
 
-// GenAntiThief set anti-thief motion detector.
-func (c *commander) GenAntiThief(on bool) error {
-	_, err := c.exec("GenAntiThief", boolToBytes(on))
-	return err
-}
-
 // GenBikeState override bike state.
 func (c *commander) GenBikeState(state BikeState) error {
 	min, max := BikeStateNormal, BikeStateRun
@@ -304,5 +298,11 @@ func (c *commander) McuTemplates(ts []McuTemplate) error {
 	}
 
 	_, err := c.exec("McuTemplates", buf.Bytes())
+	return err
+}
+
+// ImuAntiThief set anti-thief motion detector.
+func (c *commander) ImuAntiThief(on bool) error {
+	_, err := c.exec("ImuAntiThief", boolToBytes(on))
 	return err
 }
