@@ -113,10 +113,6 @@ func TestCommandHandler(t *testing.T) {
 			arg:     ModeAvgEfficiency,
 		},
 		{
-			invoker: "HbarReverse",
-			arg:     false,
-		},
-		{
 			invoker: "McuSpeedMax",
 			arg:     uint8(90),
 		},

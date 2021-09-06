@@ -231,11 +231,6 @@ func main() {
 		// 	fmt.Println("Average mode changed to", avgMode)
 		// }
 
-		// if err := dev354313.HbarReverse(true); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Println("Motor now in reverse direction")
-		// }
 
 		// kph := uint8(100)
 		// if err := dev354313.McuSpeedMax(kph); err != nil {

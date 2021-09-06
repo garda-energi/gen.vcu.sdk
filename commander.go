@@ -266,11 +266,6 @@ func (c *commander) HbarAvg(avg ModeAvg) error {
 	return err
 }
 
-// HbarReverse set MCU (Motor Control Unit) reverse state.
-func (c *commander) HbarReverse(on bool) error {
-	_, err := c.exec("HbarReverse", boolToBytes(on))
-	return err
-}
 
 // McuSpeedMax set maximum MCU (Motor Control Unit) speed (in kph).
 func (c *commander) McuSpeedMax(kph uint8) error {

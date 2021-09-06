@@ -189,10 +189,6 @@ var cmdList = [...][]command{
 			name:    "HBAR_AVG",
 			invoker: "HbarAvg",
 		},
-		command{
-			name:    "HBAR_REVERSE",
-			invoker: "HbarReverse",
-		},
 	},
 	{
 		command{
