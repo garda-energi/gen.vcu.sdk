@@ -67,11 +67,13 @@ func (r *ReportPacket) String() string {
 
 type Vcu struct {
 	LogDatetime time.Time `type:"int64" len:"7"`
+	Version 		uint16		`type:"uint16"`
 	State       BikeState `type:"int8"`
 	Events      uint16    `type:"uint16"`
 	LogBuffered uint8     `type:"uint8"`
 	BatVoltage  float32   `type:"uint8" len:"1" unit:"mVolt" factor:"18.0"`
 	Uptime      float32   `type:"uint32" unit:"hour" factor:"0.000277"`
+	LockDown 		bool  		`type:"uint8"`
 }
 
 // String converts VcuEvents type to string.
