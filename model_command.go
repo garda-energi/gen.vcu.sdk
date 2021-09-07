@@ -204,7 +204,7 @@ var cmdList = [...][]command{
 			invoker: "McuTemplates",
 		},
 	},
-	{		
+	{
 		command{
 			name:    "IMU_ANTITHIEF",
 			invoker: "ImuAntiThief",

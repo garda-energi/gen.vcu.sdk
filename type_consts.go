@@ -89,7 +89,7 @@ const (
 	TASK_Network
 	TASK_Reporte
 	TASK_Command
-	TASK_Mems
+	TASK_Imu
 	TASK_Remote
 	TASK_Finger
 	TASK_Audio

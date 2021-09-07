@@ -19,7 +19,7 @@ type ReportPacket struct {
 	Gps    *Gps          // 34 - 49
 	Hbar   *Hbar         // 49 - 61
 	Net    *Net          // 62 - 64
-	Mems   *Mems         // 65 - 90
+	Imu    *Imu          // 65 - 90
 	Remote *Remote       // 91 - 92
 	Finger *Finger       // 93 - 94
 	Audio  *Audio        // 95 - 98
@@ -67,13 +67,13 @@ func (r *ReportPacket) String() string {
 
 type Vcu struct {
 	LogDatetime time.Time `type:"int64" len:"7"`
-	Version 		uint16		`type:"uint16"`
+	Version     uint16    `type:"uint16"`
 	State       BikeState `type:"int8"`
 	Events      uint16    `type:"uint16"`
 	LogBuffered uint8     `type:"uint8"`
 	BatVoltage  float32   `type:"uint8" len:"1" unit:"mVolt" factor:"18.0"`
 	Uptime      float32   `type:"uint32" unit:"hour" factor:"0.000277"`
-	LockDown 		bool  		`type:"uint8"`
+	LockDown    bool      `type:"uint8"`
 }
 
 // String converts VcuEvents type to string.
@@ -197,7 +197,7 @@ func (n *Net) LowSignal() bool {
 	return n.Signal <= NET_LOW_SIGNAL_PERCENT
 }
 
-type Mems struct {
+type Imu struct {
 	Active    bool `type:"uint8"`
 	AntiThief bool `type:"uint8"`
 	Accel     struct {
@@ -381,7 +381,7 @@ type Task struct {
 		Network  uint16 `type:"uint16" unit:"Bytes"`
 		Reporter uint16 `type:"uint16" unit:"Bytes"`
 		Command  uint16 `type:"uint16" unit:"Bytes"`
-		Mems     uint16 `type:"uint16" unit:"Bytes"`
+		Imu      uint16 `type:"uint16" unit:"Bytes"`
 		Remote   uint16 `type:"uint16" unit:"Bytes"`
 		Finger   uint16 `type:"uint16" unit:"Bytes"`
 		Audio    uint16 `type:"uint16" unit:"Bytes"`
@@ -394,7 +394,7 @@ type Task struct {
 		Network  uint8 `type:"uint8" unit:"s"`
 		Reporter uint8 `type:"uint8" unit:"s"`
 		Command  uint8 `type:"uint8" unit:"s"`
-		Mems     uint8 `type:"uint8" unit:"s"`
+		Imu      uint8 `type:"uint8" unit:"s"`
 		Remote   uint8 `type:"uint8" unit:"s"`
 		Finger   uint8 `type:"uint8" unit:"s"`
 		Audio    uint8 `type:"uint8" unit:"s"`

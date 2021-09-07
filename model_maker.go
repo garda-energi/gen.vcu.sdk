@@ -40,7 +40,7 @@ func makeResponsePacket(vin int, cmd *command, msg message) *responsePacket {
 	}
 }
 
-func makeReportPacket(vin int, full Frame) *ReportPacket {
+func makeReportPacket(vin int, frame Frame) *ReportPacket {
 	rand.Seed(time.Now().UnixNano())
 
 	rp := &ReportPacket{
@@ -51,15 +51,17 @@ func makeReportPacket(vin int, full Frame) *ReportPacket {
 				Vin:          uint32(vin),
 				SendDatetime: time.Now(),
 			},
-			Frame: full, // Frame(rand.Intn(int(FrameLimit))),
+			Frame: frame, // Frame(rand.Intn(int(FrameLimit))),
 		},
 		Vcu: &Vcu{
 			LogDatetime: time.Now().Add(-2 * time.Second),
+			Version:     uint16(rand.Uint32()),
 			State:       BikeState(rand.Intn(int(BikeStateLimit))),
 			Events:      uint16(rand.Uint32()),
 			LogBuffered: uint8(rand.Intn(50)),
 			BatVoltage:  randFloat(0, 4400),
 			Uptime:      randFloat(0, 1000),
+			LockDown:    randBool(),
 		},
 		Eeprom: &Eeprom{
 			Active: randBool(),
@@ -108,7 +110,7 @@ func makeReportPacket(vin int, full Frame) *ReportPacket {
 			State:    NetState(rand.Intn(int(NetStateLimit))),
 			IpStatus: NetIpStatus(rand.Intn(int(NetIpStatusLimit))),
 		},
-		Mems: &Mems{
+		Imu: &Imu{
 			Active:    randBool(),
 			AntiThief: randBool(),
 			Accel: struct {
@@ -267,7 +269,7 @@ func makeReportPacket(vin int, full Frame) *ReportPacket {
 				Network  uint16 "type:\"uint16\" unit:\"Bytes\""
 				Reporter uint16 "type:\"uint16\" unit:\"Bytes\""
 				Command  uint16 "type:\"uint16\" unit:\"Bytes\""
-				Mems     uint16 "type:\"uint16\" unit:\"Bytes\""
+				Imu      uint16 "type:\"uint16\" unit:\"Bytes\""
 				Remote   uint16 "type:\"uint16\" unit:\"Bytes\""
 				Finger   uint16 "type:\"uint16\" unit:\"Bytes\""
 				Audio    uint16 "type:\"uint16\" unit:\"Bytes\""
@@ -279,7 +281,7 @@ func makeReportPacket(vin int, full Frame) *ReportPacket {
 				Network:  uint16(rand.Intn(1000)),
 				Reporter: uint16(rand.Intn(1000)),
 				Command:  uint16(rand.Intn(1000)),
-				Mems:     uint16(rand.Intn(1000)),
+				Imu:      uint16(rand.Intn(1000)),
 				Remote:   uint16(rand.Intn(1000)),
 				Finger:   uint16(rand.Intn(1000)),
 				Audio:    uint16(rand.Intn(1000)),
@@ -292,7 +294,7 @@ func makeReportPacket(vin int, full Frame) *ReportPacket {
 				Network  uint8 "type:\"uint8\" unit:\"s\""
 				Reporter uint8 "type:\"uint8\" unit:\"s\""
 				Command  uint8 "type:\"uint8\" unit:\"s\""
-				Mems     uint8 "type:\"uint8\" unit:\"s\""
+				Imu      uint8 "type:\"uint8\" unit:\"s\""
 				Remote   uint8 "type:\"uint8\" unit:\"s\""
 				Finger   uint8 "type:\"uint8\" unit:\"s\""
 				Audio    uint8 "type:\"uint8\" unit:\"s\""
@@ -304,7 +306,7 @@ func makeReportPacket(vin int, full Frame) *ReportPacket {
 				Network:  uint8(rand.Intn(255)),
 				Reporter: uint8(rand.Intn(255)),
 				Command:  uint8(rand.Intn(255)),
-				Mems:     uint8(rand.Intn(255)),
+				Imu:      uint8(rand.Intn(255)),
 				Remote:   uint8(rand.Intn(255)),
 				Finger:   uint8(rand.Intn(255)),
 				Audio:    uint8(rand.Intn(255)),
@@ -318,7 +320,7 @@ func makeReportPacket(vin int, full Frame) *ReportPacket {
 	if rp.Header.Frame == FrameSimple {
 		rp.Hbar = nil
 		rp.Net = nil
-		rp.Mems = nil
+		rp.Imu = nil
 		rp.Remote = nil
 		rp.Finger = nil
 		rp.Audio = nil
