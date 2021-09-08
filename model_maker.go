@@ -167,32 +167,39 @@ func makeReportPacket(vin int, frame Frame) *ReportPacket {
 			Active: randBool(),
 		},
 		Bms: &Bms{
-			Active: randBool(),
-			Run:    randBool(),
-			SOC:    uint8(rand.Intn(100)),
-			Faults: uint16(rand.Uint32()),
+			Active:   randBool(),
+			Run:      randBool(),
+			Capacity: uint16(rand.Intn(2100)),
+			SOC:      uint8(rand.Intn(100)),
+			Faults:   uint16(rand.Uint32()),
 			Pack: [2]struct {
-				ID      uint32  "type:\"uint32\""
-				Fault   uint16  "type:\"uint16\""
-				Voltage float32 "type:\"uint16\" len:\"2\" unit:\"Volt\" factor:\"0.01\""
-				Current float32 "type:\"uint16\" len:\"2\" unit:\"Ampere\" factor:\"0.1\""
-				SOC     uint8   "type:\"uint8\" unit:\"%\""
-				Temp    uint16  "type:\"uint16\" unit:\"Celcius\""
+				ID       uint32  "type:\"uint32\""
+				Fault    uint16  "type:\"uint16\""
+				Voltage  float32 "type:\"uint16\" len:\"2\" unit:\"Volt\" factor:\"0.01\""
+				Current  float32 "type:\"uint16\" len:\"2\" unit:\"Ampere\" factor:\"0.1\""
+				Capacity uint16  "type:\"uint16\" len:\"2\" unit:\"Wh\""
+				SOC      uint8   "type:\"uint8\" unit:\"%\""
+				SOH      uint8   "type:\"uint8\" unit:\"%\""
+				Temp     uint16  "type:\"uint16\" unit:\"Celcius\""
 			}{
 				{
-					ID:      rand.Uint32(),
-					Fault:   uint16(rand.Uint32()),
-					Voltage: randFloat(48, 60),
-					Current: randFloat(0, 110),
-					SOC:     uint8(rand.Intn(100)),
-					Temp:    uint16(randFloat(30, 50)),
+					ID:       rand.Uint32(),
+					Fault:    uint16(rand.Uint32()),
+					Voltage:  randFloat(48, 60),
+					Current:  randFloat(0, 110),
+					Capacity: uint16(rand.Intn(2100)),
+					SOC:      uint8(rand.Intn(100)),
+					SOH:      uint8(rand.Intn(100)),
+					Temp:     uint16(randFloat(30, 50)),
 				},
 				{
-					Fault:   uint16(rand.Uint32()),
-					Voltage: randFloat(48, 60),
-					Current: randFloat(0, 110),
-					SOC:     uint8(rand.Intn(100)),
-					Temp:    uint16(randFloat(30, 50)),
+					Fault:    uint16(rand.Uint32()),
+					Voltage:  randFloat(48, 60),
+					Current:  randFloat(0, 110),
+					Capacity: uint16(rand.Intn(2100)),
+					SOC:      uint8(rand.Intn(100)),
+					SOH:      uint8(rand.Intn(100)),
+					Temp:     uint16(randFloat(30, 50)),
 				},
 			},
 		},
