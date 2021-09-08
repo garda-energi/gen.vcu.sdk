@@ -1,6 +1,7 @@
 package sdk
 
 // WARNING: the report struct is not synced with report_test_data.json anymore, cause this test to fail
+// TODO: use model_maker.go for fake testing data
 
 import (
 	"strconv"
