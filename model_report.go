@@ -242,20 +242,22 @@ type Hmi struct {
 }
 
 type Bms struct {
-	Active   bool   `type:"uint8"`
-	Run      bool   `type:"uint8"`
-	Capacity uint16 `type:"uint16" len:"2" unit:"Wh"`
-	SOC      uint8  `type:"uint8" unit:"%"`
-	Faults   uint16 `type:"uint16"`
-	Pack     [BMS_PACK_MAX]struct {
-		ID       uint32  `type:"uint32"`
-		Fault    uint16  `type:"uint16"`
-		Voltage  float32 `type:"uint16" len:"2" unit:"Volt" factor:"0.01"`
-		Current  float32 `type:"uint16" len:"2" unit:"Ampere" factor:"0.1"`
-		Capacity uint16  `type:"uint16" len:"2" unit:"Wh"`
-		SOC      uint8   `type:"uint8" unit:"%"`
-		SOH      uint8   `type:"uint8" unit:"%"`
-		Temp     uint16  `type:"uint16" unit:"Celcius"`
+	Active            bool   `type:"uint8"`
+	Run               bool   `type:"uint8"`
+	CapacityRemaining uint16 `type:"uint16" len:"2" unit:"Wh"`
+	CapacityUsage     uint16 `type:"uint16" len:"2" unit:"Wh"`
+	SOC               uint8  `type:"uint8" unit:"%"`
+	Faults            uint16 `type:"uint16"`
+	Pack              [BMS_PACK_MAX]struct {
+		ID                uint32  `type:"uint32"`
+		Fault             uint16  `type:"uint16"`
+		Voltage           float32 `type:"uint16" len:"2" unit:"Volt" factor:"0.01"`
+		Current           float32 `type:"uint16" len:"2" unit:"Ampere" factor:"0.1"`
+		CapacityRemaining uint16  `type:"uint16" len:"2" unit:"Wh"`
+		CapacityUsage     uint16  `type:"uint16" len:"2" unit:"Wh"`
+		SOC               uint8   `type:"uint8" unit:"%"`
+		SOH               uint8   `type:"uint8" unit:"%"`
+		Temp              uint16  `type:"uint16" unit:"Celcius"`
 	}
 }
 
