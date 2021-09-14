@@ -1,4 +1,4 @@
-module github.com/pudjamansyurin/gen.vcu.sdk
+module github.com/garda-energi/gen.vcu.sdk
 
 go 1.16
 

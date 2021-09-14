@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	sdk "github.com/pudjamansyurin/gen.vcu.sdk"
+	sdk "github.com/garda-energi/gen.vcu.sdk"
 )
 
 func main() {
