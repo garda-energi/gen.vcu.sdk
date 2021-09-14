@@ -79,28 +79,17 @@ func makeReportPacket(vin int, frame Frame) *ReportPacket {
 		},
 		Hbar: &Hbar{
 			Reverse: randBool(),
-			Mode: struct {
-				Drive ModeDrive "type:\"uint8\""
-				Trip  ModeTrip  "type:\"uint8\""
-				Avg   ModeAvg   "type:\"uint8\""
-			}{
+			Mode: HbarMode{
 				Drive: ModeDrive(rand.Intn(int(ModeDriveLimit))),
 				Trip:  ModeTrip(rand.Intn(int(ModeTripLimit))),
 				Avg:   ModeAvg(rand.Intn(int(ModeAvgLimit))),
 			},
-			Trip: struct {
-				Odo uint16 "type:\"uint16\" unit:\"Km\""
-				A   uint16 "type:\"uint16\" unit:\"Km\""
-				B   uint16 "type:\"uint16\" unit:\"Km\""
-			}{
+			Trip: HbarTrip{
 				Odo: uint16(rand.Intn(99999)),
 				A:   uint16(rand.Intn(99999)),
 				B:   uint16(rand.Intn(99999)),
 			},
-			Avg: struct {
-				Range      uint8 "type:\"uint8\" unit:\"Km\""
-				Efficiency uint8 "type:\"uint8\" unit:\"Km/Kwh\""
-			}{
+			Avg: HbarAvg{
 				Range:      uint8(rand.Intn(255)),
 				Efficiency: uint8(rand.Intn(255)),
 			},
@@ -113,37 +102,21 @@ func makeReportPacket(vin int, frame Frame) *ReportPacket {
 		Imu: &Imu{
 			Active:    randBool(),
 			AntiThief: randBool(),
-			Accel: struct {
-				X float32 "type:\"int16\" len:\"2\" unit:\"G\" factor:\"0.01\""
-				Y float32 "type:\"int16\" len:\"2\" unit:\"G\" factor:\"0.01\""
-				Z float32 "type:\"int16\" len:\"2\" unit:\"G\" factor:\"0.01\""
-			}{
+			Accel: ImuAccel{
 				X: randFloat(0, 100),
 				Y: randFloat(0, 100),
 				Z: randFloat(0, 100),
 			},
-			Gyro: struct {
-				X float32 "type:\"int16\" len:\"2\" unit:\"rad/s\" factor:\"0.1\""
-				Y float32 "type:\"int16\" len:\"2\" unit:\"rad/s\" factor:\"0.1\""
-				Z float32 "type:\"int16\" len:\"2\" unit:\"rad/s\" factor:\"0.1\""
-			}{
+			Gyro: ImuGyro{
 				X: randFloat(0, 10000),
 				Y: randFloat(0, 10000),
 				Z: randFloat(0, 10000),
 			},
-			Tilt: struct {
-				Pitch float32 "type:\"int16\" len:\"2\" unit:\"Deg\" factor:\"0.1\""
-				Roll  float32 "type:\"int16\" len:\"2\" unit:\"Deg\" factor:\"0.1\""
-			}{
+			Tilt: ImuTilt{
 				Pitch: randFloat(0, 180),
 				Roll:  randFloat(0, 180),
 			},
-			Total: struct {
-				Accel float32 "type:\"uint16\" len:\"2\" unit:\"G\" factor:\"0.01\""
-				Gyro  float32 "type:\"uint16\" len:\"2\" unit:\"rad/s\" factor:\"0.1\""
-				Tilt  float32 "type:\"uint16\" len:\"2\" unit:\"Deg\" factor:\"0.1\""
-				Temp  float32 "type:\"uint16\" len:\"2\" unit:\"Celcius\" factor:\"0.1\""
-			}{
+			Total: ImuTotal{
 				Accel: randFloat(0, 100),
 				Gyro:  randFloat(0, 10000),
 				Tilt:  randFloat(0, 180),
@@ -167,44 +140,39 @@ func makeReportPacket(vin int, frame Frame) *ReportPacket {
 			Active: randBool(),
 		},
 		Bms: &Bms{
-			Active:            randBool(),
-			Run:               randBool(),
-			CapacityRemaining: uint16(rand.Intn(2100)),
-			CapacityUsage:     uint16(rand.Intn(2100)),
-			SOC:               uint8(rand.Intn(100)),
-			Faults:            uint16(rand.Uint32()),
-			Pack: [2]struct {
-				ID                uint32  "type:\"uint32\""
-				Fault             uint16  "type:\"uint16\""
-				Voltage           float32 "type:\"uint16\" len:\"2\" unit:\"Volt\" factor:\"0.01\""
-				Current           float32 "type:\"uint16\" len:\"2\" unit:\"Ampere\" factor:\"0.1\""
-				CapacityRemaining uint16  "type:\"uint16\" len:\"2\" unit:\"Wh\""
-				CapacityUsage     uint16  "type:\"uint16\" len:\"2\" unit:\"Wh\""
-				SOC               uint8   "type:\"uint8\" unit:\"%\""
-				SOH               uint8   "type:\"uint8\" unit:\"%\""
-				Temp              uint16  "type:\"uint16\" unit:\"Celcius\""
-			}{
-
+			Active: randBool(),
+			Run:    randBool(),
+			Capacity: BmsCapacity{
+				Remaining: uint16(rand.Intn(2100)),
+				Usage:     uint16(rand.Intn(2100)),
+			},
+			SOC:    uint8(rand.Intn(100)),
+			Faults: uint16(rand.Uint32()),
+			Pack: [2]BmsPack{
 				{
-					ID:                rand.Uint32(),
-					Fault:             uint16(rand.Uint32()),
-					Voltage:           randFloat(48, 60),
-					Current:           randFloat(0, 110),
-					CapacityRemaining: uint16(rand.Intn(2100)),
-					CapacityUsage:     uint16(rand.Intn(2100)),
-					SOC:               uint8(rand.Intn(100)),
-					SOH:               uint8(rand.Intn(100)),
-					Temp:              uint16(randFloat(30, 50)),
+					ID:      rand.Uint32(),
+					Fault:   uint16(rand.Uint32()),
+					Voltage: randFloat(48, 60),
+					Current: randFloat(0, 110),
+					Capacity: BmsCapacity{
+						Remaining: uint16(rand.Intn(2100)),
+						Usage:     uint16(rand.Intn(2100)),
+					},
+					SOC:  uint8(rand.Intn(100)),
+					SOH:  uint8(rand.Intn(100)),
+					Temp: uint16(randFloat(30, 50)),
 				},
 				{
-					Fault:             uint16(rand.Uint32()),
-					Voltage:           randFloat(48, 60),
-					Current:           randFloat(0, 110),
-					CapacityRemaining: uint16(rand.Intn(2100)),
-					CapacityUsage:     uint16(rand.Intn(2100)),
-					SOC:               uint8(rand.Intn(100)),
-					SOH:               uint8(rand.Intn(100)),
-					Temp:              uint16(randFloat(30, 50)),
+					Fault:   uint16(rand.Uint32()),
+					Voltage: randFloat(48, 60),
+					Current: randFloat(0, 110),
+					Capacity: BmsCapacity{
+						Remaining: uint16(rand.Intn(2100)),
+						Usage:     uint16(rand.Intn(2100)),
+					},
+					SOC:  uint8(rand.Intn(100)),
+					SOH:  uint8(rand.Intn(100)),
+					Temp: uint16(randFloat(30, 50)),
 				},
 			},
 		},
@@ -216,50 +184,27 @@ func makeReportPacket(vin int, frame Frame) *ReportPacket {
 			Speed:     uint8(rand.Intn(SPEED_KPH_MAX)),
 			RPM:       int16(rand.Intn(50000) - 25000),
 			Temp:      randFloat(30, 50),
-			Faults: struct {
-				Post uint32 "type:\"uint32\""
-				Run  uint32 "type:\"uint32\""
-			}{
+			Faults: McuFaultsStruct{
 				Post: rand.Uint32(),
 				Run:  rand.Uint32(),
 			},
-			Torque: struct {
-				Command  float32 "type:\"uint16\" len:\"2\" unit:\"Nm\" factor:\"0.1\""
-				Feedback float32 "type:\"uint16\" len:\"2\" unit:\"Nm\" factor:\"0.1\""
-			}{
+			Torque: McuTorque{
 				Command:  rand.Float32(),
 				Feedback: rand.Float32(),
 			},
-			DCBus: struct {
-				Current float32 "type:\"uint16\" len:\"2\" unit:\"A\" factor:\"0.1\""
-				Voltage float32 "type:\"uint16\" len:\"2\" unit:\"V\" factor:\"0.1\""
-			}{
+			DCBus: McuDCBus{
 				Current: rand.Float32(),
 				Voltage: rand.Float32(),
 			},
-			Inverter: struct {
-				Enabled   bool            "type:\"uint8\""
-				Lockout   bool            "type:\"uint8\""
-				Discharge McuInvDischarge "type:\"uint8\""
-			}{
+			Inverter: McuInverter{
 				Enabled:   randBool(),
 				Lockout:   randBool(),
 				Discharge: McuInvDischarge(rand.Intn(int(McuInvDischargeLimit))),
 			},
-			Template: struct {
-				MaxRPM    int16 "type:\"int16\" unit:\"rpm\""
-				MaxSpeed  uint8 "type:\"uint8\" unit:\"Kph\""
-				DriveMode [3]struct {
-					Discur uint16  "type:\"uint16\" unit:\"A\""
-					Torque float32 "type:\"uint16\" len:\"2\" unit:\"Nm\" factor:\"0.1\""
-				}
-			}{
+			Template: McuTemplateStruct{
 				MaxRPM:   int16(rand.Intn(50000) - 25000),
 				MaxSpeed: uint8(rand.Intn(SPEED_KPH_MAX)),
-				DriveMode: [3]struct {
-					Discur uint16  "type:\"uint16\" unit:\"A\""
-					Torque float32 "type:\"uint16\" len:\"2\" unit:\"Nm\" factor:\"0.1\""
-				}{
+				DriveMode: [3]McuTemplateDriveMode{
 					{
 						Discur: uint16(rand.Float32()),
 						Torque: rand.Float32(),
@@ -276,19 +221,7 @@ func makeReportPacket(vin int, frame Frame) *ReportPacket {
 			},
 		},
 		Task: &Task{
-			Stack: struct {
-				Manager  uint16 "type:\"uint16\" unit:\"Bytes\""
-				Network  uint16 "type:\"uint16\" unit:\"Bytes\""
-				Reporter uint16 "type:\"uint16\" unit:\"Bytes\""
-				Command  uint16 "type:\"uint16\" unit:\"Bytes\""
-				Imu      uint16 "type:\"uint16\" unit:\"Bytes\""
-				Remote   uint16 "type:\"uint16\" unit:\"Bytes\""
-				Finger   uint16 "type:\"uint16\" unit:\"Bytes\""
-				Audio    uint16 "type:\"uint16\" unit:\"Bytes\""
-				Gate     uint16 "type:\"uint16\" unit:\"Bytes\""
-				CanRX    uint16 "type:\"uint16\" unit:\"Bytes\""
-				CanTX    uint16 "type:\"uint16\" unit:\"Bytes\""
-			}{
+			Stack: TaskStack{
 				Manager:  uint16(rand.Intn(1000)),
 				Network:  uint16(rand.Intn(1000)),
 				Reporter: uint16(rand.Intn(1000)),
@@ -301,19 +234,7 @@ func makeReportPacket(vin int, frame Frame) *ReportPacket {
 				CanRX:    uint16(rand.Intn(1000)),
 				CanTX:    uint16(rand.Intn(1000)),
 			},
-			Wakeup: struct {
-				Manager  uint8 "type:\"uint8\" unit:\"s\""
-				Network  uint8 "type:\"uint8\" unit:\"s\""
-				Reporter uint8 "type:\"uint8\" unit:\"s\""
-				Command  uint8 "type:\"uint8\" unit:\"s\""
-				Imu      uint8 "type:\"uint8\" unit:\"s\""
-				Remote   uint8 "type:\"uint8\" unit:\"s\""
-				Finger   uint8 "type:\"uint8\" unit:\"s\""
-				Audio    uint8 "type:\"uint8\" unit:\"s\""
-				Gate     uint8 "type:\"uint8\" unit:\"s\""
-				CanRX    uint8 "type:\"uint8\" unit:\"s\""
-				CanTX    uint8 "type:\"uint8\" unit:\"s\""
-			}{
+			Wakeup: TaskWakeup{
 				Manager:  uint8(rand.Intn(255)),
 				Network:  uint8(rand.Intn(255)),
 				Reporter: uint8(rand.Intn(255)),

@@ -165,22 +165,27 @@ func (g *Gps) ValidVertical() bool {
 	return g.VDOP <= GPS_DOP_MIN
 }
 
+type HbarMode struct {
+	Drive ModeDrive `type:"uint8"`
+	Trip  ModeTrip  `type:"uint8"`
+	Avg   ModeAvg   `type:"uint8"`
+}
+
+type HbarTrip struct {
+	Odo uint16 `type:"uint16" unit:"Km"`
+	A   uint16 `type:"uint16" unit:"Km"`
+	B   uint16 `type:"uint16" unit:"Km"`
+}
+
+type HbarAvg struct {
+	Range      uint8 `type:"uint8" unit:"Km"`
+	Efficiency uint8 `type:"uint8" unit:"Km/Kwh"`
+}
 type Hbar struct {
 	Reverse bool `type:"uint8"`
-	Mode    struct {
-		Drive ModeDrive `type:"uint8"`
-		Trip  ModeTrip  `type:"uint8"`
-		Avg   ModeAvg   `type:"uint8"`
-	}
-	Trip struct {
-		Odo uint16 `type:"uint16" unit:"Km"`
-		A   uint16 `type:"uint16" unit:"Km"`
-		B   uint16 `type:"uint16" unit:"Km"`
-	}
-	Avg struct {
-		Range      uint8 `type:"uint8" unit:"Km"`
-		Efficiency uint8 `type:"uint8" unit:"Km/Kwh"`
-	}
+	Mode    HbarMode
+	Trip    HbarTrip
+	Avg     HbarAvg
 }
 
 type Net struct {
@@ -197,29 +202,36 @@ func (n *Net) LowSignal() bool {
 	return n.Signal <= NET_LOW_SIGNAL_PERCENT
 }
 
+type ImuAccel struct {
+	X float32 `type:"int16" len:"2" unit:"G" factor:"0.01"`
+	Y float32 `type:"int16" len:"2" unit:"G" factor:"0.01"`
+	Z float32 `type:"int16" len:"2" unit:"G" factor:"0.01"`
+}
+
+type ImuGyro struct {
+	X float32 `type:"int16" len:"2" unit:"rad/s" factor:"0.1"`
+	Y float32 `type:"int16" len:"2" unit:"rad/s" factor:"0.1"`
+	Z float32 `type:"int16" len:"2" unit:"rad/s" factor:"0.1"`
+}
+
+type ImuTilt struct {
+	Pitch float32 `type:"int16" len:"2" unit:"Deg" factor:"0.1"`
+	Roll  float32 `type:"int16" len:"2" unit:"Deg" factor:"0.1"`
+}
+
+type ImuTotal struct {
+	Accel float32 `type:"uint16" len:"2" unit:"G" factor:"0.01"`
+	Gyro  float32 `type:"uint16" len:"2" unit:"rad/s" factor:"0.1"`
+	Tilt  float32 `type:"uint16" len:"2" unit:"Deg" factor:"0.1"`
+	Temp  float32 `type:"uint16" len:"2" unit:"Celcius" factor:"0.1"`
+}
 type Imu struct {
 	Active    bool `type:"uint8"`
 	AntiThief bool `type:"uint8"`
-	Accel     struct {
-		X float32 `type:"int16" len:"2" unit:"G" factor:"0.01"`
-		Y float32 `type:"int16" len:"2" unit:"G" factor:"0.01"`
-		Z float32 `type:"int16" len:"2" unit:"G" factor:"0.01"`
-	}
-	Gyro struct {
-		X float32 `type:"int16" len:"2" unit:"rad/s" factor:"0.1"`
-		Y float32 `type:"int16" len:"2" unit:"rad/s" factor:"0.1"`
-		Z float32 `type:"int16" len:"2" unit:"rad/s" factor:"0.1"`
-	}
-	Tilt struct {
-		Pitch float32 `type:"int16" len:"2" unit:"Deg" factor:"0.1"`
-		Roll  float32 `type:"int16" len:"2" unit:"Deg" factor:"0.1"`
-	}
-	Total struct {
-		Accel float32 `type:"uint16" len:"2" unit:"G" factor:"0.01"`
-		Gyro  float32 `type:"uint16" len:"2" unit:"rad/s" factor:"0.1"`
-		Tilt  float32 `type:"uint16" len:"2" unit:"Deg" factor:"0.1"`
-		Temp  float32 `type:"uint16" len:"2" unit:"Celcius" factor:"0.1"`
-	}
+	Accel     ImuAccel
+	Gyro      ImuGyro
+	Tilt      ImuTilt
+	Total     ImuTotal
 }
 
 type Remote struct {
@@ -241,24 +253,28 @@ type Hmi struct {
 	Active bool `type:"uint8"`
 }
 
+type BmsCapacity struct {
+	Remaining uint16 `type:"uint16" len:"2" unit:"Wh"`
+	Usage     uint16 `type:"uint16" len:"2" unit:"Wh"`
+}
+type BmsPack struct {
+	ID       uint32  `type:"uint32"`
+	Fault    uint16  `type:"uint16"`
+	Voltage  float32 `type:"uint16" len:"2" unit:"Volt" factor:"0.01"`
+	Current  float32 `type:"uint16" len:"2" unit:"Ampere" factor:"0.1"`
+	Capacity BmsCapacity
+	SOC      uint8  `type:"uint8" unit:"%"`
+	SOH      uint8  `type:"uint8" unit:"%"`
+	Temp     uint16 `type:"uint16" unit:"Celcius"`
+}
+
 type Bms struct {
-	Active            bool   `type:"uint8"`
-	Run               bool   `type:"uint8"`
-	CapacityRemaining uint16 `type:"uint16" len:"2" unit:"Wh"`
-	CapacityUsage     uint16 `type:"uint16" len:"2" unit:"Wh"`
-	SOC               uint8  `type:"uint8" unit:"%"`
-	Faults            uint16 `type:"uint16"`
-	Pack              [BMS_PACK_MAX]struct {
-		ID                uint32  `type:"uint32"`
-		Fault             uint16  `type:"uint16"`
-		Voltage           float32 `type:"uint16" len:"2" unit:"Volt" factor:"0.01"`
-		Current           float32 `type:"uint16" len:"2" unit:"Ampere" factor:"0.1"`
-		CapacityRemaining uint16  `type:"uint16" len:"2" unit:"Wh"`
-		CapacityUsage     uint16  `type:"uint16" len:"2" unit:"Wh"`
-		SOC               uint8   `type:"uint8" unit:"%"`
-		SOH               uint8   `type:"uint8" unit:"%"`
-		Temp              uint16  `type:"uint16" unit:"Celcius"`
-	}
+	Active   bool `type:"uint8"`
+	Run      bool `type:"uint8"`
+	Capacity BmsCapacity
+	SOC      uint8  `type:"uint8" unit:"%"`
+	Faults   uint16 `type:"uint16"`
+	Pack     [BMS_PACK_MAX]BmsPack
 }
 
 // String converts BmsFaults type to string.
@@ -296,6 +312,36 @@ func (b *Bms) LowCapacity() bool {
 	return b.SOC < BMS_LOW_CAPACITY_PERCENT
 }
 
+type McuInverter struct {
+	Enabled   bool            `type:"uint8"`
+	Lockout   bool            `type:"uint8"`
+	Discharge McuInvDischarge `type:"uint8"`
+}
+
+type McuDCBus struct {
+	Current float32 `type:"uint16" len:"2" unit:"A" factor:"0.1"`
+	Voltage float32 `type:"uint16" len:"2" unit:"V" factor:"0.1"`
+}
+
+type McuFaultsStruct struct {
+	Post uint32 `type:"uint32"`
+	Run  uint32 `type:"uint32"`
+}
+type McuTorque struct {
+	Command  float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
+	Feedback float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
+}
+
+type McuTemplateStruct struct {
+	MaxRPM    int16 `type:"int16" unit:"rpm"`
+	MaxSpeed  uint8 `type:"uint8" unit:"Kph"`
+	DriveMode [ModeDriveLimit]McuTemplateDriveMode
+}
+type McuTemplateDriveMode struct {
+	Discur uint16  `type:"uint16" unit:"A"`
+	Torque float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
+}
+
 type Mcu struct {
 	Active    bool      `type:"uint8"`
 	Run       bool      `type:"uint8"`
@@ -304,31 +350,11 @@ type Mcu struct {
 	Speed     uint8     `type:"uint8" unit:"Kph"`
 	RPM       int16     `type:"int16" unit:"rpm"`
 	Temp      float32   `type:"uint16" len:"2" unit:"Celcius" factor:"0.1"`
-	Faults    struct {
-		Post uint32 `type:"uint32"`
-		Run  uint32 `type:"uint32"`
-	}
-	Torque struct {
-		Command  float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
-		Feedback float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
-	}
-	DCBus struct {
-		Current float32 `type:"uint16" len:"2" unit:"A" factor:"0.1"`
-		Voltage float32 `type:"uint16" len:"2" unit:"V" factor:"0.1"`
-	}
-	Inverter struct {
-		Enabled   bool            `type:"uint8"`
-		Lockout   bool            `type:"uint8"`
-		Discharge McuInvDischarge `type:"uint8"`
-	}
-	Template struct {
-		MaxRPM    int16 `type:"int16" unit:"rpm"`
-		MaxSpeed  uint8 `type:"uint8" unit:"Kph"`
-		DriveMode [ModeDriveLimit]struct {
-			Discur uint16  `type:"uint16" unit:"A"`
-			Torque float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
-		}
-	}
+	Faults    McuFaultsStruct
+	Torque    McuTorque
+	DCBus     McuDCBus
+	Inverter  McuInverter
+	Template  McuTemplateStruct
 }
 
 // String converts McuFaults type to string.
@@ -377,36 +403,36 @@ func (m *Mcu) IsRunFaults(mf ...McuFaultRun) bool {
 	return set == len(mf)
 }
 
+type TaskStack struct {
+	Manager  uint16 `type:"uint16" unit:"Bytes"`
+	Network  uint16 `type:"uint16" unit:"Bytes"`
+	Reporter uint16 `type:"uint16" unit:"Bytes"`
+	Command  uint16 `type:"uint16" unit:"Bytes"`
+	Imu      uint16 `type:"uint16" unit:"Bytes"`
+	Remote   uint16 `type:"uint16" unit:"Bytes"`
+	Finger   uint16 `type:"uint16" unit:"Bytes"`
+	Audio    uint16 `type:"uint16" unit:"Bytes"`
+	Gate     uint16 `type:"uint16" unit:"Bytes"`
+	CanRX    uint16 `type:"uint16" unit:"Bytes"`
+	CanTX    uint16 `type:"uint16" unit:"Bytes"`
+}
+
+type TaskWakeup struct {
+	Manager  uint8 `type:"uint8" unit:"s"`
+	Network  uint8 `type:"uint8" unit:"s"`
+	Reporter uint8 `type:"uint8" unit:"s"`
+	Command  uint8 `type:"uint8" unit:"s"`
+	Imu      uint8 `type:"uint8" unit:"s"`
+	Remote   uint8 `type:"uint8" unit:"s"`
+	Finger   uint8 `type:"uint8" unit:"s"`
+	Audio    uint8 `type:"uint8" unit:"s"`
+	Gate     uint8 `type:"uint8" unit:"s"`
+	CanRX    uint8 `type:"uint8" unit:"s"`
+	CanTX    uint8 `type:"uint8" unit:"s"`
+}
 type Task struct {
-	// TODO can it be implemented, use array for tasks
-	// Stack  [TASK_Limit]uint16 `type:"uint16" unit:"Bytes"`
-	// Wakeup [TASK_Limit]uint8  `type:"uint8" unit:"s"`
-	Stack struct {
-		Manager  uint16 `type:"uint16" unit:"Bytes"`
-		Network  uint16 `type:"uint16" unit:"Bytes"`
-		Reporter uint16 `type:"uint16" unit:"Bytes"`
-		Command  uint16 `type:"uint16" unit:"Bytes"`
-		Imu      uint16 `type:"uint16" unit:"Bytes"`
-		Remote   uint16 `type:"uint16" unit:"Bytes"`
-		Finger   uint16 `type:"uint16" unit:"Bytes"`
-		Audio    uint16 `type:"uint16" unit:"Bytes"`
-		Gate     uint16 `type:"uint16" unit:"Bytes"`
-		CanRX    uint16 `type:"uint16" unit:"Bytes"`
-		CanTX    uint16 `type:"uint16" unit:"Bytes"`
-	}
-	Wakeup struct {
-		Manager  uint8 `type:"uint8" unit:"s"`
-		Network  uint8 `type:"uint8" unit:"s"`
-		Reporter uint8 `type:"uint8" unit:"s"`
-		Command  uint8 `type:"uint8" unit:"s"`
-		Imu      uint8 `type:"uint8" unit:"s"`
-		Remote   uint8 `type:"uint8" unit:"s"`
-		Finger   uint8 `type:"uint8" unit:"s"`
-		Audio    uint8 `type:"uint8" unit:"s"`
-		Gate     uint8 `type:"uint8" unit:"s"`
-		CanRX    uint8 `type:"uint8" unit:"s"`
-		CanTX    uint8 `type:"uint8" unit:"s"`
-	}
+	Stack  TaskStack
+	Wakeup TaskWakeup
 }
 
 // StackOverflow check if t's stack is near overflow

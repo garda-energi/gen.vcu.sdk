@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	sdk "github.com/pudjamansyurin/gen.vcu.sdk"
+	sdk "github.com/garda-energi/gen.vcu.sdk"
 )
 
 func main() {
@@ -23,54 +23,13 @@ func main() {
 	}
 	defer api.Disconnect()
 
-	// prepare the status & report listener
-	listener := sdk.Listener{
-		StatusFunc: func(vin int, online bool) {
-			status := map[bool]string{
-				false: "OFFLINE",
-				true:  "ONLINE",
-			}[online]
-			fmt.Println(vin, "=>", status)
-		},
-		ReportFunc: func(vin int, report *sdk.ReportPacket) {
-			fmt.Println(report)
-
-			// show-off all *ReportPacket methods available
-			// if report.Vcu.RealtimeData() {
-			// 	fmt.Println("Current report is realtime")
-			// }
-			// if report.Gps.ValidHorizontal() {
-			// 	fmt.Println("GPS longitude, latitude & heading is valid")
-			// }
-			// if report.Bms.LowCapacity() {
-			// 	fmt.Println("BMS need to be charged on Charging Station")
-			// }
-		},
-	}
-
-	// listen to range of vins
-	// see api.Addlistener doc for usage
-	// vins := sdk.VinRange(354309, 354323)
-	// if err := api.AddListener(listener, vins...); err != nil {
-	// 	fmt.Println(err)
-	// } else {
-	// 	defer api.RemoveListener(vins...)
-	// }
-
-	// listen to all vins
-	if err := api.AddListener(listener); err != nil {
-		fmt.Println(err)
-	} else {
-		defer api.RemoveListener()
-	}
-
 	// listen to commands & response
 	if dev354313, err := api.NewCommander(354313); err != nil {
 		fmt.Println(err)
 	} else {
 		defer dev354313.Destroy()
 
-		// show-off all commands available
+		// expose all commands available
 		if info, err := dev354313.GenInfo(); err != nil {
 			fmt.Println(err)
 		} else {
@@ -236,7 +195,6 @@ func main() {
 		// } else {
 		// 	fmt.Println("Average mode changed to", avgMode)
 		// }
-
 
 		// kph := uint8(100)
 		// if err := dev354313.McuSpeedMax(kph); err != nil {
