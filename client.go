@@ -3,6 +3,7 @@ package sdk
 import (
 	"fmt"
 	"log"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -80,20 +81,21 @@ func (c *client) unsub(topics []string) error {
 
 // newClientOptions make client options for mqtt.
 func newClientOptions(c *ClientConfig, logger *log.Logger) *mqtt.ClientOptions {
-	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", c.Host, c.Port))
+	opts := mqtt.NewClientOptions().AddBroker(fmt.Sprintf("tcp://%s:%d", c.Host, c.Port))
+	opts.SetClientID(fmt.Sprintf("go_mqtt_client_%d", time.Now().Unix()))
 	opts.SetUsername(c.User)
 	opts.SetPassword(c.Pass)
-	opts.SetClientID("go_mqtt_client")
+	opts.SetAutoReconnect(true)
 
-	opts.DefaultPublishHandler = func(client mqtt.Client, msg mqtt.Message) {
+	opts.SetDefaultPublishHandler(func(client mqtt.Client, msg mqtt.Message) {
 		logger.Println(CLI, debugPacket(msg))
-	}
-	opts.OnConnect = func(client mqtt.Client) {
+	})
+	opts.SetOnConnectHandler(func(client mqtt.Client) {
 		logger.Println(CLI, "Connected")
-	}
-	opts.OnConnectionLost = func(client mqtt.Client, err error) {
+	})
+	opts.SetConnectionLostHandler(func(client mqtt.Client, err error) {
 		logger.Println(CLI, "Disconnected", err)
-	}
+	})
+
 	return opts
 }

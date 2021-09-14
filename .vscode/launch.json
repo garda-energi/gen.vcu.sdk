@@ -9,7 +9,7 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/example/main.go"
+      "program": "${workspaceFolder}/example/listener/main.go"
     }
   ]
 }
