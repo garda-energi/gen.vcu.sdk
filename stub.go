@@ -17,10 +17,8 @@ type repChan chan packets
 type stubMqttClient struct {
 	mqtt.Client
 	connected bool
-
 	responses *sync.Map
-
-	ch struct {
+	ch        struct {
 		res *sync.Map
 		cmd *sync.Map
 		rep *sync.Map
