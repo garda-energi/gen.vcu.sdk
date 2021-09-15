@@ -16,13 +16,10 @@ func newStubApi() *Sdk {
 }
 
 func newStubClient(l *log.Logger, connected bool) *client {
-	_ = newClientOptions(&ClientConfig{}, l)
-	return &client{
-		Client: &stubMqttClient{
+	stubClient :=
+		&stubMqttClient{
 			connected: connected,
-
 			responses: &sync.Map{},
-
 			ch: struct {
 				res *sync.Map
 				cmd *sync.Map
@@ -34,9 +31,9 @@ func newStubClient(l *log.Logger, connected bool) *client {
 				rep: &sync.Map{},
 				sts: &sync.Map{},
 			},
-		},
-		logger: l,
-	}
+		}
+
+	return newFakeClient(stubClient, l)
 }
 
 func newStubCommander(vin int) *commander {
