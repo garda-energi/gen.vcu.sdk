@@ -119,7 +119,6 @@ type NetState int8
 const (
 	NetStateDown NetState = iota - 1
 	NetStateReady
-	NetStateConfigured
 	NetStateNetworkOn
 	NetStateGprsOn
 	NetStatePdpOn
@@ -133,7 +132,6 @@ func (m NetState) String() string {
 	return [...]string{
 		"DOWN",
 		"READY",
-		"CONFIGURED",
 		"NETWORK_ON",
 		"GPRS_ON",
 		"PDP_ON",
