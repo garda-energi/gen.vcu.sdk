@@ -45,10 +45,6 @@ var cmdList = [...][]command{
 			name:    "GEN_LOCKDOWN",
 			invoker: "GenLockDown",
 		},
-		command{
-			name:    "GEN_RESTART",
-			invoker: "GenRestart",
-		},
 	},
 	{
 		command{
@@ -112,6 +108,11 @@ var cmdList = [...][]command{
 		},
 	},
 	{
+		command{
+			name:    "FOTA_RESTART",
+			invoker: "FotaRestart",
+			timeout: 1 * 60 * time.Second,
+		},
 		command{
 			name:    "FOTA_VCU",
 			invoker: "FotaVcu",

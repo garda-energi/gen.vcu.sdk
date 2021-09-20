@@ -77,12 +77,6 @@ func (c *commander) GenLockDown(on bool) error {
 	return err
 }
 
-// GenRestart soft restart main chip.
-func (c *commander) GenRestart() error {
-	_, err := c.exec("GenRestart", nil)
-	return err
-}
-
 // ReportFlush flush pending report in device buffer.
 func (c *commander) ReportFlush() error {
 	_, err := c.exec("ReportFlush", nil)
@@ -184,6 +178,12 @@ func (c *commander) RemoteAlarm() error {
 	return err
 }
 
+// FotaRestart soft restart main chip.
+func (c *commander) FotaRestart() error {
+	_, err := c.exec("FotaRestart", nil)
+	return err
+}
+
 // FotaVcu upgrade VCU (Vehicle Control Unit) firmware over the air.
 func (c *commander) FotaVcu() (string, error) {
 	msg, err := c.exec("FotaVcu", nil)
@@ -271,7 +271,6 @@ func (c *commander) HbarAvg(avg ModeAvg) error {
 	_, err := c.exec("HbarAvg", message{byte(avg)})
 	return err
 }
-
 
 // McuSpeedMax set maximum MCU (Motor Control Unit) speed (in kph).
 func (c *commander) McuSpeedMax(kph uint8) error {

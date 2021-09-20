@@ -36,9 +36,6 @@ func TestCommandHandler(t *testing.T) {
 			arg:     false,
 		},
 		{
-			invoker: "GenRestart",
-		},
-		{
 			invoker: "ReportFlush",
 		},
 		{
@@ -81,6 +78,9 @@ func TestCommandHandler(t *testing.T) {
 		},
 		{
 			invoker: "RemotePairing",
+		},
+		{
+			invoker: "FotaRestart",
 		},
 		{
 			invoker: "FotaVcu",
