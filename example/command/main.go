@@ -62,7 +62,7 @@ func main() {
 		// 	fmt.Println("Lock-down mode is disabled")
 		// }
 
-		// if err := dev354313.GenRestart(); err != nil {
+		// if err := dev354313.FotaRestart(); err != nil {
 		// 	fmt.Println(err)
 		// } else {
 		// 	fmt.Println("Main chip was restarted")
