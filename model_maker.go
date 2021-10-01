@@ -206,16 +206,16 @@ func makeReportPacket(vin int, frame Frame) *ReportPacket {
 				MaxSpeed: uint8(rand.Intn(SPEED_KPH_MAX)),
 				DriveMode: [3]McuTemplateDriveMode{
 					{
-						Discur: uint16(rand.Float32()),
-						Torque: rand.Float32(),
+						Discur: uint8(rand.Intn(MCU_DISCUR_MAX)),
+						Torque: uint8(rand.Intn(MCU_TORQUE_MAX)),
 					},
 					{
-						Discur: uint16(rand.Float32()),
-						Torque: rand.Float32(),
+						Discur: uint8(rand.Intn(MCU_DISCUR_MAX)),
+						Torque: uint8(rand.Intn(MCU_TORQUE_MAX)),
 					},
 					{
-						Discur: uint16(rand.Float32()),
-						Torque: rand.Float32(),
+						Discur: uint8(rand.Intn(MCU_DISCUR_MAX)),
+						Torque: uint8(rand.Intn(MCU_TORQUE_MAX)),
 					},
 				},
 			},
