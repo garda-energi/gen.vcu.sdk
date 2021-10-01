@@ -339,8 +339,8 @@ type McuTemplateStruct struct {
 	DriveMode [ModeDriveLimit]McuTemplateDriveMode
 }
 type McuTemplateDriveMode struct {
-	Discur uint16  `type:"uint16" unit:"A"`
-	Torque float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
+	Discur uint8 `type:"uint8" unit:"A"`
+	Torque uint8 `type:"uint8" unit:"Nm"`
 }
 
 type Mcu struct {
