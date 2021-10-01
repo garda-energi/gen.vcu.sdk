@@ -77,6 +77,13 @@ func (c *commander) GenLockDown(on bool) error {
 	return err
 }
 
+// GenCanDebug set CAN debug mode.
+func (c *commander) GenCanDebug(state uint8) error {
+	msg := uintToBytes(reflect.Uint8, uint64(state))
+	_, err := c.exec("GenCanDebug", msg)
+	return err
+}
+
 // ReportFlush flush pending report in device buffer.
 func (c *commander) ReportFlush() error {
 	_, err := c.exec("ReportFlush", nil)

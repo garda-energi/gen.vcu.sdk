@@ -74,6 +74,7 @@ type Vcu struct {
 	BatVoltage  float32   `type:"uint8" len:"1" unit:"mVolt" factor:"18.0"`
 	Uptime      float32   `type:"uint32" unit:"hour" factor:"0.000277"`
 	LockDown    bool      `type:"uint8"`
+	CANDebug    uint8     `type:"uint8"`
 }
 
 // String converts VcuEvents type to string.
