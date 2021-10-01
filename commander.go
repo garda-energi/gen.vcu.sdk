@@ -284,14 +284,14 @@ func (c *commander) McuSpeedMax(kph uint8) error {
 }
 
 type McuTemplate struct {
-	DisCur uint16
-	Torque uint16
+	DisCur uint8
+	Torque uint8
 }
 
 // McuTemplates set all MCU (Motor Control Unit) driving mode templates.
 func (c *commander) McuTemplates(ts []McuTemplate) error {
 	if len(ts) != int(ModeDriveLimit) {
-		return errors.New("templates should be set for all driving mode at once")
+		return errors.New("templates should be set for all driving modes at once")
 	}
 
 	var buf bytes.Buffer
