@@ -48,15 +48,13 @@ const (
 )
 
 const (
-	// TODO: check range in TATC datasheet
 	MCU_DISCUR_MIN = 1
-	MCU_DISCUR_MAX = 32767
+	MCU_DISCUR_MAX = 200
 )
 
 const (
-	// TODO: check range in TATC datasheet
-	MCU_TORQUE_MIN = 7
-	MCU_TORQUE_MAX = 3276
+	MCU_TORQUE_MIN = 1
+	MCU_TORQUE_MAX = 55
 )
 
 const (

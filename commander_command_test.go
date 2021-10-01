@@ -250,10 +250,10 @@ func TestCommandInvalidInputHandler(t *testing.T) {
 		{
 			invoker: "McuTemplates",
 			arg: []McuTemplate{
-				{DisCur: 0, Torque: 10},  // economy
+				{DisCur: 1, Torque: 10},  // economy
 				{DisCur: 50, Torque: 20}, // standard
 			},
-			want: errors.New("templates should be set for all driving mode at once"),
+			want: errors.New("templates should be set for all driving modes at once"),
 		},
 	}
 

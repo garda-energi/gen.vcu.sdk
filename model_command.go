@@ -38,12 +38,16 @@ var cmdList = [...][]command{
 			invoker: "GenRtc",
 		},
 		command{
-			name:    "GEN_BIKESTATE",
+			name:    "GEN_BIKE_STATE",
 			invoker: "GenBikeState",
 		},
 		command{
 			name:    "GEN_LOCKDOWN",
 			invoker: "GenLockDown",
+		},
+		command{
+			name:    "GEN_CAN_DEBUG",
+			invoker: "GenCanDebug",
 		},
 	},
 	{
