@@ -270,11 +270,11 @@ type BmsPack struct {
 }
 
 type Bms struct {
-	Active   bool `type:"uint8"`
-	Run      bool `type:"uint8"`
-	Capacity BmsCapacity
-	SOC      uint8  `type:"uint8" unit:"%"`
+	Active   bool   `type:"uint8"`
+	Run      bool   `type:"uint8"`
 	Faults   uint16 `type:"uint16"`
+	Capacity BmsCapacity
+	SOC      uint8 `type:"uint8" unit:"%"`
 	Pack     [BMS_PACK_MAX]BmsPack
 }
 
