@@ -51,11 +51,11 @@ func makeReportPacket(vin int, frame Frame) *ReportPacket {
 				Vin:          uint32(vin),
 				SendDatetime: time.Now(),
 			},
-			Frame: frame, // Frame(rand.Intn(int(FrameLimit))),
-		},
-		Vcu: &Vcu{
 			LogDatetime: time.Now().Add(-2 * time.Second),
 			Version:     uint16(rand.Uint32()),
+			Frame:       frame, // Frame(rand.Intn(int(FrameLimit))),
+		},
+		Vcu: &Vcu{
 			State:       BikeState(rand.Intn(int(BikeStateLimit))),
 			Events:      uint16(rand.Uint32()),
 			LogBuffered: uint8(rand.Intn(50)),
@@ -95,9 +95,8 @@ func makeReportPacket(vin int, frame Frame) *ReportPacket {
 			},
 		},
 		Net: &Net{
-			Signal:   uint8(rand.Intn(100)),
-			State:    NetState(rand.Intn(int(NetStateLimit))),
-			IpStatus: NetIpStatus(rand.Intn(int(NetIpStatusLimit))),
+			Signal: uint8(rand.Intn(100)),
+			State:  NetState(rand.Intn(int(NetStateLimit))),
 		},
 		Imu: &Imu{
 			Active:    randBool(),
