@@ -88,21 +88,10 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
-			desc:  "log datetime is yesterday",
-			frame: FrameSimple,
-			modifier: func(rp *ReportPacket) {
-				rp.Vcu.LogDatetime = time.Now().UTC().Add(-24 * time.Hour)
-			},
-			validator: func(rp *ReportPacket) bool {
-				return !rp.Vcu.RealtimeData()
-			},
-		},
-		{
-			desc:  "log datetime is now, no buffered",
+			desc:  "log is not buffered",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
 				rp.Vcu.LogBuffered = 0
-				rp.Vcu.LogDatetime = time.Now().UTC()
 			},
 			validator: func(rp *ReportPacket) bool {
 				return rp.Vcu.RealtimeData()
@@ -112,8 +101,8 @@ func TestSdkReportListener(t *testing.T) {
 			desc:  "log is buffered",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
+				rp.Header.LogDatetime = time.Now().UTC()
 				rp.Vcu.LogBuffered = 5
-				rp.Vcu.LogDatetime = time.Now().UTC()
 			},
 			validator: func(rp *ReportPacket) bool {
 				return !rp.Vcu.RealtimeData()

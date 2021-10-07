@@ -8,11 +8,13 @@ import (
 
 type HeaderReport struct {
 	Header
-	Frame Frame `type:"uint8"`
+	LogDatetime time.Time `type:"int64" len:"7"`
+	Version     uint16    `type:"uint16"`
+	Frame       Frame     `type:"uint8"`
 }
 
 type ReportPacket struct {
-	// name type         byte index
+	// name type         byte index (invalid)
 	Header *HeaderReport // 1 - 15
 	Vcu    *Vcu          // 16 - 31
 	Eeprom *Eeprom       // 32 - 33
@@ -66,8 +68,6 @@ func (r *ReportPacket) String() string {
 }
 
 type Vcu struct {
-	LogDatetime time.Time `type:"int64" len:"7"`
-	Version     uint16    `type:"uint16"`
 	State       BikeState `type:"int8"`
 	Events      uint16    `type:"uint16"`
 	LogBuffered uint8     `type:"uint8"`
@@ -109,8 +109,7 @@ func (v *Vcu) RealtimeData() bool {
 	if v == nil {
 		return false
 	}
-	realtimeDuration := time.Now().UTC().Add(REPORT_REALTIME_DURATION)
-	return v.LogBuffered == 0 && v.LogDatetime.After(realtimeDuration)
+	return v.LogBuffered <= REPORT_REALTIME_LOG
 }
 
 // BatteryLow check if v's backup battery voltage is low
@@ -190,9 +189,8 @@ type Hbar struct {
 }
 
 type Net struct {
-	Signal   uint8       `type:"uint8" unit:"%"`
-	State    NetState    `type:"int8"`
-	IpStatus NetIpStatus `type:"int8"`
+	Signal uint8    `type:"uint8" unit:"%"`
+	State  NetState `type:"int8"`
 }
 
 // LowSignal check if n's signal is low

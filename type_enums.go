@@ -141,39 +141,6 @@ func (m NetState) String() string {
 	}[m+1]
 }
 
-type NetIpStatus int8
-
-const (
-	NetIpStatusUnknown NetIpStatus = iota - 1
-	NetIpStatusInitial
-	NetIpStatusStart
-	NetIpStatusConfig
-	NetIpStatusGprsAct
-	NetIpStatusStatus
-	NetIpStatusConnecting
-	NetIpStatusConnectOk
-	NetIpStatusClosing
-	NetIpStatusClosed
-	NetIpStatusPdpDeact
-	NetIpStatusLimit
-)
-
-func (m NetIpStatus) String() string {
-	return [...]string{
-		"UNKNOWN",
-		"INITIAL",
-		"START",
-		"CONFIG",
-		"GPRSACT",
-		"STATUS",
-		"CONNECTING",
-		"CONNECT_OK",
-		"CLOSING",
-		"CLOSED",
-		"PDP_DEACT",
-	}[m+1]
-}
-
 type McuInvDischarge uint8
 
 const (
