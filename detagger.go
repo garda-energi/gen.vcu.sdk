@@ -6,9 +6,11 @@ import (
 )
 
 type tagger struct {
-	Tipe   string
+	Name   string
+	Tipe   VarDataType
 	Len    int
 	Factor float64
+	Sub    []tagger
 }
 
 func newTagger() tagger {
@@ -29,7 +31,7 @@ func deTag(tag reflect.StructTag, rk reflect.Kind) tagger {
 	}
 
 	if tipe, ok := tag.Lookup("type"); ok {
-		t.Tipe = tipe
+		t.Tipe = VarDataType(tipe)
 	}
 
 	if len, ok := tag.Lookup("len"); ok {
@@ -49,6 +51,29 @@ func deTag(tag reflect.StructTag, rk reflect.Kind) tagger {
 	}
 
 	return t
+}
+
+// normalize normalization tagger from uncomplete tag
+func (tag tagger) normalize() tagger {
+
+	if tag.Factor == 0 {
+		tag.Factor = 1.0
+	}
+
+	if tag.Len == 0 {
+		switch tag.Tipe {
+		case Uint8_t, Int8_t, Boolean_t:
+			tag.Len = 1
+		case Uint16_t, Int16_t:
+			tag.Len = 2
+		case Uint32_t, Int32_t, Float_t:
+			tag.Len = 4
+		case Uint64_t, Int64_t:
+			tag.Len = 8
+		}
+	}
+
+	return tag
 }
 
 // getPacketSize calculate packet size
