@@ -11,10 +11,10 @@ cover:
 build:
 	go build ./...
 
-run command:
+run-command:
 	go run example/command/main.go 
 
-run listener:
+run-listener:
 	go run example/listener/main.go 
 
 pull:

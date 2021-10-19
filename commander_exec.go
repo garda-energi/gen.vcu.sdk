@@ -48,8 +48,8 @@ func (c *commander) sendCommand(cmd *command, msg message) error {
 // waitResponse wait, decode and check of incomming ACK and RESPONSE packet.
 func (c *commander) waitResponse(cmd *command) (message, error) {
 	defer func() {
-		c.flush()
-		c.sleeper.Sleep(1 * time.Second)
+		// c.flush()
+		c.sleeper.Sleep(3 * time.Second)
 	}()
 
 	packet, err := c.waitPacket("ack", DEFAULT_ACK_TIMEOUT)
