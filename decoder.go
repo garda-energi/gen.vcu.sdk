@@ -59,19 +59,38 @@ func decodeReport(packet packet) (*ReportPacket, error) {
 	return result, nil
 }
 
+// decodePacket extract report as Map from bytes packet.
+func decodeReportAsMaps(packet packet) (*genReportPacket, error) {
+	reportPacket := &genReportPacket{}
+
+	// get version
+	reader := bytes.NewReader(packet)
+	decode(reader, reportPacket)
+
+	// decode payload
+	payloadReader := bytes.NewReader(reportPacket.Payload)
+	if err := decode(payloadReader, &reportPacket.Data, ReportPacketStrutures[1]); err != nil {
+		return nil, err
+	}
+	return reportPacket, nil
+}
+
 // decode read buffer reader than decode and set it to v.
 // v is struct or pointer type that will contain decoded data.
 // fix bug. in "decode func" before, It'll be error for case such as v isn't array of struct.
 func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 	var err error
+	var isVMaps bool = false
+	var mapElm reflect.Value // map rv
+	var rv reflect.Value
 
-	rv := reflect.ValueOf(v)
+	rv = reflect.ValueOf(v)
 
 	if rv.Kind() == reflect.Ptr {
 		rv = rv.Elem()
 	}
 
-	if !rv.IsValid() || !rv.CanSet() {
+	if !rv.IsValid() || (rv.Kind() != reflect.Map && !rv.CanSet()) {
 		return nil
 	}
 
@@ -82,8 +101,31 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 		tag = tags[0]
 	}
 
-	switch rk := rv.Kind(); rk {
+	// if v is map
+	if rv.Kind() == reflect.Map && rv.Type() == typeOfPacketData {
+		mapElm = rv
 
+		switch tag.Tipe {
+		case Struct_t:
+			if mapElm.IsNil() && mapElm.CanAddr() {
+				mapElm.Set(reflect.MakeMap(typeOfPacketData))
+			}
+			break
+		case Array_t:
+			if len(tag.Sub) == 0 {
+				return errors.New("Tag (" + tag.Name + "): Tipe Array_t cannot be 0")
+			}
+			_, contentType := createZeroElm(tag.Sub[0].Tipe)
+			rv = reflect.MakeSlice(reflect.SliceOf(contentType), tag.Len, tag.Len)
+			mapElm.SetMapIndex(reflect.ValueOf(tag.Name), rv)
+			break
+		default:
+			rv, _ = createZeroElm(tag.Tipe)
+		}
+		isVMaps = true
+	}
+
+	switch rk := rv.Kind(); rk {
 	case reflect.Ptr:
 		rv.Set(reflect.New(rv.Type().Elem()))
 		if err = decode(rdr, rv.Interface()); err != nil {
@@ -94,8 +136,7 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 		// if data type is time.Time
 		if rv.Type() == typeOfTime {
 			b := make([]byte, tag.Len)
-			err := binary.Read(rdr, binary.LittleEndian, &b)
-			if err != nil {
+			if err = binary.Read(rdr, binary.LittleEndian, &b); err != nil {
 				return err
 			}
 			rv.Set(reflect.ValueOf(bytesToTime(b)))
@@ -120,30 +161,44 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 		}
 
 	case reflect.Slice:
-		if rv.Type() == typeOfMessage {
-			x := make(message, rdr.Len())
-			err := binary.Read(rdr, binary.LittleEndian, &x)
-			if err != nil {
-				return err
+		if isVMaps {
+			for j := 0; j < rv.Len(); j++ {
+				if err = decode(rdr, rv.Index(j).Addr().Interface(), tag.Sub[0]); err != nil {
+					return err
+				}
 			}
-			rv.Set(reflect.ValueOf(x))
+
+		} else {
+			if rv.Type() == typeOfMessage {
+				x := make(message, rdr.Len())
+				if err = binary.Read(rdr, binary.LittleEndian, &x); err != nil {
+					return err
+				}
+				rv.Set(reflect.ValueOf(x))
+			}
 		}
 
 	case reflect.String:
 		x := make([]byte, tag.Len)
-		err := binary.Read(rdr, binary.LittleEndian, &x)
-		if err != nil {
+		if err = binary.Read(rdr, binary.LittleEndian, &x); err != nil {
 			return err
 		}
-		rv.SetString(bytesToStr(x))
+		if isVMaps {
+			mapElm.SetMapIndex(reflect.ValueOf(tag.Name), reflect.ValueOf(bytesToStr(x)))
+		} else {
+			rv.SetString(bytesToStr(x))
+		}
 
 	case reflect.Bool:
 		var x bool
-		err := binary.Read(rdr, binary.LittleEndian, &x)
-		if err != nil {
+		if err = binary.Read(rdr, binary.LittleEndian, &x); err != nil {
 			return err
 		}
-		rv.SetBool(x)
+		if isVMaps {
+			mapElm.SetMapIndex(reflect.ValueOf(tag.Name), reflect.ValueOf(x))
+		} else {
+			rv.SetBool(x)
+		}
 
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
 		x, err := readUint(rdr, tag.Len)
@@ -151,7 +206,11 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 			return err
 		}
 		if !rv.OverflowUint(x) {
-			rv.SetUint(x)
+			if isVMaps {
+				mapElm.SetMapIndex(reflect.ValueOf(tag.Name), reflect.ValueOf(x))
+			} else {
+				rv.SetUint(x)
+			}
 		}
 
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
@@ -161,7 +220,11 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 		}
 		x_int := int64(x)
 		if !rv.OverflowInt(x_int) {
-			rv.SetInt(x_int)
+			if isVMaps {
+				mapElm.SetMapIndex(reflect.ValueOf(tag.Name), reflect.ValueOf(x_int))
+			} else {
+				rv.SetInt(x_int)
+			}
 		}
 
 	case reflect.Float32, reflect.Float64:
@@ -187,7 +250,35 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 		}
 
 		if !rv.OverflowFloat(x64) {
-			rv.SetFloat(x64)
+			if isVMaps {
+				mapElm.SetMapIndex(reflect.ValueOf(tag.Name), reflect.ValueOf(x64))
+			} else {
+				rv.SetFloat(x64)
+			}
+		}
+
+	case reflect.Map:
+		if isVMaps {
+			for _, tagSub := range tag.Sub {
+				tagSub = tagSub.normalize()
+
+				if tagSub.Tipe == Struct_t {
+					rv = reflect.MakeMap(typeOfPacketData)
+					mapElm.SetMapIndex(reflect.ValueOf(tagSub.Name), rv)
+					if err = decode(rdr, rv.Interface(), tagSub); err != nil {
+						return err
+					}
+				} else {
+					if err = decode(rdr, mapElm.Interface(), tagSub); err != nil {
+						return err
+					}
+				}
+			}
+		}
+
+	case reflect.Interface:
+		if err = decode(rdr, rv.Elem(), tag); err != nil {
+			return err
 		}
 
 	default:
@@ -195,6 +286,38 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 	}
 
 	return err
+}
+
+// createZeroElm create zero/nil variable by VarDataType
+func createZeroElm(dt VarDataType) (reflect.Value, reflect.Type) {
+	var rt reflect.Type
+
+	switch dt {
+	case Boolean_t:
+		rt = reflect.TypeOf(false)
+	case Uint8_t:
+		rt = reflect.TypeOf(uint8(0))
+	case Uint16_t:
+		rt = reflect.TypeOf(uint16(0))
+	case Uint32_t:
+		rt = reflect.TypeOf(uint32(0))
+	case Uint64_t:
+		rt = reflect.TypeOf(uint64(0))
+	case Int8_t:
+		rt = reflect.TypeOf(int8(0))
+	case Int16_t:
+		rt = reflect.TypeOf(int16(0))
+	case Int32_t:
+		rt = reflect.TypeOf(int32(0))
+	case Int64_t:
+		rt = reflect.TypeOf(int64(0))
+	case Float_t:
+		rt = reflect.TypeOf(float32(0))
+	case Struct_t:
+		rt = typeOfPacketData
+	}
+
+	return reflect.Zero(rt), rt
 }
 
 // readUint read len(length) data as uint64
@@ -215,7 +338,7 @@ func readUint(rdr io.Reader, len int) (uint64, error) {
 
 // convertToFloat64 convert bytes data to float64.
 // data is read as typedata from tag.
-func convertToFloat64(typedata string, x uint64) (result float64) {
+func convertToFloat64(typedata VarDataType, x uint64) (result float64) {
 	rv := setVarOfTypeData(typedata)
 
 	// set ad declared memory size

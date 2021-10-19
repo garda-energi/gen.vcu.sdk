@@ -1,5 +1,24 @@
 package sdk
 
+type VarDataType string
+
+const (
+	Boolean_t VarDataType = "bool"
+	Uint8_t   VarDataType = "uint8"
+	Uint16_t  VarDataType = "uint16"
+	Uint32_t  VarDataType = "uint32"
+	Uint64_t  VarDataType = "uint64"
+	Int8_t    VarDataType = "int8"
+	Int16_t   VarDataType = "int16"
+	Int32_t   VarDataType = "int32"
+	Int64_t   VarDataType = "int64"
+	Float_t   VarDataType = "float"
+	Array_t   VarDataType = "array"
+	Struct_t  VarDataType = "struct"
+	String_t  VarDataType = "string"
+	Time_t    VarDataType = "unix_time"
+)
+
 type Frame uint8
 
 const (
