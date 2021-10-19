@@ -225,5 +225,6 @@ func main() {
 		// }
 	}
 
+	fmt.Println("Command Done")
 	<-stopChan
 }
