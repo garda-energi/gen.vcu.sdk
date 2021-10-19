@@ -2,12 +2,6 @@ package sdk
 
 import "time"
 
-type HeaderCommand struct {
-	Header
-	Code    uint8 `type:"uint8"`
-	SubCode uint8 `type:"uint8"`
-}
-
 type commandPacket struct {
 	Header  *HeaderCommand
 	Message message

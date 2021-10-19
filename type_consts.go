@@ -4,6 +4,8 @@ import (
 	"time"
 )
 
+const SDK_VERSION = 123
+
 const (
 	TOPIC_STATUS   = "VCU/+/STS"
 	TOPIC_REPORT   = "VCU/+/RPT"

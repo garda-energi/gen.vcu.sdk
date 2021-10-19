@@ -9,10 +9,10 @@ func makeCommandPacket(vin int, cmd *command, msg message) *commandPacket {
 	return &commandPacket{
 		Header: &HeaderCommand{
 			Header: Header{
-				Prefix:       PREFIX_COMMAND,
-				Size:         0,
-				Vin:          uint32(vin),
-				SendDatetime: time.Now(),
+				Prefix:  PREFIX_COMMAND,
+				Size:    0,
+				Version: uint16(SDK_VERSION),
+				Vin:     uint32(vin),
 			},
 			Code:    cmd.code,
 			SubCode: cmd.subCode,
@@ -26,10 +26,10 @@ func makeResponsePacket(vin int, cmd *command, msg message) *responsePacket {
 		Header: &headerResponse{
 			HeaderCommand: HeaderCommand{
 				Header: Header{
-					Prefix:       PREFIX_RESPONSE,
-					Size:         0,
-					Vin:          uint32(vin),
-					SendDatetime: time.Now(),
+					Prefix:  PREFIX_RESPONSE,
+					Size:    0,
+					Version: uint16(SDK_VERSION),
+					Vin:     uint32(vin),
 				},
 				Code:    cmd.code,
 				SubCode: cmd.subCode,
@@ -40,20 +40,20 @@ func makeResponsePacket(vin int, cmd *command, msg message) *responsePacket {
 	}
 }
 
-func makeReportPacket(vin int, frame Frame) *ReportPacket {
+func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 	rand.Seed(time.Now().UnixNano())
 
 	rp := &ReportPacket{
 		Header: &HeaderReport{
 			Header: Header{
-				Prefix:       PREFIX_REPORT,
-				Size:         0,
-				Vin:          uint32(vin),
-				SendDatetime: time.Now(),
+				Prefix:  PREFIX_REPORT,
+				Size:    0,
+				Version: uint16(version),
+				Vin:     uint32(vin),
 			},
-			LogDatetime: time.Now().Add(-2 * time.Second),
-			Version:     uint16(rand.Uint32()),
-			Frame:       frame, // Frame(rand.Intn(int(FrameLimit))),
+			SendDatetime: time.Now(),
+			LogDatetime:  time.Now().Add(-2 * time.Second),
+			Frame:        frame, // Frame(rand.Intn(int(FrameLimit))),
 		},
 		Vcu: &Vcu{
 			State:       BikeState(rand.Intn(int(BikeStateLimit))),
@@ -101,25 +101,15 @@ func makeReportPacket(vin int, frame Frame) *ReportPacket {
 		Imu: &Imu{
 			Active:    randBool(),
 			AntiThief: randBool(),
-			Accel: ImuAccel{
-				X: randFloat(0, 100),
-				Y: randFloat(0, 100),
-				Z: randFloat(0, 100),
-			},
-			Gyro: ImuGyro{
-				X: randFloat(0, 10000),
-				Y: randFloat(0, 10000),
-				Z: randFloat(0, 10000),
-			},
 			Tilt: ImuTilt{
 				Pitch: randFloat(0, 180),
 				Roll:  randFloat(0, 180),
 			},
 			Total: ImuTotal{
-				Accel: randFloat(0, 100),
-				Gyro:  randFloat(0, 10000),
-				Tilt:  randFloat(0, 180),
-				Temp:  randFloat(30, 50),
+				Accel:       randFloat(0, 100),
+				Gyro:        randFloat(0, 10000),
+				Tilt:        randFloat(0, 180),
+				Temperature: randFloat(30, 50),
 			},
 		},
 		Remote: &Remote{
@@ -141,10 +131,6 @@ func makeReportPacket(vin int, frame Frame) *ReportPacket {
 		Bms: &Bms{
 			Active: randBool(),
 			Run:    randBool(),
-			Capacity: BmsCapacity{
-				Remaining: uint16(rand.Intn(2100)),
-				Usage:     uint16(rand.Intn(2100)),
-			},
 			SOC:    uint8(rand.Intn(100)),
 			Faults: uint16(rand.Uint32()),
 			Pack: [2]BmsPack{
@@ -157,9 +143,9 @@ func makeReportPacket(vin int, frame Frame) *ReportPacket {
 						Remaining: uint16(rand.Intn(2100)),
 						Usage:     uint16(rand.Intn(2100)),
 					},
-					SOC:  uint8(rand.Intn(100)),
-					SOH:  uint8(rand.Intn(100)),
-					Temp: uint16(randFloat(30, 50)),
+					SOC:         uint8(rand.Intn(100)),
+					SOH:         uint8(rand.Intn(100)),
+					Temperature: uint16(randFloat(30, 50)),
 				},
 				{
 					Fault:   uint16(rand.Uint32()),
@@ -169,36 +155,31 @@ func makeReportPacket(vin int, frame Frame) *ReportPacket {
 						Remaining: uint16(rand.Intn(2100)),
 						Usage:     uint16(rand.Intn(2100)),
 					},
-					SOC:  uint8(rand.Intn(100)),
-					SOH:  uint8(rand.Intn(100)),
-					Temp: uint16(randFloat(30, 50)),
+					SOC:         uint8(rand.Intn(100)),
+					SOH:         uint8(rand.Intn(100)),
+					Temperature: uint16(randFloat(30, 50)),
 				},
 			},
 		},
 		Mcu: &Mcu{
-			Active:    randBool(),
-			Run:       randBool(),
-			Reverse:   randBool(),
-			DriveMode: ModeDrive(rand.Intn(int(ModeDriveLimit))),
-			Speed:     uint8(rand.Intn(SPEED_KPH_MAX)),
-			RPM:       int16(rand.Intn(50000) - 25000),
-			Temp:      randFloat(30, 50),
+			Active:      randBool(),
+			Run:         randBool(),
+			Reverse:     randBool(),
+			DriveMode:   ModeDrive(rand.Intn(int(ModeDriveLimit))),
+			Speed:       uint8(rand.Intn(SPEED_KPH_MAX)),
+			RPM:         int16(rand.Intn(50000) - 25000),
+			Temperature: randFloat(30, 50),
 			Faults: McuFaultsStruct{
 				Post: rand.Uint32(),
 				Run:  rand.Uint32(),
 			},
 			Torque: McuTorque{
-				Command:  rand.Float32(),
-				Feedback: rand.Float32(),
+				Commanded: rand.Float32(),
+				Feedback:  rand.Float32(),
 			},
 			DCBus: McuDCBus{
 				Current: rand.Float32(),
 				Voltage: rand.Float32(),
-			},
-			Inverter: McuInverter{
-				Enabled:   randBool(),
-				Lockout:   randBool(),
-				Discharge: McuInvDischarge(rand.Intn(int(McuInvDischargeLimit))),
 			},
 			Template: McuTemplateStruct{
 				MaxRPM:   int16(rand.Intn(50000) - 25000),

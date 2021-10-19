@@ -141,27 +141,6 @@ func (m NetState) String() string {
 	}[m+1]
 }
 
-type McuInvDischarge uint8
-
-const (
-	McuInvDischargeDisabled McuInvDischarge = iota
-	McuInvDischargeEnabled
-	McuInvDischargeCheck
-	McuInvDischargeOccuring
-	McuInvDischargeCompleted
-	McuInvDischargeLimit
-)
-
-func (m McuInvDischarge) String() string {
-	return [...]string{
-		"DISABLED",
-		"ENABLED",
-		"CHECK",
-		"OCCURING",
-		"COMPLETED",
-	}[m]
-}
-
 type resCode uint8
 
 const (

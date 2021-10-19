@@ -3,15 +3,7 @@ package sdk
 import (
 	"fmt"
 	"reflect"
-	"time"
 )
-
-type HeaderReport struct {
-	Header
-	LogDatetime time.Time `type:"int64" len:"7"`
-	Version     uint16    `type:"uint16"`
-	Frame       Frame     `type:"uint8"`
-}
 
 type ReportPacket struct {
 	// name type         byte index (invalid)
@@ -201,34 +193,20 @@ func (n *Net) LowSignal() bool {
 	return n.Signal <= NET_LOW_SIGNAL_PERCENT
 }
 
-type ImuAccel struct {
-	X float32 `type:"int16" len:"2" unit:"G" factor:"0.01"`
-	Y float32 `type:"int16" len:"2" unit:"G" factor:"0.01"`
-	Z float32 `type:"int16" len:"2" unit:"G" factor:"0.01"`
-}
-
-type ImuGyro struct {
-	X float32 `type:"int16" len:"2" unit:"rad/s" factor:"0.1"`
-	Y float32 `type:"int16" len:"2" unit:"rad/s" factor:"0.1"`
-	Z float32 `type:"int16" len:"2" unit:"rad/s" factor:"0.1"`
-}
-
 type ImuTilt struct {
 	Pitch float32 `type:"int16" len:"2" unit:"Deg" factor:"0.1"`
 	Roll  float32 `type:"int16" len:"2" unit:"Deg" factor:"0.1"`
 }
 
 type ImuTotal struct {
-	Accel float32 `type:"uint16" len:"2" unit:"G" factor:"0.01"`
-	Gyro  float32 `type:"uint16" len:"2" unit:"rad/s" factor:"0.1"`
-	Tilt  float32 `type:"uint16" len:"2" unit:"Deg" factor:"0.1"`
-	Temp  float32 `type:"uint16" len:"2" unit:"Celcius" factor:"0.1"`
+	Accel       float32 `type:"uint16" len:"2" unit:"G" factor:"0.01"`
+	Gyro        float32 `type:"uint16" len:"2" unit:"rad/s" factor:"0.1"`
+	Tilt        float32 `type:"uint16" len:"2" unit:"Deg" factor:"0.1"`
+	Temperature float32 `type:"uint16" len:"2" unit:"Celcius" factor:"0.1"`
 }
 type Imu struct {
 	Active    bool `type:"uint8"`
 	AntiThief bool `type:"uint8"`
-	Accel     ImuAccel
-	Gyro      ImuGyro
 	Tilt      ImuTilt
 	Total     ImuTotal
 }
@@ -257,23 +235,22 @@ type BmsCapacity struct {
 	Usage     uint16 `type:"uint16" len:"2" unit:"Wh"`
 }
 type BmsPack struct {
-	ID       uint32  `type:"uint32"`
-	Fault    uint16  `type:"uint16"`
-	Voltage  float32 `type:"uint16" len:"2" unit:"Volt" factor:"0.01"`
-	Current  float32 `type:"uint16" len:"2" unit:"Ampere" factor:"0.1"`
-	Capacity BmsCapacity
-	SOC      uint8  `type:"uint8" unit:"%"`
-	SOH      uint8  `type:"uint8" unit:"%"`
-	Temp     uint16 `type:"uint16" unit:"Celcius"`
+	ID          uint32  `type:"uint32"`
+	Fault       uint16  `type:"uint16"`
+	Voltage     float32 `type:"uint16" len:"2" unit:"Volt" factor:"0.01"`
+	Current     float32 `type:"uint16" len:"2" unit:"Ampere" factor:"0.1"`
+	Capacity    BmsCapacity
+	SOC         uint8  `type:"uint8" unit:"%"`
+	SOH         uint8  `type:"uint8" unit:"%"`
+	Temperature uint16 `type:"uint16" unit:"Celcius"`
 }
 
 type Bms struct {
-	Active   bool   `type:"uint8"`
-	Run      bool   `type:"uint8"`
-	Faults   uint16 `type:"uint16"`
-	Capacity BmsCapacity
-	SOC      uint8 `type:"uint8" unit:"%"`
-	Pack     [BMS_PACK_MAX]BmsPack
+	Active bool   `type:"uint8"`
+	Run    bool   `type:"uint8"`
+	Faults uint16 `type:"uint16"`
+	SOC    uint8  `type:"uint8" unit:"%"`
+	Pack   [BMS_PACK_MAX]BmsPack
 }
 
 // String converts BmsFaults type to string.
@@ -311,12 +288,6 @@ func (b *Bms) LowCapacity() bool {
 	return b.SOC < BMS_LOW_CAPACITY_PERCENT
 }
 
-type McuInverter struct {
-	Enabled   bool            `type:"uint8"`
-	Lockout   bool            `type:"uint8"`
-	Discharge McuInvDischarge `type:"uint8"`
-}
-
 type McuDCBus struct {
 	Current float32 `type:"uint16" len:"2" unit:"A" factor:"0.1"`
 	Voltage float32 `type:"uint16" len:"2" unit:"V" factor:"0.1"`
@@ -327,8 +298,8 @@ type McuFaultsStruct struct {
 	Run  uint32 `type:"uint32"`
 }
 type McuTorque struct {
-	Command  float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
-	Feedback float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
+	Commanded float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
+	Feedback  float32 `type:"uint16" len:"2" unit:"Nm" factor:"0.1"`
 }
 
 type McuTemplateStruct struct {
@@ -342,18 +313,17 @@ type McuTemplateDriveMode struct {
 }
 
 type Mcu struct {
-	Active    bool      `type:"uint8"`
-	Run       bool      `type:"uint8"`
-	Reverse   bool      `type:"uint8"`
-	DriveMode ModeDrive `type:"uint8"`
-	Speed     uint8     `type:"uint8" unit:"Kph"`
-	RPM       int16     `type:"int16" unit:"rpm"`
-	Temp      float32   `type:"uint16" len:"2" unit:"Celcius" factor:"0.1"`
-	Faults    McuFaultsStruct
-	Torque    McuTorque
-	DCBus     McuDCBus
-	Inverter  McuInverter
-	Template  McuTemplateStruct
+	Active      bool      `type:"uint8"`
+	Run         bool      `type:"uint8"`
+	Reverse     bool      `type:"uint8"`
+	DriveMode   ModeDrive `type:"uint8"`
+	Speed       uint8     `type:"uint8" unit:"Kph"`
+	RPM         int16     `type:"int16" unit:"rpm"`
+	Temperature float32   `type:"uint16" len:"2" unit:"Celcius" factor:"0.1"`
+	Faults      McuFaultsStruct
+	Torque      McuTorque
+	DCBus       McuDCBus
+	Template    McuTemplateStruct
 }
 
 // String converts McuFaults type to string.
