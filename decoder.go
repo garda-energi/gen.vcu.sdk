@@ -41,37 +41,33 @@ func decodeResponse(packet packet) (*responsePacket, error) {
 
 // decodeReport extract report from bytes packet.
 func decodeReport(packet packet) (*ReportPacket, error) {
-	reader := bytes.NewReader(packet)
-	result := &ReportPacket{}
-	if err := decode(reader, result); err != nil {
-		return nil, err
-	}
-
-	if !result.ValidPrefix() {
-		return nil, errInvalidPrefix
-	}
-	if !result.ValidSize() {
-		return nil, errInvalidSize
-	}
-	if reader.Len() != 0 {
-		return nil, errInvalidSize
-	}
-	return result, nil
-}
-
-// decodePacket extract report as Map from bytes packet.
-func decodeReportAsMaps(packet packet) (*genReportPacket, error) {
-	reportPacket := &genReportPacket{}
+	reportPacket := &ReportPacket{}
 
 	// get version
 	reader := bytes.NewReader(packet)
 	decode(reader, reportPacket)
+	rpStructure, isGot := ReportPacketStructures[int(reportPacket.Header.Version)]
+	if !isGot {
+		return nil, errors.New(fmt.Sprintf("Cannot handle report version %d", reportPacket.Header.Version))
+	}
+
+	// Check validity
+	if !reportPacket.ValidPrefix() {
+		return nil, errInvalidPrefix
+	}
 
 	// decode payload
 	payloadReader := bytes.NewReader(reportPacket.Payload)
-	if err := decode(payloadReader, &reportPacket.Data, ReportPacketStrutures[1]); err != nil {
+	if err := decode(payloadReader, &reportPacket.Data, rpStructure); err != nil {
 		return nil, err
 	}
+
+	// check length
+	if payloadReader.Len() != 0 {
+		fmt.Println("sisa length:", payloadReader.Len())
+		return nil, errInvalidSize
+	}
+
 	return reportPacket, nil
 }
 
@@ -103,6 +99,10 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 
 	// if v is map
 	if rv.Kind() == reflect.Map && rv.Type() == typeOfPacketData {
+		if tag.Tipe == "" {
+			return errors.New("Decode to map: need tag tipe.")
+		}
+
 		mapElm = rv
 
 		switch tag.Tipe {
@@ -139,7 +139,11 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 			if err = binary.Read(rdr, binary.LittleEndian, &b); err != nil {
 				return err
 			}
-			rv.Set(reflect.ValueOf(bytesToTime(b)))
+			if isVMaps {
+				mapElm.SetMapIndex(reflect.ValueOf(tag.Name), reflect.ValueOf(bytesToTime(b)))
+			} else {
+				rv.Set(reflect.ValueOf(bytesToTime(b)))
+			}
 
 		} else {
 			for i := 0; i < rv.NumField() && rdr.Len() > 0; i++ {
@@ -313,6 +317,8 @@ func createZeroElm(dt VarDataType) (reflect.Value, reflect.Type) {
 		rt = reflect.TypeOf(int64(0))
 	case Float_t:
 		rt = reflect.TypeOf(float32(0))
+	case Time_t:
+		rt = typeOfTime
 	case Struct_t:
 		rt = typeOfPacketData
 	}
