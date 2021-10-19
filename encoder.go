@@ -143,7 +143,7 @@ func encode(v interface{}, tags ...tagger) (resBytes []byte, resError error) {
 }
 
 // setVarOfTypeData create variable as typedata
-func setVarOfTypeData(typedata string) reflect.Value {
+func setVarOfTypeData(typedata VarDataType) reflect.Value {
 	var rv reflect.Value
 	switch typedata {
 	case "uint8":
@@ -178,7 +178,7 @@ func setVarOfTypeData(typedata string) reflect.Value {
 }
 
 // convertFloat64ToBytes convert float data to bytes
-func convertFloat64ToBytes(typedata string, v float64) []byte {
+func convertFloat64ToBytes(typedata VarDataType, v float64) []byte {
 	rv := setVarOfTypeData(typedata)
 	b := uintToBytes(rv.Kind(), uint64(v))
 	return b

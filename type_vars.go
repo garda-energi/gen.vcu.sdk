@@ -13,6 +13,9 @@ var typeOfTime reflect.Type = reflect.ValueOf(time.Now()).Type()
 // typeOfMessage is for comparing slice type as message ([]byte)
 var typeOfMessage reflect.Type = reflect.ValueOf(message{}).Type()
 
+// typeOfPacketData is for comparing struct type as PacketData
+var typeOfPacketData reflect.Type = reflect.ValueOf(PacketData{}).Type()
+
 var (
 	errClientDisconnected = errors.New("client disconnected")
 	errCmdNotFound        = errors.New("command not found")

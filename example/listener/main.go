@@ -11,8 +11,10 @@ func main() {
 	stopChan := sdk.SetupGracefulShutdown() // optional code
 
 	api := sdk.New(sdk.ClientConfig{
-		Host: "test.mosquitto.org",
-		Port: 1884,
+		Host: "broker.emqx.io",
+		Port: 1883,
+		// Host: "test.mosquitto.org",
+		// Port: 1884,
 		User: "rw",
 		Pass: "readwrite",
 	}, true)

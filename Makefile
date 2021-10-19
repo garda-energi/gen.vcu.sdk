@@ -11,8 +11,11 @@ cover:
 build:
 	go build ./...
 
-run:
-	go run example/main.go 
+run command:
+	go run example/command/main.go 
+
+run listener:
+	go run example/listener/main.go 
 
 pull:
 	git pull --no-ff

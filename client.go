@@ -3,6 +3,7 @@ package sdk
 import (
 	"fmt"
 	"log"
+	"os"
 	"sync"
 	"time"
 
@@ -27,6 +28,13 @@ type client struct {
 	mqtt.Client
 	logger      *log.Logger
 	subscribers *sync.Map
+}
+
+func init() {
+	// mqtt.DEBUG = log.New(os.Stderr, "DEBUG - ", log.LstdFlags)
+	// mqtt.CRITICAL = log.New(os.Stderr, "CRITICAL - ", log.LstdFlags)
+	// mqtt.WARN = log.New(os.Stderr, "WARN - ", log.LstdFlags)
+	mqtt.ERROR = log.New(os.Stderr, "ERROR - ", log.LstdFlags)
 }
 
 // newClient create instance of mqtt client

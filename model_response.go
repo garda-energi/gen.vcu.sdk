@@ -6,11 +6,6 @@ import (
 	"strings"
 )
 
-type headerResponse struct {
-	HeaderCommand
-	ResCode resCode `type:"uint8"`
-}
-
 type responsePacket struct {
 	Header  *headerResponse
 	Message message `type:"slice"`
