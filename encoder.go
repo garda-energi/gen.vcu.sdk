@@ -131,12 +131,20 @@ func encode(v interface{}, tags ...tagger) (resBytes []byte, resError error) {
 
 	case reflect.Array:
 		for j := 0; j < rv.Len(); j++ {
+			var b []byte
+			var err error
+
 			elm := rv.Index(j)
 			if elm.CanAddr() {
 				elm = elm.Addr()
 			}
 
-			b, err := encode(elm.Interface())
+			if isVMaps {
+				b, err = encode(elm.Interface(), tag.Sub[0])
+			} else {
+				b, err = encode(elm.Interface())
+			}
+
 			if err != nil {
 				return nil, err
 			}
@@ -180,7 +188,25 @@ func encode(v interface{}, tags ...tagger) (resBytes []byte, resError error) {
 			if rk == reflect.Float32 {
 				n = float64(float32(n))
 			}
-			b = convertFloat64ToBytes(tag.Tipe, n)
+
+			if isVMaps {
+				tagType := tag.UnfactorType
+				if tagType == "" {
+					switch tag.Len {
+					case 1:
+						tagType = Uint8_t
+					case 2:
+						tagType = Uint16_t
+					case 4:
+						tagType = Uint32_t
+					case 8:
+						tagType = Uint64_t
+					}
+				}
+				b = convertFloat64ToBytes(tagType, n)
+			} else {
+				b = convertFloat64ToBytes(tag.Tipe, n)
+			}
 
 		} else {
 			// set sesuai biner

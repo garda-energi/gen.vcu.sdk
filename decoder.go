@@ -64,7 +64,6 @@ func decodeReport(packet packet) (*ReportPacket, error) {
 
 	// check length
 	if payloadReader.Len() != 0 {
-		fmt.Println("sisa length:", payloadReader.Len())
 		return nil, errInvalidSize
 	}
 
@@ -211,7 +210,20 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 		}
 		if !rv.OverflowUint(x) {
 			if isVMaps {
-				mapElm.SetMapIndex(reflect.ValueOf(tag.Name), reflect.ValueOf(x))
+				var rvx reflect.Value // reflect value of x
+				switch rk {
+				case reflect.Uint8:
+					rvx = reflect.ValueOf(uint8(x))
+				case reflect.Uint16:
+					rvx = reflect.ValueOf(uint16(x))
+				case reflect.Uint32:
+					rvx = reflect.ValueOf(uint32(x))
+				case reflect.Uint64:
+					rvx = reflect.ValueOf(uint64(x))
+				case reflect.Uint:
+					rvx = reflect.ValueOf(uint(x))
+				}
+				mapElm.SetMapIndex(reflect.ValueOf(tag.Name), rvx)
 			} else {
 				rv.SetUint(x)
 			}
@@ -222,12 +234,24 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 		if err != nil {
 			return err
 		}
-		x_int := int64(x)
-		if !rv.OverflowInt(x_int) {
+		if !rv.OverflowInt(int64(x)) {
 			if isVMaps {
-				mapElm.SetMapIndex(reflect.ValueOf(tag.Name), reflect.ValueOf(x_int))
+				var rvx reflect.Value // reflect value of x
+				switch rk {
+				case reflect.Int8:
+					rvx = reflect.ValueOf(int8(x))
+				case reflect.Int16:
+					rvx = reflect.ValueOf(int16(x))
+				case reflect.Int32:
+					rvx = reflect.ValueOf(int32(x))
+				case reflect.Int64:
+					rvx = reflect.ValueOf(int64(x))
+				case reflect.Int:
+					rvx = reflect.ValueOf(int(x))
+				}
+				mapElm.SetMapIndex(reflect.ValueOf(tag.Name), rvx)
 			} else {
-				rv.SetInt(x_int)
+				rv.SetInt(int64(x))
 			}
 		}
 
@@ -265,7 +289,7 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 
 		if !rv.OverflowFloat(x64) {
 			if isVMaps {
-				mapElm.SetMapIndex(reflect.ValueOf(tag.Name), reflect.ValueOf(x64))
+				mapElm.SetMapIndex(reflect.ValueOf(tag.Name), reflect.ValueOf(float32(x64)))
 			} else {
 				rv.SetFloat(x64)
 			}

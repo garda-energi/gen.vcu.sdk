@@ -69,6 +69,7 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 			"BatVoltage":  randFloat(0, 4400),
 			"Uptime":      randFloat(0, 1000),
 			"LockDown":    randBool(),
+			"CANDebug":    uint8(rand.Intn(100)),
 		},
 
 		"Eeprom": PacketData{
@@ -85,6 +86,7 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 			"Heading":   randFloat(0, 360),
 			"Longitude": randFloat(GPS_LNG_MIN, GPS_LNG_MAX),
 			"Latitude":  randFloat(GPS_LAT_MIN, GPS_LAT_MAX),
+			"Altitude":  randFloat(0, 10),
 		},
 
 		"Hbar": PacketData{
@@ -113,25 +115,15 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 		"Imu": PacketData{
 			"Active":    randBool(),
 			"AntiThief": randBool(),
-			"Accel": PacketData{
-				"X": randFloat(0, 100),
-				"Y": randFloat(0, 100),
-				"Z": randFloat(0, 100),
-			},
-			"Gyro": PacketData{
-				"X": randFloat(0, 10000),
-				"Y": randFloat(0, 10000),
-				"Z": randFloat(0, 10000),
-			},
 			"Tilt": PacketData{
 				"Pitch": randFloat(0, 180),
 				"Roll":  randFloat(0, 180),
 			},
 			"Total": PacketData{
-				"Accel": randFloat(0, 100),
-				"Gyro":  randFloat(0, 10000),
-				"Tilt":  randFloat(0, 180),
-				"Temp":  randFloat(30, 50),
+				"Accel":       randFloat(0, 100),
+				"Gyro":        randFloat(0, 10000),
+				"Tilt":        randFloat(0, 180),
+				"Temperature": randFloat(30, 50),
 			},
 		},
 
@@ -158,56 +150,53 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 		"Bms": PacketData{
 			"Active": randBool(),
 			"Run":    randBool(),
-			"Capacity": PacketData{
-				"Remaining": uint16(rand.Intn(2100)),
-				"Usage":     uint16(rand.Intn(2100)),
-			},
 			"SOC":    uint8(rand.Intn(100)),
 			"Faults": uint16(rand.Uint32()),
 			"Pack": [2]PacketData{
 				{
 					"ID":      rand.Uint32(),
-					"Fault":   uint16(rand.Uint32()),
+					"Faults":  uint16(rand.Uint32()),
 					"Voltage": randFloat(48, 60),
 					"Current": randFloat(0, 110),
 					"Capacity": PacketData{
 						"Remaining": uint16(rand.Intn(2100)),
 						"Usage":     uint16(rand.Intn(2100)),
 					},
-					"SOC":  uint8(rand.Intn(100)),
-					"SOH":  uint8(rand.Intn(100)),
-					"Temp": uint16(randFloat(30, 50)),
+					"SOC":         uint8(rand.Intn(100)),
+					"SOH":         uint8(rand.Intn(100)),
+					"Temperature": uint16(randFloat(30, 50)),
 				},
 				{
-					"Fault":   uint16(rand.Uint32()),
+					"ID":      rand.Uint32(),
+					"Faults":  uint16(rand.Uint32()),
 					"Voltage": randFloat(48, 60),
 					"Current": randFloat(0, 110),
 					"Capacity": PacketData{
 						"Remaining": uint16(rand.Intn(2100)),
 						"Usage":     uint16(rand.Intn(2100)),
 					},
-					"SOC":  uint8(rand.Intn(100)),
-					"SOH":  uint8(rand.Intn(100)),
-					"Temp": uint16(randFloat(30, 50)),
+					"SOC":         uint8(rand.Intn(100)),
+					"SOH":         uint8(rand.Intn(100)),
+					"Temperature": uint16(randFloat(30, 50)),
 				},
 			},
 		},
 
 		"Mcu": PacketData{
-			"Active":    randBool(),
-			"Run":       randBool(),
-			"Reverse":   randBool(),
-			"DriveMode": ModeDrive(rand.Intn(int(ModeDriveLimit))),
-			"Speed":     uint8(rand.Intn(SPEED_KPH_MAX)),
-			"RPM":       int16(rand.Intn(50000) - 25000),
-			"Temp":      randFloat(30, 50),
+			"Active":      randBool(),
+			"Run":         randBool(),
+			"Reverse":     randBool(),
+			"DriveMode":   ModeDrive(rand.Intn(int(ModeDriveLimit))),
+			"Speed":       uint8(rand.Intn(SPEED_KPH_MAX)),
+			"RPM":         int16(rand.Intn(50000) - 25000),
+			"Temperature": randFloat(30, 50),
 			"Faults": PacketData{
 				"Post": rand.Uint32(),
 				"Run":  rand.Uint32(),
 			},
 			"Torque": PacketData{
-				"Command":  rand.Float32(),
-				"Feedback": rand.Float32(),
+				"Commanded": rand.Float32(),
+				"Feedback":  rand.Float32(),
 			},
 			"DCBus": PacketData{
 				"Current": rand.Float32(),

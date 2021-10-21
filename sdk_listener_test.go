@@ -112,7 +112,7 @@ func TestSdkReportListener(t *testing.T) {
 			desc:  "backup battery medium",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Data["Vcu"].(PacketData)["BatVoltage"] = BATTERY_BACKUP_FULL_MV - 300
+				rp.Data["Vcu"].(PacketData)["BatVoltage"] = float32(BATTERY_BACKUP_FULL_MV - 300)
 			},
 			validator: func(rp *ReportPacket) bool {
 				return !rp.VcuBatteryLow()
@@ -122,7 +122,7 @@ func TestSdkReportListener(t *testing.T) {
 			desc:  "backup battery low",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Data["Vcu"].(PacketData)["BatVoltage"] = BATTERY_BACKUP_LOW_MV - 300
+				rp.Data["Vcu"].(PacketData)["BatVoltage"] = float32(BATTERY_BACKUP_LOW_MV - 300)
 			},
 			validator: func(rp *ReportPacket) bool {
 				return rp.VcuBatteryLow()
@@ -152,8 +152,8 @@ func TestSdkReportListener(t *testing.T) {
 			desc:  "gps dop low",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Data["Gps"].(PacketData)["HDOP"] = GPS_DOP_MIN + 3
-				rp.Data["Gps"].(PacketData)["VDOP"] = GPS_DOP_MIN + 18
+				rp.Data["Gps"].(PacketData)["HDOP"] = float32(GPS_DOP_MIN + 3)
+				rp.Data["Gps"].(PacketData)["VDOP"] = float32(GPS_DOP_MIN + 18)
 			},
 			validator: func(rp *ReportPacket) bool {
 				return !rp.GpsValidHorizontal() && !rp.GpsValidVertical()
@@ -175,7 +175,7 @@ func TestSdkReportListener(t *testing.T) {
 			modifier: func(rp *ReportPacket) {
 				rp.Data["Gps"].(PacketData)["HDOP"] = 2.5
 				rp.Data["Gps"].(PacketData)["Longitude"] = GPS_LNG_MIN - 20
-				rp.Data["Gps"].(PacketData)["Longitude"] = GPS_LAT_MAX - 20
+				rp.Data["Gps"].(PacketData)["Latitude"] = GPS_LAT_MAX - 20
 			},
 			validator: func(rp *ReportPacket) bool {
 				return !rp.GpsValidHorizontal()
@@ -185,9 +185,9 @@ func TestSdkReportListener(t *testing.T) {
 			desc:  "gps valid hdop, valid long lat",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Data["Gps"].(PacketData)["HDOP"] = GPS_DOP_MIN
-				rp.Data["Gps"].(PacketData)["Longitude"] = GPS_LNG_MIN
-				rp.Data["Gps"].(PacketData)["Longitude"] = GPS_LAT_MAX
+				rp.Data["Gps"].(PacketData)["HDOP"] = float32(GPS_DOP_MIN)
+				rp.Data["Gps"].(PacketData)["Longitude"] = float32(GPS_LNG_MIN)
+				rp.Data["Gps"].(PacketData)["Latitude"] = float32(GPS_LAT_MAX)
 			},
 			validator: func(rp *ReportPacket) bool {
 				return rp.GpsValidHorizontal()
