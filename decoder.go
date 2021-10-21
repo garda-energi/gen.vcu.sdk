@@ -274,7 +274,11 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 		}
 
 		if tag.Factor != 1 {
-			x64 = convertToFloat64(tag.Tipe, x_uint)
+			tagType := tag.Tipe
+			if tag.UnfactorType != "" {
+				tagType = tag.UnfactorType
+			}
+			x64 = convertToFloat64(tagType, x_uint)
 			x64 *= tag.Factor
 
 		} else {

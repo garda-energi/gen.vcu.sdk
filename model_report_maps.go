@@ -42,14 +42,14 @@ var ReportPacketStructures = map[int]tagger{
 				{Name: "Active", Tipe: Boolean_t},
 				{Name: "AntiThief", Tipe: Boolean_t},
 				{Name: "Tilt", Tipe: Struct_t, Sub: []tagger{
-					{Name: "Pitch", Tipe: Float_t, Len: 2, Factor: 0.1},
-					{Name: "Roll", Tipe: Float_t, Len: 2, Factor: 0.1},
+					{Name: "Pitch", Tipe: Float_t, UnfactorType: Int16_t, Len: 2, Factor: 0.1},
+					{Name: "Roll", Tipe: Float_t, UnfactorType: Int16_t, Len: 2, Factor: 0.1},
 				}},
 				{Name: "Total", Tipe: Struct_t, Sub: []tagger{
-					{Name: "Accel", Tipe: Float_t, UnfactorType: Int16_t, Len: 2, Factor: 0.01},
-					{Name: "Gyro", Tipe: Float_t, UnfactorType: Int16_t, Len: 2, Factor: 0.1},
-					{Name: "Tilt", Tipe: Float_t, UnfactorType: Int16_t, Len: 2, Factor: 0.1},
-					{Name: "Temperature", Tipe: Float_t, UnfactorType: Int16_t, Len: 2, Factor: 0.1},
+					{Name: "Accel", Tipe: Float_t, Len: 2, Factor: 0.01},
+					{Name: "Gyro", Tipe: Float_t, Len: 2, Factor: 0.1},
+					{Name: "Tilt", Tipe: Float_t, Len: 2, Factor: 0.1},
+					{Name: "Temperature", Tipe: Float_t, Len: 2, Factor: 0.1},
 				}},
 			}},
 			{Name: "Remote", Tipe: Struct_t, Sub: []tagger{

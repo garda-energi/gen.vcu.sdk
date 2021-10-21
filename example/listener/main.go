@@ -37,7 +37,14 @@ func main() {
 		ReportFunc: func(vin int, report *sdk.ReportPacket) {
 			fmt.Println(report)
 			fmt.Println(string(report.Json()))
-			fmt.Println(report.GetValue("Vcu.Events").(uint16))
+
+			fmt.Println(report.GetValue("Bms.Pack.[0].Capacity.Remaining"))
+			fmt.Println(report.GetType("Bms.Pack.[0].Capacity.Remaining"))
+
+			vcuEvent, isOK := report.GetValue("Vcu.Events").(uint16)
+			if isOK {
+				fmt.Println(vcuEvent)
+			}
 			fmt.Println(report.GetType("Vcu.Events"))
 
 			// expose all *ReportPacket methods available

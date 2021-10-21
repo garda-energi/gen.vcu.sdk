@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -31,11 +32,27 @@ func (r *ReportPacket) GetValue(key string) interface{} {
 	data = r.Data
 
 	for _, k := range keys {
-		data = data.(PacketData)[k]
-		if data == nil {
+		if _, ok := data.([]PacketData); ok {
+			var idx int
+			var err error
+			var k_len int = len(k)
+
+			if k_len > 2 && k[0] == '[' && k[k_len-1] == ']' {
+				idx, err = strconv.Atoi(k[1 : k_len-1])
+				if err != nil {
+					return nil
+				}
+				data = data.([]PacketData)[idx]
+				continue
+			}
+			break
+		} else if _, ok := data.(PacketData); !ok {
 			break
 		}
-		if _, ok := data.(PacketData); !ok {
+
+		data = data.(PacketData)[k]
+
+		if data == nil {
 			break
 		}
 	}
@@ -57,6 +74,10 @@ func (r *ReportPacket) GetType(key string) VarDataType {
 	keys := strings.Split(key, ".")
 	for _, k := range keys {
 		isFound = false
+		if tag.Tipe == Array_t {
+			tag = tag.Sub[0]
+			continue
+		}
 		for _, subtag := range tag.Sub {
 			if subtag.Name == k {
 				isFound = true
