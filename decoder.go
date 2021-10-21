@@ -299,7 +299,9 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 		if isVMaps {
 			for _, tagSub := range tag.Sub {
 				tagSub = tagSub.normalize()
-
+				if rdr.Len() == 0 {
+					break
+				}
 				if tagSub.Tipe == Struct_t {
 					rv = reflect.MakeMap(typeOfPacketData)
 					mapElm.SetMapIndex(reflect.ValueOf(tagSub.Name), rv)
