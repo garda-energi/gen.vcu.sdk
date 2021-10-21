@@ -24,6 +24,7 @@ func (r *ReportPacket) ValidSize(tag tagger) bool {
 	return int(r.Header.Size) == tag.getSize()+4+7
 }
 
+// GetValue get report packet data by key
 func (r *ReportPacket) GetValue(key string) interface{} {
 	var data interface{}
 	keys := strings.Split(key, ".")
@@ -41,7 +42,40 @@ func (r *ReportPacket) GetValue(key string) interface{} {
 	return data
 }
 
-func (r *ReportPacket) StringOfData(data interface{}, tag tagger, deep int) string {
+// GetValue get report packet data type by key. return VarDataType.
+func (r *ReportPacket) GetType(key string) VarDataType {
+	var result VarDataType = ""
+	rpStructure, isGot := ReportPacketStructures[int(r.Header.Version)]
+
+	if !isGot {
+		return result
+	}
+
+	tag := rpStructure
+	isFound := false
+
+	keys := strings.Split(key, ".")
+	for _, k := range keys {
+		isFound = false
+		for _, subtag := range tag.Sub {
+			if subtag.Name == k {
+				isFound = true
+				tag = subtag
+				break
+			}
+		}
+		if !isFound {
+			break
+		}
+	}
+	if isFound {
+		result = tag.Tipe
+	}
+	return VarDataType(result)
+}
+
+// stringOfData get PacketData as pretty string
+func (r *ReportPacket) stringOfData(data interface{}, tag tagger, deep int) string {
 	if data == nil {
 		return ""
 	}
@@ -60,7 +94,7 @@ func (r *ReportPacket) StringOfData(data interface{}, tag tagger, deep int) stri
 			str = ""
 		}
 		for _, subtag := range tag.Sub {
-			str += r.StringOfData(d[subtag.Name], subtag, deep+1)
+			str += r.stringOfData(d[subtag.Name], subtag, deep+1)
 		}
 	case Array_t:
 		s := reflect.ValueOf(data)
@@ -71,7 +105,7 @@ func (r *ReportPacket) StringOfData(data interface{}, tag tagger, deep int) stri
 			}
 			str += fmt.Sprintln("#", i, ":")
 			for _, subtag := range tag.Sub {
-				str += r.StringOfData(s.Index(i).Interface(), subtag, deep+1)
+				str += r.stringOfData(s.Index(i).Interface(), subtag, deep+1)
 			}
 		}
 	default:
@@ -80,10 +114,10 @@ func (r *ReportPacket) StringOfData(data interface{}, tag tagger, deep int) stri
 	return str
 }
 
+// String get report packet data as pretty string
 func (r *ReportPacket) String() string {
-	str := ""
 	rpStructure := ReportPacketStructures[int(r.Header.Version)]
-	str += r.StringOfData(r.Data, rpStructure, -1)
+	str := r.stringOfData(r.Data, rpStructure, -1)
 	return str
 }
 

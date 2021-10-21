@@ -4,7 +4,7 @@ package sdk
 var ReportPacketStructures = map[int]tagger{
 	679: {
 		Tipe: Struct_t, Sub: []tagger{
-			{Name: "HeaderReport", Tipe: Struct_t, Sub: []tagger{
+			{Name: "Report", Tipe: Struct_t, Sub: []tagger{
 				{Name: "SendDatetime", Tipe: Time_t, Len: 7},
 				{Name: "LogDatetime", Tipe: Time_t, Len: 7},
 				{Name: "Frame", Tipe: Uint8_t},
