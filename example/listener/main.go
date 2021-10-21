@@ -17,7 +17,7 @@ func main() {
 		// Port: 1884,
 		User: "rw",
 		Pass: "readwrite",
-	}, true)
+	}, false)
 
 	// connect to client
 	if err := api.Connect(); err != nil {
@@ -36,6 +36,7 @@ func main() {
 		},
 		ReportFunc: func(vin int, report *sdk.ReportPacket) {
 			fmt.Println(report)
+			fmt.Println(report.GetType("Vcu.State"))
 
 			// expose all *ReportPacket methods available
 			// if report.Vcu.RealtimeData() {

@@ -48,237 +48,237 @@ func TestSdkReportListener(t *testing.T) {
 			desc:  "send datetime is yesterday",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Header.SendDatetime = time.Now().UTC().Add(-24 * time.Hour)
+				rp.Data["Report"].(PacketData)["SendDatetime"] = time.Now().UTC().Add(-24 * time.Hour)
 			},
 			validator: func(rp *ReportPacket) bool {
 				datetime := time.Now().UTC().Add(-20 * time.Hour)
-				return rp.Header.SendDatetime.Before(datetime)
+				return rp.Data["Report"].(PacketData)["SendDatetime"].(time.Time).Before(datetime)
 			},
 		},
 		{
 			desc:  "vcu's events has BMS_ERROR & BIKE_FALLEN",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Vcu.Events = 1<<VCU_BMS_ERROR | 1<<VCU_BIKE_FALLEN
+				rp.Data["Vcu"].(PacketData)["Events"] = 1<<VCU_BMS_ERROR | 1<<VCU_BIKE_FALLEN
 			},
 			validator: func(rp *ReportPacket) bool {
 				want := VcuEvents{VCU_BIKE_FALLEN, VCU_BMS_ERROR}
-				return rp.Vcu.IsEvents(want...) &&
-					len(want) == len(rp.Vcu.GetEvents())
+				return rp.VcuIsEvents(want...) &&
+					len(want) == len(rp.VcuGetEvents())
 			},
 		},
 		{
 			desc:  "vcu's events is empty",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Vcu.Events = 0
+				rp.Data["Vcu"].(PacketData)["Events"] = 0
 			},
 			validator: func(rp *ReportPacket) bool {
-				return len(rp.Vcu.GetEvents()) == 0
+				return len(rp.VcuGetEvents()) == 0
 			},
 		},
 		{
 			desc:  "vcu's events has invalid value",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Vcu.Events = 1 << VCU_EVENTS_MAX
+				rp.Data["Vcu"].(PacketData)["Events"] = 1 << VCU_EVENTS_MAX
 			},
 			validator: func(rp *ReportPacket) bool {
-				return len(rp.Vcu.GetEvents()) == 0
+				return len(rp.VcuGetEvents()) == 0
 			},
 		},
 		{
 			desc:  "log is not buffered",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Vcu.LogBuffered = 0
+				rp.Data["Vcu"].(PacketData)["LogBuffered"] = 0
 			},
 			validator: func(rp *ReportPacket) bool {
-				return rp.Vcu.RealtimeData()
+				return rp.VcuRealtimeData()
 			},
 		},
 		{
 			desc:  "log is buffered",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Header.LogDatetime = time.Now().UTC()
-				rp.Vcu.LogBuffered = 5
+				rp.Data["Report"].(PacketData)["LogDatetime"] = time.Now().UTC()
+				rp.Data["Vcu"].(PacketData)["LogBuffered"] = 5
 			},
 			validator: func(rp *ReportPacket) bool {
-				return !rp.Vcu.RealtimeData()
+				return !rp.VcuRealtimeData()
 			},
 		},
 		{
 			desc:  "backup battery medium",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Vcu.BatVoltage = BATTERY_BACKUP_FULL_MV - 300
+				rp.Data["Vcu"].(PacketData)["BatVoltage"] = BATTERY_BACKUP_FULL_MV - 300
 			},
 			validator: func(rp *ReportPacket) bool {
-				return !rp.Vcu.BatteryLow()
+				return !rp.VcuBatteryLow()
 			},
 		},
 		{
 			desc:  "backup battery low",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Vcu.BatVoltage = BATTERY_BACKUP_LOW_MV - 300
+				rp.Data["Vcu"].(PacketData)["BatVoltage"] = BATTERY_BACKUP_LOW_MV - 300
 			},
 			validator: func(rp *ReportPacket) bool {
-				return rp.Vcu.BatteryLow()
+				return rp.VcuBatteryLow()
 			},
 		},
 		{
 			desc:  "eeprom capacity medium",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Eeprom.Used = 2
+				rp.Data["Eeprom"].(PacketData)["Used"] = 2
 			},
 			validator: func(rp *ReportPacket) bool {
-				return !rp.Eeprom.CapacityLow()
+				return !rp.EepromCapacityLow()
 			},
 		},
 		{
 			desc:  "eeprom capacity low",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Eeprom.Used = 99
+				rp.Data["Eeprom"].(PacketData)["Used"] = 99
 			},
 			validator: func(rp *ReportPacket) bool {
-				return rp.Eeprom.CapacityLow()
+				return rp.EepromCapacityLow()
 			},
 		},
 		{
 			desc:  "gps dop low",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Gps.HDOP = GPS_DOP_MIN + 3
-				rp.Gps.VDOP = GPS_DOP_MIN + 18
+				rp.Data["Gps"].(PacketData)["HDOP"] = GPS_DOP_MIN + 3
+				rp.Data["Gps"].(PacketData)["VDOP"] = GPS_DOP_MIN + 18
 			},
 			validator: func(rp *ReportPacket) bool {
-				return !rp.Gps.ValidHorizontal() && !rp.Gps.ValidVertical()
+				return !rp.GpsValidHorizontal() && !rp.GpsValidVertical()
 			},
 		},
 		{
 			desc:  "gps valid vdop",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Gps.VDOP = 1.5
+				rp.Data["Gps"].(PacketData)["VDOP"] = 1.5
 			},
 			validator: func(rp *ReportPacket) bool {
-				return rp.Gps.ValidVertical()
+				return rp.GpsValidVertical()
 			},
 		},
 		{
 			desc:  "gps valid hdop, invalid long lat",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Gps.HDOP = 2.5
-				rp.Gps.Longitude = GPS_LNG_MIN - 20
-				rp.Gps.Latitude = GPS_LAT_MAX + 15
+				rp.Data["Gps"].(PacketData)["HDOP"] = 2.5
+				rp.Data["Gps"].(PacketData)["Longitude"] = GPS_LNG_MIN - 20
+				rp.Data["Gps"].(PacketData)["Longitude"] = GPS_LAT_MAX - 20
 			},
 			validator: func(rp *ReportPacket) bool {
-				return !rp.Gps.ValidHorizontal()
+				return !rp.GpsValidHorizontal()
 			},
 		},
 		{
 			desc:  "gps valid hdop, valid long lat",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Gps.HDOP = GPS_DOP_MIN
-				rp.Gps.Longitude = GPS_LNG_MIN
-				rp.Gps.Latitude = GPS_LAT_MAX
+				rp.Data["Gps"].(PacketData)["HDOP"] = GPS_DOP_MIN
+				rp.Data["Gps"].(PacketData)["Longitude"] = GPS_LNG_MIN
+				rp.Data["Gps"].(PacketData)["Longitude"] = GPS_LAT_MAX
 			},
 			validator: func(rp *ReportPacket) bool {
-				return rp.Gps.ValidHorizontal()
+				return rp.GpsValidHorizontal()
 			},
 		},
 		{
 			desc:  "net signal good",
 			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
-				rp.Net.Signal = 75
+				rp.Data["Net"].(PacketData)["Signal"] = 75
 			},
 			validator: func(rp *ReportPacket) bool {
-				return !rp.Net.LowSignal()
+				return !rp.NetLowSignal()
 			},
 		},
 		{
 			desc:  "net signal poor",
 			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
-				rp.Net.Signal = NET_LOW_SIGNAL_PERCENT - 5
+				rp.Data["Net"].(PacketData)["Signal"] = NET_LOW_SIGNAL_PERCENT - 5
 			},
 			validator: func(rp *ReportPacket) bool {
-				return rp.Net.LowSignal()
+				return rp.NetLowSignal()
 			},
 		},
 		{
 			desc:  "bms's faults has BMS_SHORT_CIRCUIT & BMS_UNBALANCE",
 			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
-				rp.Bms.Faults = 1<<BMS_SHORT_CIRCUIT | 1<<BMS_UNBALANCE
+				rp.Data["Bms"].(PacketData)["Faults"] = 1<<BMS_SHORT_CIRCUIT | 1<<BMS_UNBALANCE
 			},
 			validator: func(rp *ReportPacket) bool {
 				want := BmsFaults{BMS_SHORT_CIRCUIT, BMS_UNBALANCE}
-				return rp.Bms.IsFaults(want...) &&
-					len(want) == len(rp.Bms.GetFaults())
+				return rp.BmsIsFaults(want...) &&
+					len(want) == len(rp.BmsGetFaults())
 			},
 		},
 		{
 			desc:  "bms's faults is empty",
 			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
-				rp.Bms.Faults = 0
+				rp.Data["Bms"].(PacketData)["Faults"] = 0
 			},
 			validator: func(rp *ReportPacket) bool {
-				return len(rp.Bms.GetFaults()) == 0
+				return len(rp.BmsGetFaults()) == 0
 			},
 		},
 		{
 			desc:  "bms's faults has invalid value",
 			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
-				rp.Bms.Faults = 1 << BMS_FAULTS_MAX
+				rp.Data["Bms"].(PacketData)["Faults"] = 1 << BMS_FAULTS_MAX
 			},
 			validator: func(rp *ReportPacket) bool {
-				return len(rp.Bms.GetFaults()) == 0
+				return len(rp.BmsGetFaults()) == 0
 			},
 		},
 		{
 			desc:  "bms soc full",
 			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
-				rp.Bms.SOC = 100
+				rp.Data["Bms"].(PacketData)["SOC"] = 100
 			},
 			validator: func(rp *ReportPacket) bool {
-				return !rp.Bms.LowCapacity()
+				return !rp.BmsLowCapacity()
 			},
 		},
 		{
 			desc:  "bms soc low",
 			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
-				rp.Bms.SOC = 1
+				rp.Data["Bms"].(PacketData)["SOC"] = 1
 			},
 			validator: func(rp *ReportPacket) bool {
-				return rp.Bms.LowCapacity()
+				return rp.BmsLowCapacity()
 			},
 		},
 		{
 			desc:  "mcu's faults has MCU_POST_5V_LOW, MCU_POST_BRAKE_OPEN & MCU_RUN_ACCEL_OPEN",
 			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
-				rp.Mcu.Faults.Post = 1<<MCU_POST_5V_LOW | 1<<MCU_POST_BRAKE_OPEN
-				rp.Mcu.Faults.Run = 1 << MCU_RUN_ACCEL_OPEN
+				rp.Data["Mcu"].(PacketData)["Faults"].(PacketData)["Post"] = uint32(1<<MCU_POST_5V_LOW | 1<<MCU_POST_BRAKE_OPEN)
+				rp.Data["Mcu"].(PacketData)["Faults"].(PacketData)["Run"] = uint32(1 << MCU_RUN_ACCEL_OPEN)
 			},
 			validator: func(rp *ReportPacket) bool {
 				wantPost := []McuFaultPost{MCU_POST_5V_LOW, MCU_POST_BRAKE_OPEN}
 				wantRun := []McuFaultRun{MCU_RUN_ACCEL_OPEN}
-				return rp.Mcu.IsPostFaults(wantPost...) &&
-					len(rp.Mcu.GetFaults().Post) == len(wantPost) &&
-					rp.Mcu.IsRunFaults(wantRun...) &&
-					len(rp.Mcu.GetFaults().Run) == len(wantRun)
+				return rp.McuIsPostFaults(wantPost...) &&
+					len(rp.McuGetFaults().Post) == len(wantPost) &&
+					rp.McuIsRunFaults(wantRun...) &&
+					len(rp.McuGetFaults().Run) == len(wantRun)
 
 			},
 		},
@@ -286,23 +286,23 @@ func TestSdkReportListener(t *testing.T) {
 			desc:  "mcu's faults is empty",
 			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
-				rp.Mcu.Faults.Post = 0
-				rp.Mcu.Faults.Run = 0
+				rp.Data["Mcu"].(PacketData)["Faults"].(PacketData)["Post"] = uint32(0)
+				rp.Data["Mcu"].(PacketData)["Faults"].(PacketData)["Run"] = uint32(0)
 			},
 			validator: func(rp *ReportPacket) bool {
-				return len(rp.Mcu.GetFaults().Post) == 0 &&
-					len(rp.Mcu.GetFaults().Run) == 0
+				return len(rp.McuGetFaults().Post) == 0 &&
+					len(rp.McuGetFaults().Run) == 0
 			},
 		},
 		{
 			desc:  "some task's stack are near overflow",
 			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
-				rp.Task.Stack.Manager = STACK_OVERFLOW_BYTE_MIN - 20
-				rp.Task.Stack.Command = 0
+				rp.Data["Task"].(PacketData)["Stack"].(PacketData)["Manager"] = uint16(STACK_OVERFLOW_BYTE_MIN - 20)
+				rp.Data["Task"].(PacketData)["Stack"].(PacketData)["Command"] = uint16(0)
 			},
 			validator: func(rp *ReportPacket) bool {
-				return rp.Task.StackOverflow()
+				return rp.TaskStackOverflow()
 			},
 		},
 		// {
