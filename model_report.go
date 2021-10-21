@@ -121,6 +121,7 @@ func (r *ReportPacket) String() string {
 	return str
 }
 
+// Json get report packet data as json in bytes
 func (r *ReportPacket) Json() []byte {
 	jsonString, err := json.Marshal(r.Data)
 	if err != nil {
@@ -193,7 +194,7 @@ func (r *ReportPacket) GpsValidHorizontal() bool {
 		return false
 	}
 	longitude, isLongOK := r.GetValue("Gps.Longitude").(float32)
-	latitude, isLatOK := r.GetValue("Gps.Longitude").(float32)
+	latitude, isLatOK := r.GetValue("Gps.Latitude").(float32)
 	if !(isLongOK && isLatOK) {
 		return false
 	}
@@ -248,7 +249,7 @@ func (r *ReportPacket) BmsIsFaults(bf ...BmsFault) bool {
 
 // BmsLowCapacity check if b's SoC (State of Charge) is low
 func (r *ReportPacket) BmsLowCapacity() bool {
-	soc, isOk := r.GetValue("Bms.SOC").(uint16)
+	soc, isOk := r.GetValue("Bms.SOC").(uint8)
 	if !isOk {
 		return false
 	}
