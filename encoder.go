@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"math"
 	"reflect"
 	"time"
@@ -27,11 +28,35 @@ func encodePacket(p interface{}) (packet, error) {
 	return resBytes, nil
 }
 
+func encodeReport(rp *ReportPacket) (packet, error) {
+	rp.Payload = message([]byte{})
+	headerBytes, err := encode(rp)
+	if err != nil {
+		return nil, err
+	}
+
+	rpStructure, isGot := ReportPacketStructures[int(rp.Header.Version)]
+	if !isGot {
+		return nil, errors.New(fmt.Sprintf("Cannot handle report version %d", rp.Header.Version))
+	}
+
+	payloadBytes, err := encode(rp.Data, rpStructure)
+	packetBytes := append(headerBytes, payloadBytes...)
+
+	if packetBytes[2] == 0 {
+		packetBytes[2] = uint8(len(packetBytes) - 3)
+	}
+	return packetBytes, nil
+}
+
 // encode struct or pointer of struct to bytes
 func encode(v interface{}, tags ...tagger) (resBytes []byte, resError error) {
-	buf := &bytes.Buffer{}
+	var buf *bytes.Buffer = &bytes.Buffer{}
+	var isVMaps bool = false
+	var mapElm reflect.Value // map rv
+	var rv reflect.Value
 
-	rv := reflect.ValueOf(v)
+	rv = reflect.ValueOf(v)
 
 	if rv.Kind() == reflect.Ptr {
 		rv = rv.Elem()
@@ -42,6 +67,35 @@ func encode(v interface{}, tags ...tagger) (resBytes []byte, resError error) {
 	// if tag is pass in argument
 	if len(tags) > 0 {
 		tag = tags[0]
+	}
+
+	if rv.Kind() == reflect.Map && rv.Type() == typeOfPacketData {
+		if tag.Name == "" && tag.Tipe != Struct_t {
+			return buf.Bytes(), nil
+		} else if tag.Tipe == "" {
+			return nil, errors.New("Decode to map: need tag tipe.")
+		}
+		mapElm = rv
+
+		switch tag.Tipe {
+		case Struct_t:
+			break
+
+		case Array_t:
+			if len(tag.Sub) == 0 {
+				return nil, errors.New("Tag (" + tag.Name + "): Tipe Array_t cannot be 0")
+			}
+			rv = mapElm.MapIndex(reflect.ValueOf(tag.Name)).Elem()
+			break
+
+		default:
+			rv = mapElm.MapIndex(reflect.ValueOf(tag.Name))
+			if !rv.IsValid() {
+				return buf.Bytes(), nil
+			}
+			rv = rv.Elem()
+		}
+		isVMaps = true
 	}
 
 	switch rk := rv.Kind(); rk {
@@ -77,7 +131,12 @@ func encode(v interface{}, tags ...tagger) (resBytes []byte, resError error) {
 
 	case reflect.Array:
 		for j := 0; j < rv.Len(); j++ {
-			b, err := encode(rv.Index(j).Addr().Interface())
+			elm := rv.Index(j)
+			if elm.CanAddr() {
+				elm = elm.Addr()
+			}
+
+			b, err := encode(elm.Interface())
 			if err != nil {
 				return nil, err
 			}
@@ -132,6 +191,37 @@ func encode(v interface{}, tags ...tagger) (resBytes []byte, resError error) {
 				x64 := math.Float64bits(n)
 				b = uintToBytes(rk, x64)[:tag.Len]
 			}
+		}
+		buf.Write(b)
+
+	case reflect.Map:
+		if isVMaps {
+			for _, tagSub := range tag.Sub {
+				tagSub = tagSub.normalize()
+
+				if tagSub.Tipe == Struct_t {
+					rv = mapElm.MapIndex(reflect.ValueOf(tagSub.Name))
+
+					b, err := encode(rv.Interface(), tagSub)
+					if err != nil {
+						return nil, err
+					}
+					buf.Write(b)
+
+				} else {
+					b, err := encode(mapElm.Interface(), tagSub)
+					if err != nil {
+						return nil, err
+					}
+					buf.Write(b)
+				}
+			}
+		}
+
+	case reflect.Interface:
+		b, err := encode(rv.Elem(), tag)
+		if err != nil {
+			return nil, err
 		}
 		buf.Write(b)
 

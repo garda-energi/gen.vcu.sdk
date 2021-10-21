@@ -216,7 +216,7 @@ func (c *stubMqttClient) mockReports(vin int, rps []*ReportPacket) {
 	// encode fake reports
 	res := make(packets, len(rps))
 	for i, rp := range rps {
-		resBytes, err := encodePacket(rp)
+		resBytes, err := encodeReport(rp)
 		if err != nil {
 			log.Fatal(err)
 		}

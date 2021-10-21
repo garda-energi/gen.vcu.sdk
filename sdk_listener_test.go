@@ -320,7 +320,7 @@ func TestSdkReportListener(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			vin := vins[rand.Intn(len(vins))]
-			version := 1
+			version := 679
 
 			rp := makeReportPacket(version, vin, tC.frame)
 			tC.modifier(rp)
