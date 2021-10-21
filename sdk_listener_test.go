@@ -48,11 +48,11 @@ func TestSdkReportListener(t *testing.T) {
 			desc:  "send datetime is yesterday",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Data["HeaderReport"].(PacketData)["SendDatetime"] = time.Now().UTC().Add(-24 * time.Hour)
+				rp.Data["Report"].(PacketData)["SendDatetime"] = time.Now().UTC().Add(-24 * time.Hour)
 			},
 			validator: func(rp *ReportPacket) bool {
 				datetime := time.Now().UTC().Add(-20 * time.Hour)
-				return rp.Data["HeaderReport"].(PacketData)["SendDatetime"].(time.Time).Before(datetime)
+				return rp.Data["Report"].(PacketData)["SendDatetime"].(time.Time).Before(datetime)
 			},
 		},
 		{
@@ -101,7 +101,7 @@ func TestSdkReportListener(t *testing.T) {
 			desc:  "log is buffered",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
-				rp.Data["HeaderReport"].(PacketData)["LogDatetime"] = time.Now().UTC()
+				rp.Data["Report"].(PacketData)["LogDatetime"] = time.Now().UTC()
 				rp.Data["Vcu"].(PacketData)["LogBuffered"] = 5
 			},
 			validator: func(rp *ReportPacket) bool {

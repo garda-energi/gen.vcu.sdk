@@ -233,23 +233,33 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 
 	case reflect.Float32, reflect.Float64:
 		var x64 float64
+		var x_int int64
+		var x_uint uint64
+		var err error
 
-		x, err := readUint(rdr, tag.Len)
+		switch tag.UnfactorType {
+		case Int8_t, Int16_t, Int32_t, Int64_t:
+			x_int, err = readInt(rdr, tag.Len)
+			x_uint = uint64(x_int)
+		default:
+			x_uint, err = readUint(rdr, tag.Len)
+		}
+
 		if err != nil {
 			return err
 		}
 
 		if tag.Factor != 1 {
-			x64 = convertToFloat64(tag.Tipe, x)
+			x64 = convertToFloat64(tag.Tipe, x_uint)
 			x64 *= tag.Factor
 
 		} else {
 			// set as binary
 			if rk == reflect.Float32 {
-				x32 := math.Float32frombits(uint32(x))
+				x32 := math.Float32frombits(uint32(x_uint))
 				x64 = float64(x32)
 			} else {
-				x64 = math.Float64frombits(x)
+				x64 = math.Float64frombits(x_uint)
 			}
 		}
 
@@ -340,6 +350,31 @@ func readUint(rdr io.Reader, len int) (uint64, error) {
 		newb[i] = b[i]
 	}
 	return binary.LittleEndian.Uint64(newb), nil
+}
+
+// readInt read len(length) data as int64 (signed int)
+func readInt(rdr io.Reader, len int) (int64, error) {
+	// sometimes, data recived in length less than 8
+	b := make([]byte, len)
+	err := binary.Read(rdr, binary.BigEndian, &b)
+	if err != nil {
+		return 0, err
+	}
+
+	var result int64 = 0
+
+	switch len {
+	case 1:
+		result = int64(int8(b[0]))
+	case 2:
+		result = int64(int16(binary.LittleEndian.Uint16(b)))
+	case 3, 4:
+		result = int64(int32(binary.LittleEndian.Uint32(b)))
+	default:
+		result = int64(binary.LittleEndian.Uint64(b))
+	}
+
+	return result, nil
 }
 
 // convertToFloat64 convert bytes data to float64.

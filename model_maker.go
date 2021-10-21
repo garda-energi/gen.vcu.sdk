@@ -56,7 +56,7 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 	}
 
 	rp.Data = PacketData{
-		"HeaderReport": PacketData{
+		"Report": PacketData{
 			"SendDatetime": time.Now(),
 			"LogDatetime":  time.Now().Add(-2 * time.Second),
 			"Frame":        frame,

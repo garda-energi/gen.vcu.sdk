@@ -6,11 +6,12 @@ import (
 )
 
 type tagger struct {
-	Name   string
-	Tipe   VarDataType
-	Len    int
-	Factor float64
-	Sub    []tagger
+	Name         string
+	Tipe         VarDataType
+	Len          int
+	Factor       float64
+	UnfactorType VarDataType
+	Sub          []tagger
 }
 
 func newTagger() tagger {
