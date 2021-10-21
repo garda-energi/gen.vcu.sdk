@@ -2,17 +2,18 @@ package sdk
 
 // version : structure
 var ReportPacketStructures = map[int]tagger{
-	679: {
+	1: {
 		Tipe: Struct_t, Sub: []tagger{
 			{Name: "Report", Tipe: Struct_t, Sub: []tagger{
 				{Name: "SendDatetime", Tipe: Time_t, Len: 7},
 				{Name: "LogDatetime", Tipe: Time_t, Len: 7},
 				{Name: "Frame", Tipe: Uint8_t},
+				{Name: "Queued", Tipe: Uint8_t},
 			}},
 			{Name: "Vcu", Tipe: Struct_t, Sub: []tagger{
 				{Name: "State", Tipe: Int8_t},
 				{Name: "Events", Tipe: Uint16_t},
-				{Name: "LogBuffered", Tipe: Uint8_t},
+				{Name: "Version", Tipe: Uint16_t},
 				{Name: "BatVoltage", Tipe: Float_t, Len: 1, Factor: 18.0},
 				{Name: "Uptime", Tipe: Float_t, Len: 4, Factor: 0.000277},
 				{Name: "LockDown", Tipe: Boolean_t},
@@ -32,23 +33,6 @@ var ReportPacketStructures = map[int]tagger{
 				{Name: "Longitude", Tipe: Float_t, Len: 4, Factor: 0.0000001},
 				{Name: "Latitude", Tipe: Float_t, Len: 4, Factor: 0.0000001},
 				{Name: "Altitude", Tipe: Float_t, Len: 2, Factor: 0.1},
-			}},
-			{Name: "Hbar", Tipe: Struct_t, Sub: []tagger{
-				{Name: "Reverse", Tipe: Boolean_t},
-				{Name: "Mode", Tipe: Struct_t, Sub: []tagger{
-					{Name: "Drive", Tipe: Uint8_t},
-					{Name: "Trip", Tipe: Uint8_t},
-					{Name: "Avg", Tipe: Uint8_t},
-				}},
-				{Name: "Trip", Tipe: Struct_t, Sub: []tagger{
-					{Name: "Odo", Tipe: Uint16_t},
-					{Name: "A", Tipe: Uint16_t},
-					{Name: "B", Tipe: Uint16_t},
-				}},
-				{Name: "Avg", Tipe: Struct_t, Sub: []tagger{
-					{Name: "Range", Tipe: Uint8_t},
-					{Name: "Efficiency", Tipe: Uint8_t},
-				}},
 			}},
 			{Name: "Net", Tipe: Struct_t, Sub: []tagger{
 				{Name: "Signal", Tipe: Uint8_t},
@@ -83,6 +67,7 @@ var ReportPacketStructures = map[int]tagger{
 			}},
 			{Name: "Hmi", Tipe: Struct_t, Sub: []tagger{
 				{Name: "Active", Tipe: Boolean_t},
+				{Name: "Version", Tipe: Uint16_t},
 			}},
 			{Name: "Bms", Tipe: Struct_t, Sub: []tagger{
 				{Name: "Active", Tipe: Boolean_t},
@@ -103,6 +88,23 @@ var ReportPacketStructures = map[int]tagger{
 						{Name: "SOH", Tipe: Uint8_t},
 						{Name: "Temperature", Tipe: Uint16_t},
 					}},
+				}},
+			}},
+			{Name: "Hbar", Tipe: Struct_t, Sub: []tagger{
+				{Name: "Reverse", Tipe: Boolean_t},
+				{Name: "Mode", Tipe: Struct_t, Sub: []tagger{
+					{Name: "Drive", Tipe: Uint8_t},
+					{Name: "Trip", Tipe: Uint8_t},
+					{Name: "Avg", Tipe: Uint8_t},
+				}},
+				{Name: "Trip", Tipe: Struct_t, Sub: []tagger{
+					{Name: "Odo", Tipe: Uint16_t},
+					{Name: "A", Tipe: Uint16_t},
+					{Name: "B", Tipe: Uint16_t},
+				}},
+				{Name: "Avg", Tipe: Struct_t, Sub: []tagger{
+					{Name: "Range", Tipe: Uint8_t},
+					{Name: "Efficiency", Tipe: Uint8_t},
 				}},
 			}},
 			{Name: "Mcu", Tipe: Struct_t, Sub: []tagger{

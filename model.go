@@ -14,6 +14,7 @@ type HeaderReport struct {
 	SendDatetime time.Time `type:"unix_time" len:"7"`
 	LogDatetime  time.Time `type:"int64" len:"7"`
 	Frame        Frame     `type:"uint8"`
+	Queued       uint8     `type:"uint8"`
 }
 
 type HeaderCommand struct {
@@ -42,4 +43,12 @@ type PacketData map[string]interface{}
 // online convert status payload to online status.
 func (p packet) online() bool {
 	return string(p) == "1"
+}
+
+// RealtimeData check if current report log is realtime
+func (hr *HeaderReport) RealtimeData() bool {
+	if hr == nil {
+		return false
+	}
+	return hr.Queued <= REPORT_REALTIME_LOG
 }

@@ -11,7 +11,6 @@ type StructReportPacket struct {
 	Vcu    *Vcu          // 16 - 31
 	Eeprom *Eeprom       // 32 - 33
 	Gps    *Gps          // 34 - 49
-	Hbar   *Hbar         // 49 - 61
 	Net    *Net          // 62 - 64
 	Imu    *Imu          // 65 - 90
 	Remote *Remote       // 91 - 92
@@ -19,6 +18,7 @@ type StructReportPacket struct {
 	Audio  *Audio        // 95 - 98
 	Hmi    *Hmi          // 99
 	Bms    *Bms          // 100 - 130
+	Hbar   *Hbar         // 49 - 61
 	Mcu    *Mcu          // 131 - 173
 	Task   *Task         // 174 - 206
 }
@@ -60,13 +60,13 @@ func (r *StructReportPacket) String() string {
 }
 
 type Vcu struct {
-	State       BikeState `type:"int8"`
-	Events      uint16    `type:"uint16"`
-	LogBuffered uint8     `type:"uint8"`
-	BatVoltage  float32   `type:"uint8" len:"1" unit:"mVolt" factor:"18.0"`
-	Uptime      float32   `type:"uint32" unit:"hour" factor:"0.000277"`
-	LockDown    bool      `type:"uint8"`
-	CANDebug    uint8     `type:"uint8"`
+	State      BikeState `type:"int8"`
+	Events     uint16    `type:"uint16"`
+	Version    uint16    `type:"uint16"`
+	BatVoltage float32   `type:"uint8" len:"1" unit:"mVolt" factor:"18.0"`
+	Uptime     float32   `type:"uint32" unit:"hour" factor:"0.000277"`
+	LockDown   bool      `type:"uint8"`
+	CANDebug   uint8     `type:"uint8"`
 }
 
 // String converts VcuEvents type to string.
@@ -94,14 +94,6 @@ func (v *Vcu) IsEvents(ev ...VcuEvent) bool {
 		}
 	}
 	return set == len(ev)
-}
-
-// RealtimeData check if current report log is realtime
-func (v *Vcu) RealtimeData() bool {
-	if v == nil {
-		return false
-	}
-	return v.LogBuffered <= REPORT_REALTIME_LOG
 }
 
 // BatteryLow check if v's backup battery voltage is low
@@ -227,7 +219,8 @@ type Audio struct {
 	Volume uint8 `type:"uint8" unit:"%"`
 }
 type Hmi struct {
-	Active bool `type:"uint8"`
+	Active  bool   `type:"uint8"`
+	Version uint16 `type:"uint16"`
 }
 
 type BmsCapacity struct {
