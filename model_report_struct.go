@@ -126,7 +126,7 @@ type Gps struct {
 	Heading   float32 `type:"uint8" len:"1" unit:"Deg" factor:"2.0"`
 	Longitude float32 `type:"int32" factor:"0.0000001"`
 	Latitude  float32 `type:"int32" factor:"0.0000001"`
-	Altitude  float32 `type:"uint16" len:"2" unit:"m" factor:"0.1"`
+	Altitude  float32 `type:"int16" len:"2" unit:"m" factor:"0.1"`
 }
 
 // ValidHorizontal check if g's horizontal section (heading, longitude, latitude) is valid
@@ -194,7 +194,7 @@ type ImuTotal struct {
 	Accel       float32 `type:"uint16" len:"2" unit:"G" factor:"0.01"`
 	Gyro        float32 `type:"uint16" len:"2" unit:"rad/s" factor:"0.1"`
 	Tilt        float32 `type:"uint16" len:"2" unit:"Deg" factor:"0.1"`
-	Temperature float32 `type:"uint16" len:"2" unit:"Celcius" factor:"0.1"`
+	Temperature float32 `type:"int16" len:"2" unit:"Celcius" factor:"0.1"`
 }
 type Imu struct {
 	Active    bool `type:"uint8"`
@@ -235,7 +235,7 @@ type BmsPack struct {
 	Capacity    BmsCapacity
 	SOC         uint8  `type:"uint8" unit:"%"`
 	SOH         uint8  `type:"uint8" unit:"%"`
-	Temperature uint16 `type:"uint16" unit:"Celcius"`
+	Temperature uint16 `type:"int16" unit:"Celcius"`
 }
 
 type Bms struct {
@@ -312,7 +312,7 @@ type Mcu struct {
 	DriveMode   ModeDrive `type:"uint8"`
 	Speed       uint8     `type:"uint8" unit:"Kph"`
 	RPM         int16     `type:"int16" unit:"rpm"`
-	Temperature float32   `type:"uint16" len:"2" unit:"Celcius" factor:"0.1"`
+	Temperature float32   `type:"int16" len:"2" unit:"Celcius" factor:"0.1"`
 	Faults      McuFaultsStruct
 	Torque      McuTorque
 	DCBus       McuDCBus
@@ -366,17 +366,17 @@ func (m *Mcu) IsRunFaults(mf ...McuFaultRun) bool {
 }
 
 type TaskStack struct {
-	Manager  uint16 `type:"uint16" unit:"Bytes"`
-	Network  uint16 `type:"uint16" unit:"Bytes"`
-	Reporter uint16 `type:"uint16" unit:"Bytes"`
-	Command  uint16 `type:"uint16" unit:"Bytes"`
-	Imu      uint16 `type:"uint16" unit:"Bytes"`
-	Remote   uint16 `type:"uint16" unit:"Bytes"`
-	Finger   uint16 `type:"uint16" unit:"Bytes"`
-	Audio    uint16 `type:"uint16" unit:"Bytes"`
-	Gate     uint16 `type:"uint16" unit:"Bytes"`
-	CanRX    uint16 `type:"uint16" unit:"Bytes"`
-	CanTX    uint16 `type:"uint16" unit:"Bytes"`
+	Manager  uint8 `type:"uint8" unit:"Bytes"`
+	Network  uint8 `type:"uint8" unit:"Bytes"`
+	Reporter uint8 `type:"uint8" unit:"Bytes"`
+	Command  uint8 `type:"uint8" unit:"Bytes"`
+	Imu      uint8 `type:"uint8" unit:"Bytes"`
+	Remote   uint8 `type:"uint8" unit:"Bytes"`
+	Finger   uint8 `type:"uint8" unit:"Bytes"`
+	Audio    uint8 `type:"uint8" unit:"Bytes"`
+	Gate     uint8 `type:"uint8" unit:"Bytes"`
+	CanRX    uint8 `type:"uint8" unit:"Bytes"`
+	CanTX    uint8 `type:"uint8" unit:"Bytes"`
 }
 
 type TaskWakeup struct {
