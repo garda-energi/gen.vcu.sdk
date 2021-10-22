@@ -60,16 +60,17 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 			"SendDatetime": time.Now(),
 			"LogDatetime":  time.Now().Add(-2 * time.Second),
 			"Frame":        frame,
+			"Queued":       uint8(rand.Intn(50)),
 		},
 
 		"Vcu": PacketData{
-			"State":       BikeState(rand.Intn(int(BikeStateLimit))),
-			"Events":      uint16(rand.Uint32()),
-			"LogBuffered": uint8(rand.Intn(50)),
-			"BatVoltage":  randFloat(0, 4400),
-			"Uptime":      randFloat(0, 1000),
-			"LockDown":    randBool(),
-			"CANDebug":    uint8(rand.Intn(100)),
+			"State":      BikeState(rand.Intn(int(BikeStateLimit))),
+			"Events":     uint16(rand.Uint32()),
+			"Version":    uint16(rand.Uint32()),
+			"BatVoltage": randFloat(0, 4400),
+			"Uptime":     randFloat(0, 1000),
+			"LockDown":   randBool(),
+			"CANDebug":   uint8(rand.Intn(100)),
 		},
 
 		"Eeprom": PacketData{
@@ -87,24 +88,6 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 			"Longitude": randFloat(GPS_LNG_MIN, GPS_LNG_MAX),
 			"Latitude":  randFloat(GPS_LAT_MIN, GPS_LAT_MAX),
 			"Altitude":  randFloat(0, 10),
-		},
-
-		"Hbar": PacketData{
-			"Reverse": randBool(),
-			"Mode": PacketData{
-				"Drive": ModeDrive(rand.Intn(int(ModeDriveLimit))),
-				"Trip":  ModeTrip(rand.Intn(int(ModeTripLimit))),
-				"Avg":   ModeAvg(rand.Intn(int(ModeAvgLimit))),
-			},
-			"Trip": PacketData{
-				"Odo": uint16(rand.Intn(99999)),
-				"A":   uint16(rand.Intn(99999)),
-				"B":   uint16(rand.Intn(99999)),
-			},
-			"Avg": PacketData{
-				"Range":      uint8(rand.Intn(255)),
-				"Efficiency": uint8(rand.Intn(255)),
-			},
 		},
 
 		"Net": PacketData{
@@ -144,7 +127,8 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 		},
 
 		"Hmi": PacketData{
-			"Active": randBool(),
+			"Active":  randBool(),
+			"Version": uint16(rand.Uint32()),
 		},
 
 		"Bms": PacketData{
@@ -179,6 +163,24 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 					"SOH":         uint8(rand.Intn(100)),
 					"Temperature": uint16(randFloat(30, 50)),
 				},
+			},
+		},
+
+		"Hbar": PacketData{
+			"Reverse": randBool(),
+			"Mode": PacketData{
+				"Drive": ModeDrive(rand.Intn(int(ModeDriveLimit))),
+				"Trip":  ModeTrip(rand.Intn(int(ModeTripLimit))),
+				"Avg":   ModeAvg(rand.Intn(int(ModeAvgLimit))),
+			},
+			"Trip": PacketData{
+				"Odo": uint16(rand.Intn(99999)),
+				"A":   uint16(rand.Intn(99999)),
+				"B":   uint16(rand.Intn(99999)),
+			},
+			"Avg": PacketData{
+				"Range":      uint8(rand.Intn(255)),
+				"Efficiency": uint8(rand.Intn(255)),
 			},
 		},
 

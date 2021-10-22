@@ -178,13 +178,13 @@ func (r *ReportPacket) VcuIsEvents(ev ...VcuEvent) bool {
 	return set == len(ev)
 }
 
-// VcuRealtimeData check if current report log is realtime
-func (r *ReportPacket) VcuRealtimeData() bool {
-	logBuffered, isOK := r.GetValue("Vcu.LogBuffered").(uint8)
+// RealtimeData check if current report log is realtime
+func (r *ReportPacket) RealtimeData() bool {
+	queued, isOK := r.GetValue("Report.Queued").(uint8)
 	if !isOK {
 		return false
 	}
-	return logBuffered <= REPORT_REALTIME_LOG
+	return queued <= REPORT_REALTIME_QUEUED
 }
 
 // VcuBatteryLow check if v's backup battery voltage is low

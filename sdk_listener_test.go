@@ -56,6 +56,27 @@ func TestSdkReportListener(t *testing.T) {
 			},
 		},
 		{
+			desc:  "log is not queued",
+			frame: FrameSimple,
+			modifier: func(rp *ReportPacket) {
+				rp.Data["Report"].(PacketData)["Queued"] = 0
+			},
+			validator: func(rp *ReportPacket) bool {
+				return rp.RealtimeData()
+			},
+		},
+		{
+			desc:  "log is queued",
+			frame: FrameSimple,
+			modifier: func(rp *ReportPacket) {
+				rp.Data["Report"].(PacketData)["LogDatetime"] = time.Now().UTC()
+				rp.Data["Report"].(PacketData)["Queued"] = 5
+			},
+			validator: func(rp *ReportPacket) bool {
+				return !rp.RealtimeData()
+			},
+		},
+		{
 			desc:  "vcu's events has BMS_ERROR & BIKE_FALLEN",
 			frame: FrameSimple,
 			modifier: func(rp *ReportPacket) {
@@ -85,27 +106,6 @@ func TestSdkReportListener(t *testing.T) {
 			},
 			validator: func(rp *ReportPacket) bool {
 				return len(rp.VcuGetEvents()) == 0
-			},
-		},
-		{
-			desc:  "log is not buffered",
-			frame: FrameSimple,
-			modifier: func(rp *ReportPacket) {
-				rp.Data["Vcu"].(PacketData)["LogBuffered"] = 0
-			},
-			validator: func(rp *ReportPacket) bool {
-				return rp.VcuRealtimeData()
-			},
-		},
-		{
-			desc:  "log is buffered",
-			frame: FrameSimple,
-			modifier: func(rp *ReportPacket) {
-				rp.Data["Report"].(PacketData)["LogDatetime"] = time.Now().UTC()
-				rp.Data["Vcu"].(PacketData)["LogBuffered"] = 5
-			},
-			validator: func(rp *ReportPacket) bool {
-				return !rp.VcuRealtimeData()
 			},
 		},
 		{
@@ -320,7 +320,7 @@ func TestSdkReportListener(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			vin := vins[rand.Intn(len(vins))]
-			version := 679
+			version := 1
 
 			rp := makeReportPacket(version, vin, tC.frame)
 			tC.modifier(rp)

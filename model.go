@@ -44,11 +44,3 @@ type PacketData map[string]interface{}
 func (p packet) online() bool {
 	return string(p) == "1"
 }
-
-// RealtimeData check if current report log is realtime
-func (hr *HeaderReport) RealtimeData() bool {
-	if hr == nil {
-		return false
-	}
-	return hr.Queued <= REPORT_REALTIME_LOG
-}
