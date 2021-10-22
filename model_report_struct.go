@@ -194,7 +194,7 @@ type ImuTotal struct {
 	Accel       float32 `type:"uint16" len:"2" unit:"G" factor:"0.01"`
 	Gyro        float32 `type:"uint16" len:"2" unit:"rad/s" factor:"0.1"`
 	Tilt        float32 `type:"uint16" len:"2" unit:"Deg" factor:"0.1"`
-	Temperature float32 `type:"int16" len:"2" unit:"Celcius" factor:"0.1"`
+	Temperature int8    `type:"int8" unit:"Celcius"`
 }
 type Imu struct {
 	Active    bool `type:"uint8"`
@@ -233,9 +233,9 @@ type BmsPack struct {
 	Voltage     float32 `type:"uint16" len:"2" unit:"Volt" factor:"0.01"`
 	Current     float32 `type:"uint16" len:"2" unit:"Ampere" factor:"0.1"`
 	Capacity    BmsCapacity
-	SOC         uint8  `type:"uint8" unit:"%"`
-	SOH         uint8  `type:"uint8" unit:"%"`
-	Temperature uint16 `type:"int16" unit:"Celcius"`
+	SOC         uint8 `type:"uint8" unit:"%"`
+	SOH         uint8 `type:"uint8" unit:"%"`
+	Temperature int8  `type:"int8" unit:"Celcius"`
 }
 
 type Bms struct {
@@ -312,7 +312,7 @@ type Mcu struct {
 	DriveMode   ModeDrive `type:"uint8"`
 	Speed       uint8     `type:"uint8" unit:"Kph"`
 	RPM         int16     `type:"int16" unit:"rpm"`
-	Temperature float32   `type:"int16" len:"2" unit:"Celcius" factor:"0.1"`
+	Temperature int8      `type:"int8" unit:"Celcius"`
 	Faults      McuFaultsStruct
 	Torque      McuTorque
 	DCBus       McuDCBus

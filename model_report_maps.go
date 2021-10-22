@@ -49,7 +49,7 @@ var ReportPacketStructures = map[int]tagger{
 					{Name: "Accel", Tipe: Float_t, Len: 2, Factor: 0.01},
 					{Name: "Gyro", Tipe: Float_t, Len: 2, Factor: 0.1},
 					{Name: "Tilt", Tipe: Float_t, Len: 2, Factor: 0.1},
-					{Name: "Temperature", Tipe: Float_t, UnfactorType: Int16_t, Len: 2, Factor: 0.1},
+					{Name: "Temperature", Tipe: Int8_t},
 				}},
 			}},
 			{Name: "Remote", Tipe: Struct_t, Sub: []tagger{
@@ -86,7 +86,7 @@ var ReportPacketStructures = map[int]tagger{
 						}},
 						{Name: "SOC", Tipe: Uint8_t},
 						{Name: "SOH", Tipe: Uint8_t},
-						{Name: "Temperature", Tipe: Int16_t},
+						{Name: "Temperature", Tipe: Int8_t},
 					}},
 				}},
 			}},
@@ -114,7 +114,7 @@ var ReportPacketStructures = map[int]tagger{
 				{Name: "DriveMode", Tipe: Uint8_t},
 				{Name: "Speed", Tipe: Uint8_t},
 				{Name: "RPM", Tipe: Int16_t},
-				{Name: "Temperature", Tipe: Float_t, UnfactorType: Int16_t, Len: 2, Factor: 0.1},
+				{Name: "Temperature", Tipe: Int8_t},
 				{Name: "Faults", Tipe: Struct_t, Sub: []tagger{
 					{Name: "Post", Tipe: Uint32_t},
 					{Name: "Run", Tipe: Uint32_t},
