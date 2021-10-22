@@ -31,6 +31,7 @@ const (
 
 const BMS_PACK_MAX = 2
 const SPEED_KPH_MAX = 110
+const TRIP_KM_MAX = 99999
 const MESSAGE_LEN_MAX = 200
 
 const REPORT_REALTIME_QUEUED = 3
