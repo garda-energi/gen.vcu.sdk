@@ -17,7 +17,7 @@ func main() {
 		// Port: 1884,
 		User: "rw",
 		Pass: "readwrite",
-	}, true)
+	}, false)
 
 	// connect to client
 	if err := api.Connect(); err != nil {
@@ -35,7 +35,17 @@ func main() {
 			fmt.Println(vin, "=>", status)
 		},
 		ReportFunc: func(vin int, report *sdk.ReportPacket) {
-			fmt.Println(report)
+			fmt.Println(vin, "=>", report)
+			// fmt.Println(string(report.Json()))
+
+			// fmt.Println(report.GetValue("Bms.Pack.[0].Capacity.Remaining"))
+			// fmt.Println(report.GetType("Bms.Pack.[0].Capacity.Remaining"))
+
+			// vcuEvent, isOK := report.GetValue("Vcu.Events").(uint16)
+			// if isOK {
+			// 	fmt.Println(vcuEvent)
+			// }
+			// fmt.Println(report.GetType("Vcu.Events"))
 
 			// expose all *ReportPacket methods available
 			// if report.Vcu.RealtimeData() {

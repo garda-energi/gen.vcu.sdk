@@ -6,11 +6,12 @@ import (
 )
 
 type tagger struct {
-	Name   string
-	Tipe   VarDataType
-	Len    int
-	Factor float64
-	Sub    []tagger
+	Name         string
+	Tipe         VarDataType
+	Len          int
+	Factor       float64
+	UnfactorType VarDataType
+	Sub          []tagger
 }
 
 func newTagger() tagger {
@@ -74,6 +75,38 @@ func (tag tagger) normalize() tagger {
 	}
 
 	return tag
+}
+
+// getSize calculate tagger and sub tagger size
+func (tag tagger) getSize() int {
+	length := 0
+	switch tag.Tipe {
+	case Struct_t:
+		for _, sub := range tag.Sub {
+			length += sub.getSize()
+		}
+	case Array_t:
+		if len(tag.Sub) != 0 {
+			length += tag.Len * tag.Sub[0].getSize()
+		}
+	case Float_t:
+		if tag.Len != 0 {
+			length += tag.Len
+		} else {
+			length += 4
+		}
+	case Time_t:
+		length += 7
+	case Boolean_t, Uint8_t, Int8_t:
+		length += 1
+	case Uint16_t, Int16_t:
+		length += 2
+	case Uint32_t, Int32_t:
+		length += 4
+	case Uint64_t, Int64_t:
+		length += 8
+	}
+	return length
 }
 
 // getPacketSize calculate packet size

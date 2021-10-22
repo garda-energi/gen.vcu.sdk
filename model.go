@@ -14,6 +14,7 @@ type HeaderReport struct {
 	SendDatetime time.Time `type:"unix_time" len:"7"`
 	LogDatetime  time.Time `type:"int64" len:"7"`
 	Frame        Frame     `type:"uint8"`
+	Queued       uint8     `type:"uint8"`
 }
 
 type HeaderCommand struct {
@@ -42,13 +43,4 @@ type PacketData map[string]interface{}
 // online convert status payload to online status.
 func (p packet) online() bool {
 	return string(p) == "1"
-}
-
-type genReportPacket struct {
-	Header
-	LogDatetime time.Time `type:"int64" len:"7"`
-	Version     uint16    `type:"uint16"`
-	Frame       Frame     `type:"uint8"`
-	Payload     message
-	Data        PacketData
 }

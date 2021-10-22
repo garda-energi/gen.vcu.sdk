@@ -34,18 +34,11 @@ func (ls *Listener) report() mqtt.MessageHandler {
 
 		vin := getTopicVin(msg.Topic())
 
-		mapResult, err := decodeReportAsMaps(msg.Payload())
+		mapResult, err := decodeReport(msg.Payload())
 		if err != nil {
-			log.Println("cant decode", err)
+			ls.logger.Println("cant decode", err)
 		} else {
-			log.Println(mapResult)
-		}
-
-		result, err := decodeReport(msg.Payload())
-		if err != nil {
-			log.Println("cant decode", err)
-		} else {
-			ls.ReportFunc(vin, result)
+			ls.ReportFunc(vin, mapResult)
 		}
 	}
 }
