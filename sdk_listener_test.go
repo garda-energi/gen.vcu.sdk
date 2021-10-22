@@ -298,8 +298,8 @@ func TestSdkReportListener(t *testing.T) {
 			desc:  "some task's stack are near overflow",
 			frame: FrameFull,
 			modifier: func(rp *ReportPacket) {
-				rp.Data["Task"].(PacketData)["Stack"].(PacketData)["Manager"] = uint16(STACK_OVERFLOW_BYTE_MIN - 20)
-				rp.Data["Task"].(PacketData)["Stack"].(PacketData)["Command"] = uint16(0)
+				rp.Data["Task"].(PacketData)["Stack"].(PacketData)["Manager"] = uint8(STACK_OVERFLOW_BYTE_MIN - 20)
+				rp.Data["Task"].(PacketData)["Stack"].(PacketData)["Command"] = uint8(0)
 			},
 			validator: func(rp *ReportPacket) bool {
 				return rp.TaskStackOverflow()

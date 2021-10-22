@@ -336,7 +336,7 @@ func (r *ReportPacket) TaskStackOverflow() bool {
 		return false
 	}
 	for _, stack := range stacks {
-		if stackVal, isGetStack := stack.(uint16); isGetStack && stackVal < STACK_OVERFLOW_BYTE_MIN {
+		if stackVal, isGetStack := stack.(uint8); isGetStack && stackVal < STACK_OVERFLOW_BYTE_MIN {
 			return true
 		}
 	}
