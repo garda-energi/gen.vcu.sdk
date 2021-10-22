@@ -126,7 +126,7 @@ type Gps struct {
 	Heading   float32 `type:"uint8" len:"1" unit:"Deg" factor:"2.0"`
 	Longitude float32 `type:"int32" factor:"0.0000001"`
 	Latitude  float32 `type:"int32" factor:"0.0000001"`
-	Altitude  float32 `type:"uint16" len:"2" unit:"m" factor:"0.1"`
+	Altitude  float32 `type:"int16" len:"2" unit:"m" factor:"0.1"`
 }
 
 // ValidHorizontal check if g's horizontal section (heading, longitude, latitude) is valid
