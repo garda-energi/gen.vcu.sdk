@@ -190,8 +190,8 @@ type VcuEvent uint8
 type VcuEvents []VcuEvent
 
 const (
-	VCU_NET_SOFT_RESET VcuEvent = iota
-	VCU_NET_HARD_RESET
+	VCU_RESERVED VcuEvent = iota
+	VCU_NET_RESET
 	VCU_REMOTE_MISSING
 	VCU_BIKE_FALLEN
 	VCU_BIKE_MOVED
@@ -202,11 +202,20 @@ const (
 
 func (m VcuEvent) String() string {
 	return [...]string{
-		"NET_SOFT_RESET",
-		"NET_HARD_RESET",
+		"RESERVED_0",
+		"NET_RESET",
 		"REMOTE_MISSING",
 		"BIKE_FALLEN",
 		"BIKE_MOVED",
+		"RESERVED_5",
+		"RESERVED_6",
+		"RESERVED_7",
+		"RESERVED_8",
+		"RESERVED_9",
+		"RESERVED_10",
+		"RESERVED_11",
+		"RESERVED_12",
+		"RESERVED_13",
 		"BMS_ERROR",
 		"MCU_ERROR",
 	}[m]
