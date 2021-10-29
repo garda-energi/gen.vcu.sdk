@@ -106,7 +106,7 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 				"Accel":       randFloat(0, 100),
 				"Gyro":        randFloat(0, 10000),
 				"Tilt":        randFloat(0, 180),
-				"Temperature": randFloat(30, 50),
+				"Temperature": int8(rand.Intn(128)),
 			},
 		},
 
@@ -134,8 +134,8 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 		"Bms": PacketData{
 			"Active": randBool(),
 			"Run":    randBool(),
-			"SOC":    uint8(rand.Intn(100)),
 			"Faults": uint16(rand.Uint32()),
+			"SOC":    uint8(rand.Intn(100)),
 			"Pack": [2]PacketData{
 				{
 					"ID":      rand.Uint32(),
@@ -148,7 +148,7 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 					},
 					"SOC":         uint8(rand.Intn(100)),
 					"SOH":         uint8(rand.Intn(100)),
-					"Temperature": uint16(randFloat(30, 50)),
+					"Temperature": int8(rand.Intn(128)),
 				},
 				{
 					"ID":      rand.Uint32(),
@@ -161,7 +161,7 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 					},
 					"SOC":         uint8(rand.Intn(100)),
 					"SOH":         uint8(rand.Intn(100)),
-					"Temperature": uint16(randFloat(30, 50)),
+					"Temperature": int8(rand.Intn(128)),
 				},
 			},
 		},
@@ -174,9 +174,9 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 				"Avg":   ModeAvg(rand.Intn(int(ModeAvgLimit))),
 			},
 			"Trip": PacketData{
-				"Odo": uint16(rand.Intn(99999)),
-				"A":   uint16(rand.Intn(99999)),
-				"B":   uint16(rand.Intn(99999)),
+				"Odo": uint16(rand.Intn(TRIP_KM_MAX)),
+				"A":   uint16(rand.Intn(TRIP_KM_MAX)),
+				"B":   uint16(rand.Intn(TRIP_KM_MAX)),
 			},
 			"Avg": PacketData{
 				"Range":      uint8(rand.Intn(255)),
@@ -191,7 +191,7 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 			"DriveMode":   ModeDrive(rand.Intn(int(ModeDriveLimit))),
 			"Speed":       uint8(rand.Intn(SPEED_KPH_MAX)),
 			"RPM":         int16(rand.Intn(50000) - 25000),
-			"Temperature": randFloat(30, 50),
+			"Temperature": int8(rand.Intn(128)),
 			"Faults": PacketData{
 				"Post": rand.Uint32(),
 				"Run":  rand.Uint32(),
@@ -226,17 +226,17 @@ func makeReportPacket(version int, vin int, frame Frame) *ReportPacket {
 
 		"Task": PacketData{
 			"Stack": PacketData{
-				"Manager":  uint16(rand.Intn(1000)),
-				"Network":  uint16(rand.Intn(1000)),
-				"Reporter": uint16(rand.Intn(1000)),
-				"Command":  uint16(rand.Intn(1000)),
-				"Imu":      uint16(rand.Intn(1000)),
-				"Remote":   uint16(rand.Intn(1000)),
-				"Finger":   uint16(rand.Intn(1000)),
-				"Audio":    uint16(rand.Intn(1000)),
-				"Gate":     uint16(rand.Intn(1000)),
-				"CanRX":    uint16(rand.Intn(1000)),
-				"CanTX":    uint16(rand.Intn(1000)),
+				"Manager":  uint8(rand.Intn(255)),
+				"Network":  uint8(rand.Intn(255)),
+				"Reporter": uint8(rand.Intn(255)),
+				"Command":  uint8(rand.Intn(255)),
+				"Imu":      uint8(rand.Intn(255)),
+				"Remote":   uint8(rand.Intn(255)),
+				"Finger":   uint8(rand.Intn(255)),
+				"Audio":    uint8(rand.Intn(255)),
+				"Gate":     uint8(rand.Intn(255)),
+				"CanRX":    uint8(rand.Intn(255)),
+				"CanTX":    uint8(rand.Intn(255)),
 			},
 			"Wakeup": PacketData{
 				"Manager":  uint8(rand.Intn(255)),
