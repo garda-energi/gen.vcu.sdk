@@ -230,7 +230,7 @@ func decode(rdr *bytes.Reader, v interface{}, tags ...tagger) error {
 		}
 
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-		x, err := readUint(rdr, tag.Len)
+		x, err := readInt(rdr, tag.Len)
 		if err != nil {
 			return err
 		}
