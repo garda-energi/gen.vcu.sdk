@@ -78,9 +78,8 @@ func (c *commander) GenLockDown(on bool) error {
 }
 
 // GenCanDebug set CAN debug mode.
-func (c *commander) GenCanDebug(state uint8) error {
-	msg := uintToBytes(reflect.Uint8, uint64(state))
-	_, err := c.exec("GenCanDebug", msg)
+func (c *commander) GenCanDebug(on bool) error {
+	_, err := c.exec("GenCanDebug", boolToBytes(on))
 	return err
 }
 

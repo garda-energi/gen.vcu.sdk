@@ -17,7 +17,7 @@ var ReportPacketStructures = map[int]tagger{
 				{Name: "BatVoltage", Tipe: Float_t, Len: 1, Factor: 18.0},
 				{Name: "Uptime", Tipe: Float_t, Len: 4, Factor: 0.000277},
 				{Name: "LockDown", Tipe: Boolean_t},
-				{Name: "CANDebug", Tipe: Uint8_t},
+				{Name: "CANDebug", Tipe: Boolean_t},
 			}},
 			{Name: "Eeprom", Tipe: Struct_t, Sub: []tagger{
 				{Name: "Active", Tipe: Boolean_t},
