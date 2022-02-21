@@ -36,6 +36,13 @@ func main() {
 		},
 		ReportFunc: func(vin int, report *sdk.ReportPacket) {
 			fmt.Println(vin, "=>", report)
+
+			// Get Error
+			if bikeErr := report.GetBikeError(); bikeErr != sdk.BIKE_NOERROR {
+				fmt.Println("Code:", byte(bikeErr))
+				fmt.Println("Error:", bikeErr.Error())
+			}
+
 			// fmt.Println(string(report.Json()))
 
 			// fmt.Println(report.GetValue("Bms.Pack.[0].Capacity.Remaining"))

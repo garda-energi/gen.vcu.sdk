@@ -95,6 +95,86 @@ func (r *ReportPacket) GetType(key string) VarDataType {
 	return VarDataType(result)
 }
 
+// GetBikeError get error from bike's report packet.
+// return BIKE_NOERROR if no error detected.
+// and return BIKE_ERROR_*** if any error.
+// r.GetBikeError().Error() will return error string
+func (r *ReportPacket) GetBikeError() BikeError {
+	if r.Header.Version == 1 {
+		// varsi 1 mcu error
+		mcuFaultPost := r.GetValue("Mcu.Faults.Post").(uint32)
+		mcuFaultRun := r.GetValue("Mcu.Faults.Run").(uint32)
+
+		if mcuFaultPost > 0 {
+			postOverTemp := uint32((1 << MCU_POST_MOD_TEMP_LOW) |
+				(1 << MCU_POST_MOD_TEMP_HIGH) |
+				(1 << MCU_POST_PCB_TEMP_HIGH) |
+				(1 << MCU_POST_GATE_TEMP_HIGH))
+
+			if mcuFaultPost&postOverTemp != 0 {
+				return BIKE_ERROR_MOTOR_OVER_TEMPERATURE
+			} else {
+				return BIKE_ERROR_UNKNOWN
+			}
+
+		} else if mcuFaultRun > 0 {
+			runOverCurrent := uint32(1 << MCU_RUN_OVER_CURRENT)
+			runOverVoltage := uint32(1 << MCU_RUN_OVER_VOLTAGE)
+			runUnderVoltage := uint32(1 << MCU_RUN_UNDER_VOLTAGE)
+			runOverTemp := uint32((1 << MCU_RUN_INV_OVER_TEMP) |
+				(1 << MCU_RUN_MOTOR_OVER_TEMP) |
+				(1 << MCU_RUN_MODA_OVER_TEMP) |
+				(1 << MCU_RUN_MODB_OVER_TEMP) |
+				(1 << MCU_RUN_MODC_OVER_TEMP) |
+				(1 << MCU_RUN_PCB_OVER_TEMP) |
+				(1 << MCU_RUN_GATE1_OVER_TEMP) |
+				(1 << MCU_RUN_GATE2_OVER_TEMP) |
+				(1 << MCU_RUN_GATE3_OVER_TEMP))
+
+			if mcuFaultRun&runOverCurrent != 0 {
+				return BIKE_ERROR_MOTOR_OVER_CURRENT
+			} else if mcuFaultRun&runOverVoltage != 0 {
+				return BIKE_ERROR_MOTOR_OVER_VOLTAGE
+			} else if mcuFaultRun&runUnderVoltage != 0 {
+				return BIKE_ERROR_MOTOR_UNDER_VOLTAGE
+			} else if mcuFaultRun&runOverTemp != 0 {
+				return BIKE_ERROR_MOTOR_OVER_TEMPERATURE
+			} else {
+				return BIKE_ERROR_UNKNOWN
+			}
+		}
+
+		// Check BMS error
+		BmsFault := r.GetValue("Bms.Faults").(uint16)
+		if BmsFault > 0 {
+			bmsSysFailure := uint16((1 << BMS_SYSTEM_FAILURE))
+			bmsOverCurrent := uint16((1 << BMS_DISCHARGE_OVER_CURRENT) | (1 << BMS_CHARGE_OVER_CURRENT))
+			bmsOverVoltage := uint16((1 << BMS_OVER_VOLTAGE))
+			bmsUnderVoltage := uint16((1 << BMS_UNDER_VOLTAGE))
+			bmsOverTemp := uint16((1 << BMS_DISCHARGE_OVER_TEMPERATURE) | (1 << BMS_CHARGE_OVER_TEMPERATURE))
+			bmsOverDischarge := uint16((1 << BMS_OVER_DISCHARGE_CAPACITY))
+
+			if BmsFault&bmsSysFailure != 0 {
+				return BIKE_ERROR_BATTERY_SYSTEM_FAILURE
+			} else if BmsFault&bmsOverCurrent != 0 {
+				return BIKE_ERROR_BATTERY_OVER_CURRENT
+			} else if BmsFault&bmsOverVoltage != 0 {
+				return BIKE_ERROR_BATTERY_OVER_VOLTAGE
+			} else if BmsFault&bmsUnderVoltage != 0 {
+				return BIKE_ERROR_BATTERY_UNDER_VOLTAGE
+			} else if BmsFault&bmsOverTemp != 0 {
+				return BIKE_ERROR_BATTERY_OVER_TEMPERATURE
+			} else if BmsFault&bmsOverDischarge != 0 {
+				return BIKE_ERROR_BATTERY_OVER_DISCHARGE
+			} else {
+				return BIKE_ERROR_UNKNOWN
+			}
+		}
+	}
+
+	return BIKE_NOERROR
+}
+
 // stringOfData get PacketData as pretty string
 func (r *ReportPacket) stringOfData(data interface{}, tag tagger, deep int) string {
 	if data == nil {
