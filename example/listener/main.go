@@ -38,8 +38,7 @@ func main() {
 			fmt.Println(vin, "=>", report)
 
 			// Get Error
-			bikeErr := report.GetBikeError()
-			if bikeErr != sdk.BIKE_NOERROR {
+			if bikeErr := report.GetBikeError(); bikeErr != sdk.BIKE_NOERROR {
 				fmt.Println("Code:", byte(bikeErr))
 				fmt.Println("Error:", bikeErr.Error())
 			}
