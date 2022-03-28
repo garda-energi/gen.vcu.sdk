@@ -63,6 +63,7 @@ Todo Command:
   ✔ add code-doc for all methods & functions @done(21-07-25 19:40)
   ✔ Size() in Response's Method, make to dynamic calculation based on struct field, not hardcoded. @done(21-07-28 10:03)
   ☐ test sending command for different VIN at the same time
+  ☐ Add commmand setDriveMode
 
     
 Todo Client:  
