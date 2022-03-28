@@ -11,12 +11,11 @@ func main() {
 	stopChan := sdk.SetupGracefulShutdown() // optional code
 
 	api := sdk.New(sdk.ClientConfig{
-		Host: "broker.emqx.io",
-		Port: 1883,
-		// Host: "test.mosquitto.org",
-		// Port: 1884,
-		User: "rw",
-		Pass: "readwrite",
+		Host:     "mqtt.farad-ev.com",
+		Port:     1883,
+		User:     "farad-ev",
+		Pass:     "Vr@467890",
+		Protocol: "tcp",
 	}, false)
 
 	// connect to client
@@ -35,7 +34,7 @@ func main() {
 			fmt.Println(vin, "=>", status)
 		},
 		ReportFunc: func(vin int, report *sdk.ReportPacket) {
-			fmt.Println(vin, "=>", report)
+			// fmt.Println(vin, "=>", report)
 
 			// Get Error
 			if bikeErr := report.GetBikeError(); bikeErr != sdk.BIKE_NOERROR {

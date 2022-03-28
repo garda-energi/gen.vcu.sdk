@@ -17,10 +17,11 @@ type subscriber struct {
 
 // ClientConfig store connection string for mqtt client
 type ClientConfig struct {
-	Host string
-	Port int
-	User string
-	Pass string
+	Host     string
+	Port     int
+	User     string
+	Pass     string
+	Protocol string
 }
 
 // client implements mqtt client
@@ -111,7 +112,10 @@ func (c *client) unsub(topics []string) error {
 
 func (c *client) newClientOptions(cfg *ClientConfig) *mqtt.ClientOptions {
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", cfg.Host, cfg.Port))
+	if cfg.Protocol == "" {
+		cfg.Protocol = "tcp"
+	}
+	opts.AddBroker(fmt.Sprintf("%s://%s:%d", cfg.Protocol, cfg.Host, cfg.Port))
 	opts.SetClientID(fmt.Sprintf("go_mqtt_client_%d", time.Now().Unix()))
 	opts.SetUsername(cfg.User)
 	opts.SetPassword(cfg.Pass)

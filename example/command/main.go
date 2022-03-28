@@ -11,12 +11,11 @@ func main() {
 	stopChan := sdk.SetupGracefulShutdown() // optional code
 
 	api := sdk.New(sdk.ClientConfig{
-		Host: "broker.emqx.io",
-		Port: 1883,
-		// Host: "test.mosquitto.org",
-		// Port: 1884,
-		User: "rw",
-		Pass: "readwrite",
+		Host:     "absence.sandhika.com",
+		Port:     1883,
+		User:     "farad-ev",
+		Pass:     "Vr@467890",
+		Protocol: "tcp",
 	}, true)
 
 	// connect to client
@@ -26,7 +25,7 @@ func main() {
 	defer api.Disconnect()
 
 	// listen to commands & response
-	if dev354313, err := api.NewCommander(354313); err != nil {
+	if dev354313, err := api.NewCommander(12); err != nil {
 		fmt.Println(err)
 	} else {
 		defer dev354313.Destroy()
@@ -38,11 +37,11 @@ func main() {
 			fmt.Println(info)
 		}
 
-		if err := dev354313.GenLed(false); err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Println("Device led (on-board) was turned-off")
-		}
+		// if err := dev354313.GenLed(false); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("Device led (on-board) was turned-off")
+		// }
 
 		// rtc := time.Now()
 		// if err := dev354313.GenRtc(rtc); err != nil {
@@ -108,11 +107,11 @@ func main() {
 		// 	fmt.Println("Registered driverID are :", ids)
 		// }
 
-		// if id, err := dev354313.FingerAdd(); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Println("New driverID registered as", id)
-		// }
+		if id, err := dev354313.FingerAdd(); err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println("New driverID registered as", id)
+		}
 
 		// driverId := 1
 		// if err := dev354313.FingerDel(driverId); err != nil {
