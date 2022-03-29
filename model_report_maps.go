@@ -207,6 +207,7 @@ var ReportPacketStructures = map[int]tagger{
 			{Name: "Imu", Tipe: Struct_t, Sub: []tagger{
 				{Name: "Active", Tipe: Boolean_t},
 				{Name: "AntiThief", Tipe: Boolean_t},
+				{Name: "IsFallen", Tipe: Boolean_t},
 				{Name: "Tilt", Tipe: Struct_t, Sub: []tagger{
 					{Name: "Pitch", Tipe: Float_t, UnfactorType: Int16_t, Len: 2, Factor: 0.1},
 					{Name: "Roll", Tipe: Float_t, UnfactorType: Int16_t, Len: 2, Factor: 0.1},
