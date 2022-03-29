@@ -202,6 +202,10 @@ var cmdList = [...][]command{
 			name:    "MCU_TEMPLATES",
 			invoker: "McuTemplates",
 		},
+		command{
+			name:    "MCU_DIVE_MODE",
+			invoker: "McuSetDriveMode",
+		},
 	},
 	{
 		command{

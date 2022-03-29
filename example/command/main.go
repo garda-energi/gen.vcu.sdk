@@ -197,6 +197,13 @@ func main() {
 		// 	fmt.Println("Average mode changed to", avgMode)
 		// }
 
+		// mode := sdk.ModeDriveSport
+		// if err := dev354313.McuSetDriveMode(mode); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("Mode changed")
+		// }
+
 		// kph := uint8(100)
 		// user_id := uint8(2)
 		// if err := dev354313.McuSpeedMax(kph, user_id); err != nil {
