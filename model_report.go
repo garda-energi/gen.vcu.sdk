@@ -96,7 +96,7 @@ func (r *ReportPacket) GetType(key string) VarDataType {
 }
 
 // GetBikeError get error from bike's report packet.
-// return BIKE_NOERROR if no error detected.
+// Return BIKE_NOERROR if no error detected
 // and return BIKE_ERROR_*** if any error.
 // r.GetBikeError().Error() will return error string
 func (r *ReportPacket) GetBikeError() BikeError {
@@ -143,7 +143,17 @@ func (r *ReportPacket) GetBikeError() BikeError {
 				return BIKE_ERROR_UNKNOWN
 			}
 		}
+	}
 
+	return BIKE_NOERROR
+}
+
+// GetBatteryError get error from bike's report packet.
+// Return BIKE_BATTERY_NOERROR if no error detected
+// and return BIKE_ERROR_BATTERY_*** if any error.
+// r.GetBatteryError().Error() will return error string
+func (r *ReportPacket) GetBatteryError() BatteryError {
+	if r.Header.Version == 1 || r.Header.Version == 2 {
 		// Check BMS error
 		BmsFault := r.GetValue("Bms.Faults").(uint16)
 		if BmsFault > 0 {
@@ -167,12 +177,12 @@ func (r *ReportPacket) GetBikeError() BikeError {
 			} else if BmsFault&bmsOverDischarge != 0 {
 				return BIKE_ERROR_BATTERY_OVER_DISCHARGE
 			} else {
-				return BIKE_ERROR_UNKNOWN
+				return BIKE_ERROR_BATTERY_UNKNOWN
 			}
 		}
 	}
 
-	return BIKE_NOERROR
+	return BIKE_BATTERY_NOERROR
 }
 
 // stringOfData get PacketData as pretty string
