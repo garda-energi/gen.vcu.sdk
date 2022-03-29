@@ -141,7 +141,14 @@ func (c *commander) invoke(invoker string, arg interface{}) (res, err interface{
 	method := reflect.ValueOf(c).MethodByName(invoker)
 	ins := []reflect.Value{}
 	if arg != nil {
-		ins = append(ins, reflect.ValueOf(arg))
+		rv := reflect.ValueOf(arg)
+		if invoker == "McuSpeedMax" && rv.Kind() == reflect.Slice {
+			for i := 0; i < rv.Len(); i++ {
+				ins = append(ins, rv.Index(i))
+			}
+		} else {
+			ins = append(ins, rv)
+		}
 	}
 	outs := method.Call(ins)
 

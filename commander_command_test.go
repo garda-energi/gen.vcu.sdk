@@ -117,7 +117,7 @@ func TestCommandHandler(t *testing.T) {
 		},
 		{
 			invoker: "McuSpeedMax",
-			arg:     uint8(90),
+			arg:     []uint8{90, 1},
 		},
 		{
 			invoker: "McuTemplates",
@@ -226,7 +226,7 @@ func TestCommandInvalidInputHandler(t *testing.T) {
 		},
 		{
 			invoker: "McuSpeedMax",
-			arg:     uint8(245),
+			arg:     []uint8{245, 1},
 			want:    errInputOutOfRange("speed-max"),
 		},
 		{
