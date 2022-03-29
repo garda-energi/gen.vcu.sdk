@@ -107,11 +107,11 @@ func main() {
 		// 	fmt.Println("Registered driverID are :", ids)
 		// }
 
-		if id, err := dev354313.FingerAdd(); err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Println("New driverID registered as", id)
-		}
+		// if id, err := dev354313.FingerAdd(); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("New driverID registered as", id)
+		// }
 
 		// driverId := 1
 		// if err := dev354313.FingerDel(driverId); err != nil {
@@ -198,7 +198,8 @@ func main() {
 		// }
 
 		// kph := uint8(100)
-		// if err := dev354313.McuSpeedMax(kph); err != nil {
+		// user_id := uint8(2)
+		// if err := dev354313.McuSpeedMax(kph, user_id); err != nil {
 		// 	fmt.Println(err)
 		// } else {
 		// 	fmt.Println("Motor speed is limited to", kph, "kph")
