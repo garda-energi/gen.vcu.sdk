@@ -100,7 +100,7 @@ func (r *ReportPacket) GetType(key string) VarDataType {
 // and return BIKE_ERROR_*** if any error.
 // r.GetBikeError().Error() will return error string
 func (r *ReportPacket) GetBikeError() BikeError {
-	if r.Header.Version == 1 {
+	if r.Header.Version == 1 || r.Header.Version == 2 {
 		// varsi 1 mcu error
 		mcuFaultPost := r.GetValue("Mcu.Faults.Post").(uint32)
 		mcuFaultRun := r.GetValue("Mcu.Faults.Run").(uint32)

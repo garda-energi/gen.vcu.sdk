@@ -34,7 +34,9 @@ func main() {
 			fmt.Println(vin, "=>", status)
 		},
 		ReportFunc: func(vin int, report *sdk.ReportPacket) {
-			// fmt.Println(vin, "=>", report)
+			if vin == 12 {
+				fmt.Println(vin, "=>", report)
+			}
 
 			// Get Error
 			if bikeErr := report.GetBikeError(); bikeErr != sdk.BIKE_NOERROR {

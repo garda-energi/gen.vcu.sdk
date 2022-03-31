@@ -286,12 +286,27 @@ var ReportPacketStructures = map[int]tagger{
 				{Name: "Speed", Tipe: Uint8_t},
 				{Name: "RPM", Tipe: Int16_t},
 				{Name: "Temperature", Tipe: Int8_t},
-				{Name: "Error", Tipe: Array_t, Len: 8, Sub: []tagger{
-					{Name: "err", Tipe: Uint8_t, Len: 1},
+				{Name: "Faults", Tipe: Struct_t, Sub: []tagger{
+					{Name: "Post", Tipe: Uint32_t},
+					{Name: "Run", Tipe: Uint32_t},
+				}},
+				{Name: "Torque", Tipe: Struct_t, Sub: []tagger{
+					{Name: "Commanded", Tipe: Float_t, Len: 2, Factor: 0.1},
+					{Name: "Feedback", Tipe: Float_t, Len: 2, Factor: 0.1},
 				}},
 				{Name: "DCBus", Tipe: Struct_t, Sub: []tagger{
 					{Name: "Current", Tipe: Float_t, Len: 2, Factor: 0.1},
 					{Name: "Voltage", Tipe: Float_t, Len: 2, Factor: 0.1},
+				}},
+				{Name: "Template", Tipe: Struct_t, Sub: []tagger{
+					{Name: "MaxRPM", Tipe: Int16_t},
+					{Name: "MaxSpeed", Tipe: Uint8_t},
+					{Name: "DriveMode", Tipe: Array_t, Len: 3, Sub: []tagger{
+						{Tipe: Struct_t, Sub: []tagger{
+							{Name: "Discur", Tipe: Uint8_t},
+							{Name: "Torque", Tipe: Uint8_t},
+						}},
+					}},
 				}},
 			}},
 			{Name: "Task", Tipe: Struct_t, Sub: []tagger{
