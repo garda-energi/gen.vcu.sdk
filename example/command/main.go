@@ -25,7 +25,7 @@ func main() {
 	defer api.Disconnect()
 
 	// listen to commands & response
-	if dev354313, err := api.NewCommander(12); err != nil {
+	if dev354313, err := api.NewCommander(13); err != nil {
 		fmt.Println(err)
 	} else {
 		defer dev354313.Destroy()
@@ -210,6 +210,14 @@ func main() {
 		// 	fmt.Println(err)
 		// } else {
 		// 	fmt.Println("Motor speed is limited to", kph, "kph")
+		// }
+
+		// driveMode := sdk.ModeDrive(2)
+		// user_id = uint8(2)
+		// if err := dev354313.McuSetDriveMode(driveMode, user_id); err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	fmt.Println("Motor drive mode set to", driveMode)
 		// }
 
 		// templates := []sdk.McuTemplate{

@@ -290,7 +290,7 @@ func (c *commander) McuSpeedMax(kph uint8, userId uint8) error {
 }
 
 // McuSetDriveMode set driving mode in MCU (Motor Control Unit).
-func (c *commander) McuSetDriveMode(mode ModeDrive) error {
+func (c *commander) McuSetDriveMode(mode ModeDrive, userId uint8) error {
 	if mode >= ModeDriveLimit {
 		return errInputOutOfRange("mode-drive")
 	}

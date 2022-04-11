@@ -102,10 +102,10 @@ func (r *ReportPacket) GetType(key string) VarDataType {
 func (r *ReportPacket) GetBikeError() BikeError {
 	if r.Header.Version == 1 || r.Header.Version == 2 {
 		// varsi 1 mcu error
-		mcuFaultPost := r.GetValue("Mcu.Faults.Post").(uint32)
-		mcuFaultRun := r.GetValue("Mcu.Faults.Run").(uint32)
+		mcuFaultPost, isFaultPostOK := r.GetValue("Mcu.Faults.Post").(uint32)
+		mcuFaultRun, isFaultRunOK := r.GetValue("Mcu.Faults.Run").(uint32)
 
-		if mcuFaultPost > 0 {
+		if isFaultPostOK && mcuFaultPost > 0 {
 			postOverTemp := uint32((1 << MCU_POST_MOD_TEMP_LOW) |
 				(1 << MCU_POST_MOD_TEMP_HIGH) |
 				(1 << MCU_POST_PCB_TEMP_HIGH) |
@@ -117,7 +117,7 @@ func (r *ReportPacket) GetBikeError() BikeError {
 				return BIKE_ERROR_UNKNOWN
 			}
 
-		} else if mcuFaultRun > 0 {
+		} else if isFaultRunOK && mcuFaultRun > 0 {
 			runOverCurrent := uint32(1 << MCU_RUN_OVER_CURRENT)
 			runOverVoltage := uint32(1 << MCU_RUN_OVER_VOLTAGE)
 			runUnderVoltage := uint32(1 << MCU_RUN_UNDER_VOLTAGE)

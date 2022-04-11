@@ -142,7 +142,7 @@ func (c *commander) invoke(invoker string, arg interface{}) (res, err interface{
 	ins := []reflect.Value{}
 	if arg != nil {
 		rv := reflect.ValueOf(arg)
-		if invoker == "McuSpeedMax" && rv.Kind() == reflect.Slice {
+		if (invoker == "McuSpeedMax" || invoker == "McuSetDriveMode") && rv.Kind() == reflect.Slice {
 			for i := 0; i < rv.Len(); i++ {
 				ins = append(ins, rv.Index(i))
 			}

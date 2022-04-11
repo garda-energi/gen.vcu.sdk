@@ -34,7 +34,7 @@ func main() {
 			fmt.Println(vin, "=>", status)
 		},
 		ReportFunc: func(vin int, report *sdk.ReportPacket) {
-			if vin == 12 {
+			if vin == 13 {
 				fmt.Println(vin, "=>", report)
 			}
 
